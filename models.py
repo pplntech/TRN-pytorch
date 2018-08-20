@@ -53,6 +53,8 @@ class TSN(nn.Module):
             print("Converting the ImageNet model to RGB+Diff init model")
             self.base_model = self._construct_diff_model(self.base_model)
             print("Done. RGBDiff model ready.")
+
+            
         if consensus_type in ['TRN', 'TRNmultiscale']:
             # plug in the Temporal Relation Network Module
             self.consensus = TRNmodule.return_TRN(consensus_type, self.img_feature_dim, self.num_segments, num_class)
@@ -71,7 +73,7 @@ class TSN(nn.Module):
             self.partialBN(True)
 
     def _prepare_tsn(self, num_class):
-        feature_dim = getattr(self.base_model, self.base_model.last_layer_name).in_features
+        feature_dim = getattr(self.base_model, self.base_model.last_layer_name).in_features # 1024
         # print (self.base_model)
         if self.dropout == 0:
             if self.consensus_type in ['TRN','TRNmultiscale']:
@@ -84,7 +86,7 @@ class TSN(nn.Module):
             else:
                 setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, num_class))
             self.new_fc = None
-        else:
+        else: # dropout not ZERO
             setattr(self.base_model, self.base_model.last_layer_name, nn.Dropout(p=self.dropout))
 
             if self.consensus_type in ['TRN','TRNmultiscale']:

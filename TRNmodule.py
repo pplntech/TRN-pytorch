@@ -26,7 +26,7 @@ class RelationModule(torch.nn.Module):
                 nn.Linear(num_bottleneck,self.num_class),
                 )
         return classifier
-    def forward(self, input):
+    def forward(self, input): # (BS, num_frames, img_feature_dim)
         # print (input.size()) # torch.Size([72, 2, 256]) (BS, NUM_SEG, img_feature_dim)
         input = input.view(input.size(0), self.num_frames*self.img_feature_dim)
         # print (input.size()) # torch.Size([72, 512])

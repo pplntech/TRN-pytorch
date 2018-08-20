@@ -93,14 +93,14 @@ class MemNNModule(torch.nn.Module):
                 )
         return classifier
 
-    def forward(self, input):
-        accumulated_output = []
+    def forward(self, input): # (BS, num_frames, 1024)
         bs = input.size()[0]
         assert (input.size()[1]==self.num_frames)
 
         queries_emb = torch.mean(input, 1) # (BS, 1024)
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
+        accumulated_output = []
         w_u1 = self.hop(input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
         accumulated_output.append(w_u1)
 
@@ -141,6 +141,7 @@ class MemNNModule(torch.nn.Module):
 
         p = torch.bmm(query, key) # (BS, 1, NUM_SEG)
         p = F.softmax(p.view(-1, p.size()[1]*p.size()[2]), dim=1).view(-1, p.size()[1], p.size()[2]) # (BS, 1, NUM_SEG)
+        # print (p)
 
         value = ValueEmbedding(mem_emb) # (BS * NUM_SEG, 256)
         value = value.view(bs, self.num_frames, -1) # (BS, NUM_SEG, 256)
