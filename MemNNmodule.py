@@ -148,7 +148,8 @@ class MemNNModule(torch.nn.Module):
         out = torch.bmm(p, value) # (BS, 1, 256)
         out = torch.squeeze(out, 1).contiguous() # (BS, 256)
 
-        return out + queries_emb
+        return out
+        # return out + queries_emb
 
 # (consensus_type, self.img_feature_dim, self.num_segments, num_class)
 def return_MemNN(relation_type, img_feature_dim, num_frames, num_class, channel, num_hop):
