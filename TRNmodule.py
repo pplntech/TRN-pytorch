@@ -15,6 +15,7 @@ class RelationModule(torch.nn.Module):
         self.num_class = num_class
         self.img_feature_dim = img_feature_dim
         self.classifier = self.fc_fusion()
+
     def fc_fusion(self):
         # naive concatenate
         num_bottleneck = 512
@@ -26,7 +27,9 @@ class RelationModule(torch.nn.Module):
                 )
         return classifier
     def forward(self, input):
+        # print (input.size()) # torch.Size([72, 2, 256]) (BS, NUM_SEG, img_feature_dim)
         input = input.view(input.size(0), self.num_frames*self.img_feature_dim)
+        # print (input.size()) # torch.Size([72, 512])
         input = self.classifier(input)
         return input
 
@@ -37,12 +40,12 @@ class RelationModuleMultiScale(torch.nn.Module):
         super(RelationModuleMultiScale, self).__init__()
         self.subsample_num = 3 # how many relations selected to sum up
         self.img_feature_dim = img_feature_dim
-        self.scales = [i for i in range(num_frames, 1, -1)] # generate the multiple frame relations
+        self.scales = [i for i in range(num_frames, 1, -1)] # generate the multiple frame relations # -1 for reverse order
 
         self.relations_scales = []
         self.subsample_scales = []
         for scale in self.scales:
-            relations_scale = self.return_relationset(num_frames, scale)
+            relations_scale = self.return_relationset(num_frames, scale) # all combinations
             self.relations_scales.append(relations_scale)
             self.subsample_scales.append(min(self.subsample_num, len(relations_scale))) # how many samples of relation to select in each forward pass
 
@@ -145,6 +148,7 @@ class RelationModuleMultiScaleWithClassifier(torch.nn.Module):
         import itertools
         return list(itertools.combinations([i for i in range(num_frames)], num_frames_relation))
 
+# consensus_type, self.img_feature_dim, self.num_segments, num_class
 def return_TRN(relation_type, img_feature_dim, num_frames, num_class):
     if relation_type == 'TRN':
         TRNmodel = RelationModule(img_feature_dim, num_frames, num_class)

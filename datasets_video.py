@@ -7,19 +7,25 @@ import torchvision.datasets as datasets
 ROOT_DATASET = 'video_datasets'
 
 
-def return_something(modality):
-    filename_categories = 'something/category.txt'
+def return_something(modality, root_dir):
+    filename_categories = os.path.join(root_dir,'category.txt')
+    # 'something/category.txt'
+
     if modality == 'RGB':
-        root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/20bn-something-something-v1'
+        root_data = '20bn-something-something-v1'
         #root_data = '/mnt/localssd1/bzhou/something/20bn-something-something-v1'
-        filename_imglist_train = 'something/train_videofolder.txt'
-        filename_imglist_val = 'something/val_videofolder.txt'
+        # filename_imglist_train = 'something/train_videofolder.txt'
+        # filename_imglist_val = 'something/val_videofolder.txt'
+        filename_imglist_train = 'train_videofolder.txt'
+        filename_imglist_val = 'val_videofolder.txt'
         prefix = '{:05d}.jpg'
     elif modality == 'Flow':
         root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/flow'
         #root_data = '/mnt/localssd1/bzhou/something/flow'
-        filename_imglist_train = 'something/train_videofolder.txt'
-        filename_imglist_val = 'something/val_videofolder.txt'
+        # filename_imglist_train = 'something/train_videofolder.txt'
+        # filename_imglist_val = 'something/val_videofolder.txt'
+        filename_imglist_train = 'train_videofolder.txt'
+        filename_imglist_val = 'val_videofolder.txt'
         prefix = '{:05d}.jpg'
     else:
         print('no such modality:'+modality)
@@ -99,17 +105,19 @@ def return_moments(modality):
     return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
 
 
-def return_dataset(dataset, modality):
+def return_dataset(dataset, modality, root_dir):
     dict_single = {'jester': return_jester, 'something': return_something, 'somethingv2': return_somethingv2,
                    'charades': return_charades, 'moments': return_moments}
     if dataset in dict_single:
-        file_categories, file_imglist_train, file_imglist_val, root_data, prefix = dict_single[dataset](modality)
+        file_categories, file_imglist_train, file_imglist_val, root_data, prefix = dict_single[dataset](modality, root_dir)
     else:
         raise ValueError('Unknown dataset '+dataset)
 
-    file_imglist_train = os.path.join(ROOT_DATASET, file_imglist_train)
-    file_imglist_val = os.path.join(ROOT_DATASET, file_imglist_val)
-    file_categories = os.path.join(ROOT_DATASET, file_categories)
+    file_categories = os.path.join(root_dir, file_categories)
+    file_imglist_train = os.path.join(root_dir, file_imglist_train)
+    file_imglist_val = os.path.join(root_dir, file_imglist_val)
+    root_data = os.path.join(root_dir, root_data)
+    
     with open(file_categories) as f:
         lines = f.readlines()
     categories = [item.rstrip() for item in lines]

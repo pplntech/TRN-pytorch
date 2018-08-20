@@ -21,13 +21,15 @@ best_prec1 = 0
 def main():
     global args, best_prec1
     args = parser.parse_args()
+    _join_result_path()
     check_rootfolders()
 
-    categories, args.train_list, args.val_list, args.root_path, prefix = datasets_video.return_dataset(args.dataset, args.modality)
+    categories, args.train_list, args.val_list, args.root_path, prefix = datasets_video.return_dataset(args.dataset, args.modality, args.root_path)
+    # print(categories, args.train_list, args.val_list, args.root_path, prefix)
     num_class = len(categories)
 
 
-    args.store_name = '_'.join(['TRN', args.dataset, args.modality, args.arch, args.consensus_type, 'segment%d'% args.num_segments])
+    args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.consensus_type, 'segment%d'% args.num_segments])
     print('storing name: ' + args.store_name)
 
     model = TSN(num_class, args.num_segments, args.modality,
@@ -35,7 +37,8 @@ def main():
                 consensus_type=args.consensus_type,
                 dropout=args.dropout,
                 img_feature_dim=args.img_feature_dim,
-                partial_bn=not args.no_partialbn)
+                partial_bn=not args.no_partialbn,
+                num_hop=args.hop)
 
     crop_size = model.crop_size
     scale_size = model.scale_size
@@ -77,10 +80,10 @@ def main():
                    modality=args.modality,
                    image_tmpl=prefix,
                    transform=torchvision.transforms.Compose([
-                       train_augmentation,
+                       train_augmentation, # GroupMultiScaleCrop[1, .875, .75, .66] AND GroupRandomHorizontalFlip
                        Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
                        ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
-                       normalize,
+                       normalize, # GroupNormalize
                    ])),
         batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True)
@@ -160,6 +163,8 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
         # measure data loading time
+        # print (input.size()) # [72, 6, 224, 224]
+        # asdf
         data_time.update(time.time() - end)
 
         target = target.cuda(async=True)
@@ -315,8 +320,13 @@ def check_rootfolders():
     for folder in folders_util:
         if not os.path.exists(folder):
             print('creating folder ' + folder)
-            os.mkdir(folder)
+            # os.mkdir(folder)
+            os.makedirs(folder)
 
+def _join_result_path():
+    args.root_log = os.path.join(args.result_path, args.root_log)
+    args.root_model = os.path.join(args.result_path, args.root_model)
+    args.root_output = os.path.join(args.result_path, args.root_output)
 
 if __name__ == '__main__':
     main()

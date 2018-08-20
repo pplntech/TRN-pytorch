@@ -50,6 +50,7 @@ class GroupRandomHorizontalFlip(object):
 
     def __call__(self, img_group, is_flow=False):
         v = random.random()
+        # print (len(img_group), type(img_group[0])) # 2 <class 'PIL.Image.Image'>
         if v < 0.5:
             ret = [img.transpose(Image.FLIP_LEFT_RIGHT) for img in img_group]
             if self.is_flow:
@@ -66,8 +67,14 @@ class GroupNormalize(object):
         self.std = std
 
     def __call__(self, tensor):
+        # print (tensor.size()) # [6, 224, 224]
+        # print (len(self.mean)) # 3
+        # print (len(self.std)) # 1
         rep_mean = self.mean * (tensor.size()[0]//len(self.mean))
         rep_std = self.std * (tensor.size()[0]//len(self.std))
+        # print (self.mean, rep_mean)
+        # print (self.std, rep_std)
+        # asdf
 
         # TODO: make efficient
         for t, m, s in zip(tensor, rep_mean, rep_std):
@@ -256,13 +263,22 @@ class Stack(object):
         self.roll = roll
 
     def __call__(self, img_group):
+        '''
+        img_group : list
+        len(img_group) : num_segments
+        '''
+        # print (img_group[0])
+        # print (type(img_group[0]))
+        # print (img_group[0].mode) # RGB
+        # print (np.array(img_group[0]).shape) # (224, 224, 3)
+        # print (np.concatenate(img_group).shape) # (224, 224, 6)
         if img_group[0].mode == 'L':
             return np.concatenate([np.expand_dims(x, 2) for x in img_group], axis=2)
         elif img_group[0].mode == 'RGB':
             if self.roll:
                 return np.concatenate([np.array(x)[:, :, ::-1] for x in img_group], axis=2)
             else:
-                return np.concatenate(img_group, axis=2)
+                return np.concatenate(img_group, axis=2) # (224, 224, 6)
 
 
 class ToTorchFormatTensor(object):

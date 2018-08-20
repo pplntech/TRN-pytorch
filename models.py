@@ -5,13 +5,14 @@ from transforms import *
 from torch.nn.init import normal, constant
 
 import TRNmodule
+import MemNNmodule
 
 class TSN(nn.Module):
     def __init__(self, num_class, num_segments, modality,
                  base_model='resnet101', new_length=None,
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,img_feature_dim=256,
-                 crop_num=1, partial_bn=True, print_spec=True):
+                 crop_num=1, partial_bn=True, print_spec=True, num_hop=1):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -40,7 +41,7 @@ class TSN(nn.Module):
         img_feature_dim:    {}
             """.format(base_model, self.modality, self.num_segments, self.new_length, consensus_type, self.dropout, self.img_feature_dim)))
 
-        self._prepare_base_model(base_model)
+        self._prepare_base_model(base_model) # assign 'self.base_model'
 
         feature_dim = self._prepare_tsn(num_class)
 
@@ -55,6 +56,10 @@ class TSN(nn.Module):
         if consensus_type in ['TRN', 'TRNmultiscale']:
             # plug in the Temporal Relation Network Module
             self.consensus = TRNmodule.return_TRN(consensus_type, self.img_feature_dim, self.num_segments, num_class)
+            # (relation_type, img_feature_dim, num_frames, num_class)
+        elif consensus_type in ['MemNN']:
+            # plug in the Temporal Relation Network Module
+            self.consensus = MemNNmodule.return_MemNN(consensus_type, self.img_feature_dim, self.num_segments, num_class, channel=1024, num_hop=num_hop)
         else:
             self.consensus = ConsensusModule(consensus_type)
 
@@ -67,25 +72,42 @@ class TSN(nn.Module):
 
     def _prepare_tsn(self, num_class):
         feature_dim = getattr(self.base_model, self.base_model.last_layer_name).in_features
+        # print (self.base_model)
         if self.dropout == 0:
-            setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, num_class))
+            if self.consensus_type in ['TRN','TRNmultiscale']:
+                setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
+
+            elif self.consensus_type in ['MemNN']:
+                self.base_model = nn.Sequential(*list(self.base_model.children())[:-1]) # feature_dim
+                # setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
+
+            else:
+                setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, num_class))
             self.new_fc = None
         else:
             setattr(self.base_model, self.base_model.last_layer_name, nn.Dropout(p=self.dropout))
+
             if self.consensus_type in ['TRN','TRNmultiscale']:
                 # create a new linear layer as the frame feature
                 self.new_fc = nn.Linear(feature_dim, self.img_feature_dim)
+
+            elif self.consensus_type in ['MemNN']:
+                self.new_fc = None
+
             else:
                 # the default consensus types in TSN
                 self.new_fc = nn.Linear(feature_dim, num_class)
 
         std = 0.001
-        if self.new_fc is None:
-            normal(getattr(self.base_model, self.base_model.last_layer_name).weight, 0, std)
-            constant(getattr(self.base_model, self.base_model.last_layer_name).bias, 0)
-        else:
-            normal(self.new_fc.weight, 0, std)
-            constant(self.new_fc.bias, 0)
+        if self.consensus_type not in ['MemNN']:
+            if self.new_fc is None: # dropout 0
+                normal(getattr(self.base_model, self.base_model.last_layer_name).weight, 0, std)
+                constant(getattr(self.base_model, self.base_model.last_layer_name).bias, 0)
+            else:
+                normal(self.new_fc.weight, 0, std)
+                constant(self.new_fc.bias, 0)
+        # print (self.base_model)
+        # asdf
         return feature_dim
 
     def _prepare_base_model(self, base_model):
@@ -101,7 +123,7 @@ class TSN(nn.Module):
                 self.input_mean = [0.5]
                 self.input_std = [np.mean(self.input_std)]
             elif self.modality == 'RGBDiff':
-                self.input_mean = [0.485, 0.456, 0.406] + [0] * 3 * self.new_length
+                self.input_mean = self.input_mean + [0] * 3 * self.new_length
                 self.input_std = self.input_std + [np.mean(self.input_std) * 2] * 3 * self.new_length
         elif base_model == 'BNInception':
             import model_zoo
@@ -211,22 +233,32 @@ class TSN(nn.Module):
         ]
 
     def forward(self, input):
+        # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
+
         sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
+        # new_length is 1 when RGB, otherwise 5
 
         if self.modality == 'RGBDiff':
             sample_len = 3 * self.new_length
             input = self._get_diff(input)
 
+        # print (input.view((-1, sample_len) + input.size()[-2:]).size()) # (BS * num_seg, num_channel, h, w)
         base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:]))
+        # print (base_out.size()) # (BS * num_seg, 1024) # 1024 is number of channels
 
-        if self.dropout > 0:
-            base_out = self.new_fc(base_out)
+        if self.dropout > 0 and self.consensus_type!='MemNN':
+            base_out = self.new_fc(base_out) # img_feature_dim
+        # print (base_out.size()) # (BS * num_seg, img_feature_dim_OR_final_class_num)
+        # base_out is class_logit when TSN, otherwise img_feature_dim when TRN
 
+        # print (self.before_softmax) # True
         if not self.before_softmax:
             base_out = self.softmax(base_out)
+        # print (base_out.size()) # (BS * num_seg, img_feature_dim_OR_final_class_num)
         if self.reshape:
             base_out = base_out.view((-1, self.num_segments) + base_out.size()[1:])
-
+        # print (base_out.size()) # (BS, NUM_SEG, img_feature_dim_OR_final_class_num)
+        
         output = self.consensus(base_out)
         return output.squeeze(1)
 
@@ -259,7 +291,7 @@ class TSN(nn.Module):
         # modify parameters, assume the first blob contains the convolution kernels
         params = [x.clone() for x in conv_layer.parameters()]
         kernel_size = params[0].size()
-        new_kernel_size = kernel_size[:1] + (2 * self.new_length, ) + kernel_size[2:]
+        new_kernel_size = kernel_size[:1] + (2 * self.new_length, ) + kernel_size[2:] # change number of channels
         new_kernels = params[0].data.mean(dim=1, keepdim=True).expand(new_kernel_size).contiguous()
 
         new_conv = nn.Conv2d(2 * self.new_length, conv_layer.out_channels,

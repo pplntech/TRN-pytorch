@@ -1,1 +1,2 @@
 python main.py something RGB --arch BNInception --num_segments 3 --consensus_type TRN --batch-size 48
+python main.py something RGB --consensus_type MemNN --batch-size 32 --gpus 0 --root_path /hdd3/VideoDataset --num_segments 8 --hop 1 --result_path /hdd3/VideoDataset/Experiments/v02_temp
