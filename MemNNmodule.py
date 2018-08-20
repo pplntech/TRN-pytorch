@@ -110,21 +110,22 @@ class MemNNModule(torch.nn.Module):
 
         if self.hops >= 3:
             w_u3 = self.hop(input, w_u2, self.KeyEmbedding1, self.ValueEmbedding1)
-            print (w_u3.size())
+            # print (w_u3.size()) # (BS, 256)
             accumulated_output.append(w_u3)
 
-        print (len(accumulated_output))
-        print (accumulated_output[0].size())
+        # print (len(accumulated_output)) # hops
+        # print (accumulated_output[0].size())
         accumulated_output = torch.stack(accumulated_output)
-        print (accumulated_output.size())
-        asdf
+        accumulated_output = accumulated_output.view(bs, -1)
+        # print (accumulated_output.size()) # (hops, BS, 256)
         # print (input.size()) # (BS, NUM_SEG, 1024)
 
         # input = input.view(input.size(0)*self.num_frames, -1) # print (input.size()) # torch.Size([72, 512]) # 512 : (2 * 256)
         # print (input.size()) # (BS * NUM_SEG, 1024)
 
 
-        output = self.classifier(w_u)
+        output = self.classifier(accumulated_output)
+        # output = self.classifier(w_u)
         return output
 
     def hop(self, mem_emb, queries_emb, KeyEmbedding, ValueEmbedding):
