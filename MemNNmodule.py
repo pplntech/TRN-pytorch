@@ -94,13 +94,30 @@ class MemNNModule(torch.nn.Module):
         return classifier
 
     def forward(self, input):
+        accumulated_output = []
         bs = input.size()[0]
         assert (input.size()[1]==self.num_frames)
 
         queries_emb = torch.mean(input, 1) # (BS, 1024)
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
-        w_u = self.hop(input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
+        w_u1 = self.hop(input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
+        accumulated_output.append(w_u1)
+
+        if self.hops >= 2:
+            w_u2 = self.hop(input, w_u1, self.KeyEmbedding1, self.ValueEmbedding1)
+            accumulated_output.append(w_u2)
+
+        if self.hops >= 3:
+            w_u3 = self.hop(input, w_u2, self.KeyEmbedding1, self.ValueEmbedding1)
+            print (w_u3.size())
+            accumulated_output.append(w_u3)
+
+        print (len(accumulated_output))
+        print (accumulated_output[0].size())
+        accumulated_output = torch.stack(accumulated_output)
+        print (accumulated_output.size())
+        asdf
         # print (input.size()) # (BS, NUM_SEG, 1024)
 
         # input = input.view(input.size(0)*self.num_frames, -1) # print (input.size()) # torch.Size([72, 512]) # 512 : (2 * 256)
@@ -122,7 +139,7 @@ class MemNNModule(torch.nn.Module):
         key = torch.transpose(key, 1, 2) # (BS, 256, NUM_SEG)
 
         p = torch.bmm(query, key) # (BS, 1, NUM_SEG)
-        p = F.softmax(p.view(-1, p.size()[1]*p.size()[2]), dim=1).view(-1, p.size()[1], p.size()[2])
+        p = F.softmax(p.view(-1, p.size()[1]*p.size()[2]), dim=1).view(-1, p.size()[1], p.size()[2]) # (BS, 1, NUM_SEG)
 
         value = ValueEmbedding(mem_emb) # (BS * NUM_SEG, 256)
         value = value.view(bs, self.num_frames, -1) # (BS, NUM_SEG, 256)
