@@ -44,6 +44,8 @@ for (filename_input, filename_output) in zip(files_input, files_output):
         line = line.rstrip()
         items = line.split(';')
         folders.append(items[0])
+        print (dict_categories[items[1]])
+        asdf
         idx_categories.append(os.path.join(dict_categories[items[1]]))
     output = []
     for i in range(len(folders)):
