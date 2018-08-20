@@ -70,7 +70,7 @@ class MemNNModule(torch.nn.Module):
         self.embedding_dim = embedding_dim # 256
         self.num_frames = num_frames # num of segments
         self.num_class = num_class
-        self.num_hop = num_hop
+        self.hops = num_hop
 
         # if embedding_dim is None: embedding_dim = channel // 2 # 128
 
@@ -87,7 +87,7 @@ class MemNNModule(torch.nn.Module):
         num_bottleneck = 512
         classifier = nn.Sequential(
                 nn.ReLU(),
-                nn.Linear(self.num_hop * self.embedding_dim, num_bottleneck),
+                nn.Linear(self.hops * self.embedding_dim, num_bottleneck),
                 nn.ReLU(),
                 nn.Linear(num_bottleneck,self.num_class),
                 )
