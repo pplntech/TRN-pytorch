@@ -234,7 +234,7 @@ class TSN(nn.Module):
         super(TSN, self).train(mode)
         count = 0
         if self._enable_pbn:
-            print("Freezing BatchNorm2D except the first one.")
+            print("Freezing BatchNorm2D except the first one in base_model.")
             for m in self.base_model.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     count += 1
@@ -246,6 +246,7 @@ class TSN(nn.Module):
                         m.bias.requires_grad = False
 
             if self.consensus_type in ['MemNN']:
+                print("Freezing BatchNorm2D except the first one in query_model.")
                 for m in self.query_base_model.modules():
                     if isinstance(m, nn.BatchNorm2d):
                         count += 1
