@@ -259,8 +259,6 @@ class TSN(nn.Module):
         self._enable_pbn = enable
 
     def get_optim_policies(self):
-        print ('hello')
-        asdf
         first_conv_weight = []
         first_conv_bias = []
         normal_weight = []
