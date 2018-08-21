@@ -77,9 +77,11 @@ for (filename_input, filename_output) in zip(files_input, files_output):
     elif extension=='json':
         with open(os.path.join(args.root_dir,filename_input)) as f:
             data = json.load(f)
-        print (data)
-        asdf
-        pass
+        for each_data in data:
+            print (int(each_data['id']), dict_categories[each_data['label']])
+            folder.append(int(each_data['id']))
+            idx_categories.append(dict_categories[each_data['label']])
+            asdf
 
     output = []
     for i in range(len(folders)):
