@@ -95,7 +95,7 @@ class MemNNModule(torch.nn.Module):
 
     def forward(self, memory_input, query_input): # (BS, num_frames, 1024), (BS, num_frames, 1024)
         print (memory_input.size())
-        print (query_input.size())
+        # print (query_input.size())
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
 

@@ -109,6 +109,7 @@ class TSN(nn.Module):
 
             elif self.consensus_type in ['MemNN']:
                 print ('2nd query related function')
+                setattr(self.query_base_model, self.query_base_model.last_layer_name, nn.Dropout(p=self.dropout))
                 self.new_fc = None
                 self.query_new_fc = None
 
