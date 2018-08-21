@@ -16,13 +16,17 @@ parser.add_argument(
     "root_dir",
     type=str,
     help='Root directory path of data')
-# parser.add_argument(
-#     "dataset",
-#     type=str, choices=['something','jester','moments', 'somethingv2', 'charades'],
-#     help='name of dataset')
+parser.add_argument(
+    "dataset",
+    type=str, choices=['something','jester','moments', 'somethingv2', 'charades'],
+    help='name of dataset')
 args = parser.parse_args()
 
-dataset_name = 'something-something-v1' # 'jester-v1'
+if dataset=='something':
+    dataset_name = 'something-something-v1' # 'jester-v1'
+elif dataset=='somethingv2':
+    dataset_name = 'something-something-v2' # 'jester-v1'
+    
 with open(os.path.join(args.root_dir,'%s-labels.csv'% dataset_name)) as f:
     lines = f.readlines()
 categories = []
