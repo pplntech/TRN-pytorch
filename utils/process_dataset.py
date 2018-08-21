@@ -43,7 +43,7 @@ dict_categories = {}
 for i, category in enumerate(categories):
     dict_categories[category] = i
 
-files_input = ['%s-validation.%s'%d(ataset_name, extension),'%s-train.%s'%d(ataset_name, extension)]
+files_input = ['%s-validation.%s'% (dataset_name, extension),'%s-train.%s'% (dataset_name, extension)]
 files_output = ['val_videofolder_%s.txt'%(dataset_name),'train_videofolder_%s.txt'%(dataset_name)]
 for (filename_input, filename_output) in zip(files_input, files_output):
     with open(os.path.join(args.root_dir,filename_input)) as f:
