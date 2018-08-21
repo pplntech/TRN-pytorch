@@ -22,11 +22,11 @@ parser.add_argument(
     help='name of dataset')
 args = parser.parse_args()
 
-if dataset=='something':
+if args.dataset=='something':
     dataset_name = 'something-something-v1' # 'jester-v1'
-elif dataset=='somethingv2':
+elif args.dataset=='somethingv2':
     dataset_name = 'something-something-v2' # 'jester-v1'
-    
+
 with open(os.path.join(args.root_dir,'%s-labels.csv'% dataset_name)) as f:
     lines = f.readlines()
 categories = []
