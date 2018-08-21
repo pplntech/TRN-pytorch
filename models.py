@@ -9,7 +9,7 @@ import MemNNmodule
 
 class TSN(nn.Module):
     def __init__(self, num_class, num_segments, modality,
-                 base_model='resnet101', new_length=None,
+                 base_model='resnet101', query_base_model='resnet18', new_length=None,
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,img_feature_dim=256,
                  crop_num=1, partial_bn=True, print_spec=True, num_hop=1):
@@ -43,7 +43,7 @@ class TSN(nn.Module):
 
         self._prepare_base_model(base_model) # assign 'self.base_model'
         if consensus_type in ['MemNN']:
-            self._prepare_query_base_model(base_model) # assign 'self.base_model'
+            self._prepare_query_base_model(query_base_model) # assign 'self.base_model'
 
 
         feature_dim = self._prepare_tsn(num_class)

@@ -10,6 +10,7 @@ parser.add_argument('--store_name', type=str, default="")
 
 # ========================= Model Configs ==========================
 parser.add_argument('--arch', type=str, default="BNInception")
+parser.add_argument('--arch_query', type=str, default="BNInception")
 parser.add_argument('--num_segments', type=int, default=3)
 parser.add_argument('--consensus_type', type=str, default='avg',\
      choices=['avg', 'max', 'topk', 'identity', 'rnn', 'cnn', 'TRN', 'TRNmultiscale', 'MemNN'])

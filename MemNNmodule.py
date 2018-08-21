@@ -101,15 +101,15 @@ class MemNNModule(torch.nn.Module):
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
         accumulated_output = []
-        w_u1 = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
+        w_u1, w_u1_plus_query = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
         accumulated_output.append(w_u1)
 
         if self.hops >= 2:
-            w_u2 = self.hop(memory_input, w_u1, self.KeyEmbedding1, self.ValueEmbedding1)
+            w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
             accumulated_output.append(w_u2)
 
         if self.hops >= 3:
-            w_u3 = self.hop(memory_input, w_u2, self.KeyEmbedding1, self.ValueEmbedding1)
+            w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
             # print (w_u3.size()) # (BS, 256)
             accumulated_output.append(w_u3)
 
@@ -150,7 +150,7 @@ class MemNNModule(torch.nn.Module):
         out = torch.squeeze(out, 1).contiguous() # (BS, 256)
 
         # return out
-        return out + queries_emb
+        return out, (out + queries_emb)
 
 # (consensus_type, self.img_feature_dim, self.num_segments, num_class)
 def return_MemNN(relation_type, img_feature_dim, num_frames, num_class, channel, num_hop):

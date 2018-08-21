@@ -29,11 +29,12 @@ def main():
     num_class = len(categories)
 
 
-    args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.consensus_type, 'segment%d'% args.num_segments])
+    args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.arch_query, args.consensus_type, 'segment%d'% args.num_segments])
     print('storing name: ' + args.store_name)
 
     model = TSN(num_class, args.num_segments, args.modality,
                 base_model=args.arch,
+                query_base_model=args.arch_query,
                 consensus_type=args.consensus_type,
                 dropout=args.dropout,
                 img_feature_dim=args.img_feature_dim,
