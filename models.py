@@ -108,6 +108,7 @@ class TSN(nn.Module):
                 self.new_fc = nn.Linear(feature_dim, self.img_feature_dim)
 
             elif self.consensus_type in ['MemNN']:
+                print ('2nd query related function')
                 self.new_fc = None
                 self.query_new_fc = None
 
@@ -268,8 +269,6 @@ class TSN(nn.Module):
         conv_cnt = 0
         bn_cnt = 0
         for m in self.modules():
-            print (m)
-            asdf
             if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
                 ps = list(m.parameters())
                 conv_cnt += 1
