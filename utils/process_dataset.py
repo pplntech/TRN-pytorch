@@ -9,6 +9,7 @@
 #
 import os
 import pdb
+import json
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -29,13 +30,23 @@ elif args.dataset=='somethingv2':
     dataset_name = 'something-something-v2' # 'jester-v1'
     extension = 'json'
 
-with open(os.path.join(args.root_dir,'%s-labels.%s'% (dataset_name, extension))) as f:
-    lines = f.readlines()
 categories = []
-for line in lines:
-    line = line.rstrip()
-    categories.append(line)
+if extension=='csv':
+    with open(os.path.join(args.root_dir,'%s-labels.%s'% (dataset_name, extension))) as f:
+        lines = f.readlines()
+    for line in lines:
+        line = line.rstrip()
+        categories.append(line)
+elif extension=='json':
+    with open(os.path.join(args.root_dir,'%s-labels.%s'% (dataset_name, extension))) as f:
+        data = json.load(f)
+    print (data)
+    print (type(data))
+    asdf
+    pass
+
 categories = sorted(categories)
+
 with open(os.path.join(args.root_dir,'category_%s.txt'%(dataset_name)),'w') as f:
     f.write('\n'.join(categories))
 
@@ -46,20 +57,23 @@ for i, category in enumerate(categories):
 files_input = ['%s-validation.%s'% (dataset_name, extension),'%s-train.%s'% (dataset_name, extension)]
 files_output = ['val_videofolder_%s.txt'%(dataset_name),'train_videofolder_%s.txt'%(dataset_name)]
 for (filename_input, filename_output) in zip(files_input, files_output):
-    with open(os.path.join(args.root_dir,filename_input)) as f:
-        lines = f.readlines()
     folders = []
     idx_categories = []
-    for line in lines:
-        print (line)
-        asdf
-        line = line.rstrip()
-        items = line.split(';')
-        folders.append(items[0])
-        # print (dict_categories[items[1]])
-        # asdf
-        # idx_categories.append(os.path.join(dict_categories[items[1]]))
-        idx_categories.append(dict_categories[items[1]])
+
+    if extension=='csv':
+        with open(os.path.join(args.root_dir,filename_input)) as f:
+            lines = f.readlines()
+        for line in lines:
+            line = line.rstrip()
+            items = line.split(';')
+            folders.append(items[0])
+            # print (dict_categories[items[1]])
+            # asdf
+            # idx_categories.append(os.path.join(dict_categories[items[1]]))
+            idx_categories.append(dict_categories[items[1]])
+    elif extension=='json':
+        pass
+
     output = []
     for i in range(len(folders)):
         curFolder = folders[i]
