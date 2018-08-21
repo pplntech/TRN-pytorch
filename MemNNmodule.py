@@ -80,6 +80,7 @@ class MemNNModule(torch.nn.Module):
         self.additional_QueryEmbedding = nn.Linear(self.channel, self.embedding_dim)
         self.KeyEmbedding1 = nn.Linear(self.channel, self.embedding_dim) # conv_pi in Non-Local
         self.ValueEmbedding1 = nn.Linear(self.channel, self.embedding_dim) # conv_g in Non-Local
+        self.ValueEmbedding2 = nn.Linear(self.channel, self.embedding_dim) # conv_g in Non-Local
         self.classifier = self.fc_fusion()
 
     def fc_fusion(self):
@@ -98,14 +99,16 @@ class MemNNModule(torch.nn.Module):
         assert (memory_input.size()[1]==self.num_frames)
 
         queries_emb = torch.mean(query_input, 1) # (BS, 1024)
-        queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
+        queries_emb = self.KeyEmbedding1(queries_emb) # (BS, 256)
+        # queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
         accumulated_output = []
         w_u1, w_u1_plus_query = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
         accumulated_output.append(w_u1)
 
         if self.hops >= 2:
-            w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
+            w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.ValueEmbedding1, self.ValueEmbedding2)
+            # w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
             accumulated_output.append(w_u2)
 
         if self.hops >= 3:
