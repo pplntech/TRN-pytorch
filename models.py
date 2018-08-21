@@ -271,6 +271,7 @@ class TSN(nn.Module):
         bn_cnt = 0
         for name, m in self.named_modules():
             print (name)
+            print (type(m))
             # print (name, m)
             asdf
             if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
