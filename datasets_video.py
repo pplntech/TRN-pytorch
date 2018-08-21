@@ -8,7 +8,8 @@ ROOT_DATASET = 'video_datasets'
 
 
 def return_something(modality, root_dir):
-    filename_categories = os.path.join(root_dir,'category.txt')
+    dataset_name = 'something-something-v1'
+    filename_categories = os.path.join(root_dir,'category_%s.txt' % (dataset_name))
     # 'something/category.txt'
 
     if modality == 'RGB':
@@ -16,8 +17,8 @@ def return_something(modality, root_dir):
         #root_data = '/mnt/localssd1/bzhou/something/20bn-something-something-v1'
         # filename_imglist_train = 'something/train_videofolder.txt'
         # filename_imglist_val = 'something/val_videofolder.txt'
-        filename_imglist_train = 'train_videofolder.txt'
-        filename_imglist_val = 'val_videofolder.txt'
+        filename_imglist_train = 'train_videofolder_%s.txt' % (dataset_name)
+        filename_imglist_val = 'val_videofolder_%s.txt' % (dataset_name)
         prefix = '{:05d}.jpg'
     elif modality == 'Flow':
         root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/flow'
@@ -33,14 +34,19 @@ def return_something(modality, root_dir):
     return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
 
 
-def return_somethingv2(modality):
-    filename_categories = 'something/v2/category.txt'
+def return_somethingv2(modality, root_dir):
+    dataset_name = 'something-something-v2'
+    filename_categories = os.path.join(root_dir,'category_%s.txt' % (dataset_name))
+    # filename_categories = 'something/v2/category.txt'
     if modality == 'RGB':
+        root_data = '20bn-something-something-v2'
         # root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/v2/20bn-something-something-v2'
-        root_data = '/mnt/localssd2/aandonia/something/v2/20bn-something-something-v2-frames'
+        # root_data = '/mnt/localssd2/aandonia/something/v2/20bn-something-something-v2-frames'
         # root_data = '/mnt/localssd1/aandonia/something/v2/20bn-something-something-v2-frames'
-        filename_imglist_train = 'something/v2/train_videofolder.txt'
-        filename_imglist_val = 'something/v2/val_videofolder.txt'
+        filename_imglist_train = 'train_videofolder_%s.txt' % (dataset_name)
+        filename_imglist_val = 'val_videofolder_%s.txt' % (dataset_name)
+        # filename_imglist_train = 'something/v2/train_videofolder.txt'
+        # filename_imglist_val = 'something/v2/val_videofolder.txt'
         prefix = '{:06d}.jpg'
     elif modality == 'Flow':
         #root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/flow'

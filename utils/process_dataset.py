@@ -16,6 +16,10 @@ parser.add_argument(
     "root_dir",
     type=str,
     help='Root directory path of data')
+# parser.add_argument(
+#     "dataset",
+#     type=str, choices=['something','jester','moments', 'somethingv2', 'charades'],
+#     help='name of dataset')
 args = parser.parse_args()
 
 dataset_name = 'something-something-v1' # 'jester-v1'
@@ -26,7 +30,7 @@ for line in lines:
     line = line.rstrip()
     categories.append(line)
 categories = sorted(categories)
-with open(os.path.join(args.root_dir,'category.txt'),'w') as f:
+with open(os.path.join(args.root_dir,'category_%s.txt'%(dataset_name)),'w') as f:
     f.write('\n'.join(categories))
 
 dict_categories = {}
@@ -34,7 +38,7 @@ for i, category in enumerate(categories):
     dict_categories[category] = i
 
 files_input = ['%s-validation.csv'%dataset_name,'%s-train.csv'%dataset_name]
-files_output = ['val_videofolder.txt','train_videofolder.txt']
+files_output = ['val_videofolder_%s.txt'%(dataset_name),'train_videofolder_%s.txt'%(dataset_name)]
 for (filename_input, filename_output) in zip(files_input, files_output):
     with open(os.path.join(args.root_dir,filename_input)) as f:
         lines = f.readlines()
