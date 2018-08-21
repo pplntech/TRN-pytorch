@@ -37,11 +37,14 @@ if extension=='csv':
     for line in lines:
         line = line.rstrip()
         categories.append(line)
+
 elif extension=='json':
     with open(os.path.join(args.root_dir,'%s-labels.%s'% (dataset_name, extension))) as f:
         data = json.load(f)
-    print (data)
-    print (type(data))
+    # print (data)
+    # print (type(data))
+    categories = data.keys()
+    print (categories)
     asdf
     pass
 
