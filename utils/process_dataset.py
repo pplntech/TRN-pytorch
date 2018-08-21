@@ -51,6 +51,8 @@ for (filename_input, filename_output) in zip(files_input, files_output):
     folders = []
     idx_categories = []
     for line in lines:
+        print (line)
+        asdf
         line = line.rstrip()
         items = line.split(';')
         folders.append(items[0])
