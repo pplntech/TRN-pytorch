@@ -5,11 +5,14 @@ python main.py something RGB --consensus_type MemNN --batch-size 32 --gpus 0 --r
 
 # dgx
 # single hop
-python main.py something RGB --consensus_type MemNN --batch-size 128 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
---num_segments 8 --hop 1 --result_path /raid/users/km/SthSth/Experiments/TRN/v03_temp --workers 20
-
-python main.py something RGB --consensus_type MemNN --batch-size 128 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
+python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 1 --result_path /raid/users/km/SthSth/Experiments/TRN/v05_MemNNQueryNN --workers 20
 # multi hops
 python main.py something RGB --consensus_type MemNN --batch-size 128 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 3 --result_path /raid/users/km/SthSth/Experiments/TRN/v03_temp --workers 20 --lr 0.0001
+
+
+# Experiments (batch_size)
+Ciplabthree : 
+DGX : v03(128), v04(128), v05(80)
+Mine : v01, v02

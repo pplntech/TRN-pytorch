@@ -87,15 +87,13 @@ class MemNNModule(torch.nn.Module):
         num_bottleneck = 512
         classifier = nn.Sequential(
                 nn.ReLU(),
-                nn.Linear(self.hops * self.embedding_dim, num_bottleneck),
+                nn.Linear(self.hops * self.embedding_dim, (self.hops * self.embedding_dim)//2),
                 nn.ReLU(),
-                nn.Linear(num_bottleneck,self.num_class),
+                nn.Linear((self.hops * self.embedding_dim)//2, self.num_class),
                 )
         return classifier
 
     def forward(self, memory_input, query_input): # (BS, num_frames, 1024), (BS, num_frames, 1024)
-        # print (memory_input.size())
-        # print (query_input.size())
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
 
