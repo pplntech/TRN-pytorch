@@ -22,7 +22,7 @@ def split(l, n):
 
 
 def extract(video, tmpl='%06d.jpg'):
-    os.system(f'ffmpeg -i {VIDEO_ROOT}/{video} -vf scale=256:256 '
+    os.system(f'ffmpeg -loglevel panic -i {VIDEO_ROOT}/{video} -vf scale=256:256 '
               f'{FRAME_ROOT}/{video[:-5]}/{tmpl}')
 
 
