@@ -270,8 +270,13 @@ class TSN(nn.Module):
         conv_cnt = 0
         bn_cnt = 0
         for name, m in self.named_modules():
-            print (name)
-            print (type(m))
+            # print (name, type(m))
+            if(name=='base_model'):
+                conv_cnt = 0
+                bn_cnt = 0
+            if(name=='query_base_model'):
+                conv_cnt = 0
+                bn_cnt = 0
             # print (name, m)
             if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
                 ps = list(m.parameters())
@@ -300,7 +305,6 @@ class TSN(nn.Module):
             elif len(m._modules) == 0:
                 if len(list(m.parameters())) > 0:
                     raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
-        asdf
         return [
             {'params': first_conv_weight, 'lr_mult': 5 if self.modality == 'Flow' else 1, 'decay_mult': 1,
              'name': "first_conv_weight"},
