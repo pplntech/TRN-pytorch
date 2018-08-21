@@ -18,7 +18,7 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1
 
 # Experiments (batch_size)
 Ciplabthree : v05onV2(39)
-DGX : v03(128), v04(128), v05(80)
+DGX : v03(128), v04(128), v05(80), v06(80, 2 hops)
 Mine : v01, v02
 
 --num_segments 8 --hop 1 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v05_twoCNNs --workers 20 --lr 0.0001
