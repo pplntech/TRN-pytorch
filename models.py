@@ -92,6 +92,7 @@ class TSN(nn.Module):
 
             elif self.consensus_type in ['MemNN']:
                 self.base_model = nn.Sequential(*list(self.base_model.children())[:-1]) # feature_dim
+                print ('2nd query related function')
                 self.query_base_model = nn.Sequential(*list(self.query_base_model.children())[:-1]) # feature_dim
                 # setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
 
@@ -176,7 +177,7 @@ class TSN(nn.Module):
             raise ValueError('Unknown base model: {}'.format(base_model))
 
     def _prepare_query_base_model(self, base_model):
-
+        print ('1st query related function')
         if 'resnet' in base_model or 'vgg' in base_model:
             self.query_base_model = getattr(torchvision.models, base_model)(True)
             self.query_base_model.last_layer_name = 'fc'
@@ -258,6 +259,8 @@ class TSN(nn.Module):
         self._enable_pbn = enable
 
     def get_optim_policies(self):
+        print ('hello')
+        asdf
         first_conv_weight = []
         first_conv_bias = []
         normal_weight = []
