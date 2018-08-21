@@ -44,8 +44,8 @@ elif extension=='json':
     # print (data)
     # print (type(data))
     categories = data.keys()
-    print (categories)
-    asdf
+    # print (categories)
+    # asdf
     pass
 
 categories = sorted(categories)
@@ -75,6 +75,10 @@ for (filename_input, filename_output) in zip(files_input, files_output):
             # idx_categories.append(os.path.join(dict_categories[items[1]]))
             idx_categories.append(dict_categories[items[1]])
     elif extension=='json':
+        with open(os.path.join(args.root_dir,filename_input)) as f:
+            data = json.load(f)
+        print (data)
+        asdf
         pass
 
     output = []
