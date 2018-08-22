@@ -115,7 +115,7 @@ class MemNNModule(torch.nn.Module):
 
         # print (len(accumulated_output)) # hops
         # print (accumulated_output[0].size())
-        accumulated_output = torch.stack(accumulated_output)
+        accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
         # print (accumulated_output.size()) # (hops, BS, 256)
         # print (input.size()) # (BS, NUM_SEG, 1024)

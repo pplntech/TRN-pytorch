@@ -102,7 +102,8 @@ class MemNNModule(torch.nn.Module):
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
         
-        queries_emb = torch.mean(query_input, 1) # (BS, 1024)
+        queries_emb = torch.mean(memory_input, 1) # (BS, 1024)
+        # queries_emb = torch.mean(query_input, 1) # (BS, 1024)
         # queries_emb = self.KeyEmbedding1(queries_emb) # (BS, 256)
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
