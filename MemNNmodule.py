@@ -113,13 +113,13 @@ class MemNNModule(torch.nn.Module):
         if self.hops >= 2:
             w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.ValueEmbedding1, self.ValueEmbedding2)
             # w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
-            accumulated_output.append(w_u2)
+            accumulated_output.append(w_u2_plus_query)
 
         if self.hops >= 3:
             w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.ValueEmbedding2, self.ValueEmbedding3)
             # w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
             # print (w_u3.size()) # (BS, 256)
-            accumulated_output.append(w_u3)
+            accumulated_output.append(w_u3_plus_query)
 
         accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
