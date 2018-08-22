@@ -87,7 +87,8 @@ class MemNNModule(torch.nn.Module):
         self.classifier = self.fc_fusion()
 
     def fc_fusion(self):
-        nums = 1 # self.hops
+        # nums = 1 # self.hops
+        nums = self.hops
         num_bottleneck = 512
         classifier = nn.Sequential(
                 nn.ReLU(),
@@ -121,8 +122,6 @@ class MemNNModule(torch.nn.Module):
             accumulated_output.append(w_u3)
 
         accumulated_output = torch.stack(accumulated_output, -1)
-        print (accumulated_output.size())
-        asdf
         accumulated_output = accumulated_output.view(bs, -1)
 
         output = self.classifier(accumulated_output)
