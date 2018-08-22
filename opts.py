@@ -22,6 +22,7 @@ parser.add_argument('--loss_type', type=str, default="nll",
                     choices=['nll'])
 parser.add_argument('--img_feature_dim', default=256, type=int, help="the feature dimension for each frame")
 parser.add_argument('--hop', default=5, type=int, help="number of hops")
+parser.add_argument('--num_CNNs', default=2, type=int, help="number of CNNs to use")
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',

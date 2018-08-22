@@ -63,7 +63,7 @@ class RelationModuleMultiScale(torch.nn.Module):
 
 class MemNNModule(torch.nn.Module):
     # this is the naive implementation of the n-frame relation module, as num_frames == num_frames_relation
-    def __init__(self, embedding_dim, num_frames, num_class, channel, num_hop):
+    def __init__(self, embedding_dim, num_frames, num_class, channel, num_hop, num_CNNs):
         super(MemNNModule, self).__init__()
 
         self.channel = channel # 1024
@@ -71,6 +71,7 @@ class MemNNModule(torch.nn.Module):
         self.num_frames = num_frames # num of segments
         self.num_class = num_class
         self.hops = num_hop
+        self.num_CNNs = num_CNNs
 
         # if embedding_dim is None: embedding_dim = channel // 2 # 128
 
@@ -101,8 +102,10 @@ class MemNNModule(torch.nn.Module):
     def forward(self, memory_input, query_input): # (BS, num_frames, 1024), (BS, num_frames, 1024)
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
-        
-        queries_emb = torch.mean(memory_input, 1) # (BS, 1024)
+        if self.num_CNNs==1:
+            queries_emb = torch.mean(memory_input, 1) # (BS, 1024)
+        elif self.num_CNNs==2:
+            queries_emb = torch.mean(query_input, 1) # (BS, 1024)
         # queries_emb = torch.mean(query_input, 1) # (BS, 1024)
         # queries_emb = self.KeyEmbedding1(queries_emb) # (BS, 256)
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)

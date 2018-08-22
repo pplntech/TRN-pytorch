@@ -39,7 +39,8 @@ def main():
                 dropout=args.dropout,
                 img_feature_dim=args.img_feature_dim,
                 partial_bn=not args.no_partialbn,
-                num_hop=args.hop)
+                num_hop=args.hop,
+                num_CNNs=args.num_CNNs)
 
     crop_size = model.crop_size
     scale_size = model.scale_size

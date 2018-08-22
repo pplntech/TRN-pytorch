@@ -21,7 +21,7 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1
 
 # Experiments (batch_size)
 Ciplabthree : v05onV2(39)
-DGX : v03(128), v04(128), v05(80), v06(80, single hop)
+DGX : v03(128), v04(128), v05(80), v06(80, single hop), v07(80, 2 hops, 2 CNNs), v08(80, 2 hops, 1 CNN)
 Mine : v01, v02
 
 V06
@@ -31,3 +31,7 @@ python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2
 V07
 python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v07_MemNNQueryNN_2hops/ --workers 20
+
+V08
+python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
+--num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v08_MemNNQueryNN_2hops_1CNN/ --workers 20 --num_CNNs 1

@@ -12,7 +12,7 @@ class TSN(nn.Module):
                  base_model='resnet101', query_base_model='resnet18', new_length=None,
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,img_feature_dim=256,
-                 crop_num=1, partial_bn=True, print_spec=True, num_hop=1):
+                 crop_num=1, partial_bn=True, print_spec=True, num_hop=1, num_CNNs=2):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -72,7 +72,7 @@ class TSN(nn.Module):
             # (relation_type, img_feature_dim, num_frames, num_class)
         elif consensus_type in ['MemNN']:
             # plug in the Temporal Relation Network Module
-            self.consensus = MemNNmodule.return_MemNN(consensus_type, self.img_feature_dim, self.num_segments, num_class, channel=1024, num_hop=num_hop)
+            self.consensus = MemNNmodule.return_MemNN(consensus_type, self.img_feature_dim, self.num_segments, num_class, channel=1024, num_hop=num_hop, num_CNNs=num_CNNs)
         else:
             self.consensus = ConsensusModule(consensus_type)
 
