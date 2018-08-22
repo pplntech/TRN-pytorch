@@ -164,9 +164,9 @@ class MemNNModule(torch.nn.Module):
         return out, (out + queries_emb)
 
 # (consensus_type, self.img_feature_dim, self.num_segments, num_class)
-def return_MemNN(relation_type, img_feature_dim, num_frames, num_class, channel, num_hop):
+def return_MemNN(relation_type, img_feature_dim, num_frames, num_class, channel, num_hop, num_CNNs):
     if relation_type == 'MemNN':
-        MemNNmodel = MemNNModule(img_feature_dim, num_frames, num_class, channel, num_hop)
+        MemNNmodel = MemNNModule(img_feature_dim, num_frames, num_class, channel, num_hop, num_CNNs)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 
