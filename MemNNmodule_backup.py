@@ -80,58 +80,51 @@ class MemNNModule(torch.nn.Module):
         self.additional_QueryEmbedding = nn.Linear(self.channel, self.embedding_dim)
         self.KeyEmbedding1 = nn.Linear(self.channel, self.embedding_dim) # conv_pi in Non-Local
         self.ValueEmbedding1 = nn.Linear(self.channel, self.embedding_dim) # conv_g in Non-Local
-        if self.hops >= 2:
-            self.ValueEmbedding2 = nn.Linear(self.channel, self.embedding_dim) # conv_g in Non-Local
-        if self.hops >= 3:
-            self.ValueEmbedding3 = nn.Linear(self.channel, self.embedding_dim) # conv_g in Non-Local
         self.classifier = self.fc_fusion()
 
     def fc_fusion(self):
-        # nums = 1 # self.hops
-        nums = self.hops
+        # naive concatenate
         num_bottleneck = 512
         classifier = nn.Sequential(
                 nn.ReLU(),
-                nn.Linear(nums * self.embedding_dim, (nums * self.embedding_dim)//2),
+                nn.Linear(self.hops * self.embedding_dim, (self.hops * self.embedding_dim)//2),
                 nn.ReLU(),
-                nn.Linear((nums * self.embedding_dim)//2, self.num_class),
+                nn.Linear((self.hops * self.embedding_dim)//2, self.num_class),
                 )
         return classifier
 
     def forward(self, memory_input, query_input): # (BS, num_frames, 1024), (BS, num_frames, 1024)
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
-        
+
         queries_emb = torch.mean(query_input, 1) # (BS, 1024)
-        # queries_emb = self.KeyEmbedding1(queries_emb) # (BS, 256)
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
         accumulated_output = []
-        w_u1, w_u1_plus_query = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
-        accumulated_output.append(w_u1_plus_query)
+        w_u1 = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
+        accumulated_output.append(w_u1)
 
         if self.hops >= 2:
-            w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.ValueEmbedding1, self.ValueEmbedding2)
-            # w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
+            w_u2 = self.hop(memory_input, w_u1, self.KeyEmbedding1, self.ValueEmbedding1)
             accumulated_output.append(w_u2)
 
         if self.hops >= 3:
-            w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.ValueEmbedding2, self.ValueEmbedding3)
-            # w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
+            w_u3 = self.hop(memory_input, w_u2, self.KeyEmbedding1, self.ValueEmbedding1)
             # print (w_u3.size()) # (BS, 256)
             accumulated_output.append(w_u3)
 
-        accumulated_output = torch.stack(accumulated_output, -1)
+        # print (len(accumulated_output)) # hops
+        # print (accumulated_output[0].size())
+        accumulated_output = torch.stack(accumulated_output)
         accumulated_output = accumulated_output.view(bs, -1)
+        # print (accumulated_output.size()) # (hops, BS, 256)
+        # print (input.size()) # (BS, NUM_SEG, 1024)
+
+        # input = input.view(input.size(0)*self.num_frames, -1) # print (input.size()) # torch.Size([72, 512]) # 512 : (2 * 256)
+        # print (input.size()) # (BS * NUM_SEG, 1024)
+
 
         output = self.classifier(accumulated_output)
-        '''
-        memory_input = memory_input.view(memory_input.size(0)*self.num_frames, -1)
-        memory_input = self.KeyEmbedding1(memory_input)
-        memory_input = memory_input.view(bs, self.num_frames*self.embedding_dim)
-
-        output = self.classifier(memory_input)
-        '''
         # output = self.classifier(w_u)
         return output
 
@@ -157,7 +150,7 @@ class MemNNModule(torch.nn.Module):
         out = torch.squeeze(out, 1).contiguous() # (BS, 256)
 
         # return out
-        return out, (out + queries_emb)
+        return out + queries_emb
 
 # (consensus_type, self.img_feature_dim, self.num_segments, num_class)
 def return_MemNN(relation_type, img_feature_dim, num_frames, num_class, channel, num_hop):
