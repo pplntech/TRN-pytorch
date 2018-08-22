@@ -120,7 +120,7 @@ class MemNNModule(torch.nn.Module):
             # print (w_u3.size()) # (BS, 256)
             accumulated_output.append(w_u3)
 
-        accumulated_output = torch.stack(accumulated_output)
+        accumulated_output = torch.stack(accumulated_output, -1)
         print (accumulated_output.size())
         asdf
         accumulated_output = accumulated_output.view(bs, -1)
