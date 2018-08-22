@@ -271,6 +271,7 @@ class TSN(nn.Module):
         conv_cnt = 0
         bn_cnt = 0
         for name, m in self.named_modules():
+            print (m)
             # print (name, type(m))
             if(name=='base_model'):
                 conv_cnt = 0
