@@ -88,19 +88,21 @@ class MemNNModule(torch.nn.Module):
         num_bottleneck = 512
         classifier = nn.Sequential(
                 nn.ReLU(),
-                nn.Linear(self.hops * self.embedding_dim, (self.hops * self.embedding_dim)//2),
+                nn.Linear(self.num_frames * self.embedding_dim, (self.num_frames * self.embedding_dim)//2),
+                # nn.Linear(self.hops * self.embedding_dim, (self.hops * self.embedding_dim)//2),
                 nn.ReLU(),
-                nn.Linear((self.hops * self.embedding_dim)//2, self.num_class),
+                nn.Linear((self.num_frames * self.embedding_dim)//2, self.num_class),
+                # nn.Linear((self.hops * self.embedding_dim)//2, self.num_class),
                 )
         return classifier
 
     def forward(self, memory_input, query_input): # (BS, num_frames, 1024), (BS, num_frames, 1024)
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
-
+        '''
         queries_emb = torch.mean(query_input, 1) # (BS, 1024)
-        queries_emb = self.KeyEmbedding1(queries_emb) # (BS, 256)
-        # queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
+        # queries_emb = self.KeyEmbedding1(queries_emb) # (BS, 256)
+        queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
         accumulated_output = []
         w_u1, w_u1_plus_query = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
@@ -125,9 +127,13 @@ class MemNNModule(torch.nn.Module):
 
         # input = input.view(input.size(0)*self.num_frames, -1) # print (input.size()) # torch.Size([72, 512]) # 512 : (2 * 256)
         # print (input.size()) # (BS * NUM_SEG, 1024)
-
-
         output = self.classifier(accumulated_output)
+        '''
+        memory_input = memory_input.view(memory_input.size(0)*self.num_frames, -1)
+        memory_input = self.KeyEmbedding1(memory_input)
+        memory_input = memory_input.view(bs, self.num_frames*self.embedding_dim)
+
+        output = self.classifier(memory_input)
         # output = self.classifier(w_u)
         return output
 
