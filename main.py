@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+import json
 import shutil
 import torch
 import torchvision
@@ -62,7 +63,7 @@ def main():
                   .format(args.evaluate, checkpoint['epoch'])))
         else:
             print(("=> no checkpoint found at '{}'".format(args.resume)))
-
+    # asdf
     cudnn.benchmark = True
 
     # Data loading code
@@ -122,7 +123,8 @@ def main():
                                 weight_decay=args.weight_decay)
 
     if args.evaluate:
-        validate(val_loader, model, criterion, 0)
+        json_file_path = os.path.join(args.result_path, 'results_epoch%d.json'%args.evaluation_epoch)
+        validate(val_loader, model, criterion, 0, json_file=json_file_path, idx2class=categories)
         return
 
     log_training = open(os.path.join(args.root_log, '%s.csv' % args.store_name), 'w')
@@ -134,7 +136,7 @@ def main():
 
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:
-            prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log_training)
+            prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log=log_training)
 
             # remember best prec@1 and save checkpoint
             is_best = prec1 > best_prec1
@@ -163,7 +165,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
     model.train()
 
     end = time.time()
-    for i, (input, target) in enumerate(train_loader):
+    for i, (input, target, ids, indices) in enumerate(train_loader):
         # measure data loading time
         # print (input.size()) # [72, 6, 224, 224]
         # asdf
@@ -215,7 +217,13 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
 
 
-def validate(val_loader, model, criterion, iter, log):
+def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2class=None):
+    if json_file is not None:
+        dicts = {}
+        for idx, classstr in enumerate(idx2class):
+            dicts[str(idx)] = []
+
+
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
@@ -225,17 +233,27 @@ def validate(val_loader, model, criterion, iter, log):
     model.eval()
 
     end = time.time()
-    for i, (input, target) in enumerate(val_loader):
+    for i, (input, target, ids, indices) in enumerate(val_loader):
+        if json_file is not None:
+            bs = indices.size()[0]
+            ids_list = [int(x) for x in ids]
+            target_list = target.numpy().tolist()
+            indices_list = indices.numpy().tolist()
+
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
 
         # compute output
-        output = model(input_var)
+        output, attentions = model(input_var, eval=True)
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1,5))
+        if json_file is not None:
+            _, pred = output.topk(1, 1, True, True)
+            pred = pred.t()
+            pred = pred.cpu().data.numpy().tolist()[0]
 
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
@@ -244,6 +262,18 @@ def validate(val_loader, model, criterion, iter, log):
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
+
+        if json_file is not None:
+            for each_bs in range(bs):
+                each_dict = {}
+                each_dict['id'] = ids_list[each_bs]
+                each_dict['GT'] = target_list[each_bs]
+                each_dict['framenums'] = indices_list[each_bs]
+
+                each_dict['hop_probabilities'] = attentions[each_bs]
+                each_dict['Predict'] = pred[each_bs]
+                # print (each_dict) # , sum(attentions[each_bs][0]), sum(attentions[each_bs][1]))
+                dicts[str(each_dict['GT'])].append(each_dict)
 
         if i % args.print_freq == 0:
             output = ('Test: [{0}/{1}]\t'
@@ -254,16 +284,22 @@ def validate(val_loader, model, criterion, iter, log):
                    i, len(val_loader), batch_time=batch_time, loss=losses,
                    top1=top1, top5=top5))
             print(output)
-            log.write(output + '\n')
-            log.flush()
+            if log is not None:
+                log.write(output + '\n')
+                log.flush()
 
     output = ('Testing Results: Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f} Loss {loss.avg:.5f}'
           .format(top1=top1, top5=top5, loss=losses))
     print(output)
     output_best = '\nBest Prec@1: %.3f'%(best_prec1)
     print(output_best)
-    log.write(output + ' ' + output_best + '\n')
-    log.flush()
+    if log is not None:
+        log.write(output + ' ' + output_best + '\n')
+        log.flush()
+
+    if json_file is not None:
+        with open(json_file, 'w') as f:
+            json.dump(dicts,f)
 
     return top1.avg
 
@@ -309,7 +345,6 @@ def accuracy(output, target, topk=(1,)):
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
     correct = pred.eq(target.view(1, -1).expand_as(pred))
-
     res = []
     for k in topk:
         correct_k = correct[:k].view(-1).float().sum(0)

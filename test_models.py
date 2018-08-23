@@ -2,13 +2,18 @@ import argparse
 import time
 
 import numpy as np
+import torch
+import torchvision
 import torch.nn.parallel
+import torch.backends.cudnn as cudnn
 import torch.optim
+from torch.nn.utils import clip_grad_norm
+
 from sklearn.metrics import confusion_matrix
 from dataset import TSNDataSet
 from models import TSN
 from transforms import *
-from ops import ConsensusModule
+from ops import ConsensusModule, parser
 import datasets_video
 import pdb
 from torch.nn import functional as F

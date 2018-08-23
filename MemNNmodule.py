@@ -91,15 +91,18 @@ class MemNNModule(torch.nn.Module):
         # nums = 1 # self.hops
         nums = self.hops
         num_bottleneck = 512
+        # print (nums * self.embedding_dim, (nums * self.embedding_dim)//2)
         classifier = nn.Sequential(
                 nn.ReLU(),
+                # nn.Linear(nums * self.embedding_dim, num_bottleneck),
                 nn.Linear(nums * self.embedding_dim, (nums * self.embedding_dim)//2),
                 nn.ReLU(),
+                # nn.Linear(num_bottleneck, self.num_class),
                 nn.Linear((nums * self.embedding_dim)//2, self.num_class),
                 )
         return classifier
 
-    def forward(self, memory_input, query_input): # (BS, num_frames, 1024), (BS, num_frames, 1024)
+    def forward(self, memory_input, query_input, eval): # (BS, num_frames, 1024), (BS, num_frames, 1024)
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
         if self.num_CNNs==1:
@@ -111,23 +114,26 @@ class MemNNModule(torch.nn.Module):
         queries_emb = self.additional_QueryEmbedding(queries_emb) # (BS, 256)
 
         accumulated_output = []
-        w_u1, w_u1_plus_query = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
+        attentions = []
+        w_u1, w_u1_plus_query, p1 = self.hop(memory_input, queries_emb, self.KeyEmbedding1, self.ValueEmbedding1)
         accumulated_output.append(w_u1_plus_query)
+        attentions.append(p1.cpu())
 
         if self.hops >= 2:
-            w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.ValueEmbedding1, self.ValueEmbedding2)
+            w_u2, w_u2_plus_query, p2 = self.hop(memory_input, w_u1_plus_query, self.ValueEmbedding1, self.ValueEmbedding2)
             # w_u2, w_u2_plus_query = self.hop(memory_input, w_u1_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
             accumulated_output.append(w_u2_plus_query)
+            attentions.append(p2.cpu())
 
         if self.hops >= 3:
-            w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.ValueEmbedding2, self.ValueEmbedding3)
+            w_u3, w_u3_plus_query, p3 = self.hop(memory_input, w_u2_plus_query, self.ValueEmbedding2, self.ValueEmbedding3)
             # w_u3, w_u3_plus_query = self.hop(memory_input, w_u2_plus_query, self.KeyEmbedding1, self.ValueEmbedding1)
             # print (w_u3.size()) # (BS, 256)
             accumulated_output.append(w_u3_plus_query)
+            attentions.append(p3.cpu())
 
         accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
-
         output = self.classifier(accumulated_output)
         '''
         memory_input = memory_input.view(memory_input.size(0)*self.num_frames, -1)
@@ -137,7 +143,15 @@ class MemNNModule(torch.nn.Module):
         output = self.classifier(memory_input)
         '''
         # output = self.classifier(w_u)
-        return output
+        attentions = torch.stack(attentions,-1)
+        attentions = attentions.permute(0, 1, 3, 2)
+        attentions = attentions.squeeze(1)
+        # print (attentions.size())
+        attentions = attentions.data.numpy().tolist()
+        if eval:
+            return output, attentions
+        else:
+            return output
 
     def hop(self, mem_emb, queries_emb, KeyEmbedding, ValueEmbedding):
         bs = mem_emb.size(0)
@@ -161,7 +175,7 @@ class MemNNModule(torch.nn.Module):
         out = torch.squeeze(out, 1).contiguous() # (BS, 256)
 
         # return out
-        return out, (out + queries_emb)
+        return out, (out + queries_emb), p
 
 # (consensus_type, self.img_feature_dim, self.num_segments, num_class)
 def return_MemNN(relation_type, img_feature_dim, num_frames, num_class, channel, num_hop, num_CNNs):

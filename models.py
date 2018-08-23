@@ -319,7 +319,7 @@ class TSN(nn.Module):
              'name': "BN scale/shift"},
         ]
 
-    def forward(self, input):
+    def forward(self, input, eval=False):
         # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
 
         sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
@@ -353,11 +353,18 @@ class TSN(nn.Module):
                 query_out = query_out.view((-1, self.num_segments) + query_out.size()[1:])
         # print (base_out.size()) # (BS, NUM_SEG, img_feature_dim_OR_final_class_num)
         if self.consensus_type in ['MemNN']:
-            output = self.consensus(base_out, query_out)
+            if eval:
+                output, attentions = self.consensus(base_out, query_out, eval=eval)
+            else:
+                output = self.consensus(base_out, query_out, eval=eval)
         else:
             output = self.consensus(base_out)
 
-        return output.squeeze(1)
+
+        if eval:
+            return output.squeeze(1), attentions
+        else:
+            return output.squeeze(1)
 
     def _get_diff(self, input, keep_rgb=False):
         input_c = 3 if self.modality in ["RGB", "RGBDiff"] else 2

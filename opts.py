@@ -53,8 +53,8 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
-parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
-                    help='evaluate model on validation set')
+parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',help='evaluate model on validation set')
+parser.add_argument('--evaluation_epoch', default=0, type=int, metavar='N',help='evaluation epoch')
 parser.add_argument('--snapshot_pref', type=str, default="")
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -64,5 +64,7 @@ parser.add_argument('--root_log',type=str, default='log')
 parser.add_argument('--root_model', type=str, default='model')
 parser.add_argument('--root_output',type=str, default='output')
 
+# parser.add_argument('--test', action='store_true', help='If true, test is performed.')
+# parser.set_defaults(test=False)
 
 

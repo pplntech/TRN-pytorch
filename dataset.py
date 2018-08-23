@@ -132,7 +132,7 @@ class TSNDataSet(data.Dataset):
                     p += 1
 
         process_data = self.transform(images)
-        return process_data, record.label
+        return process_data, record.label, record.path, indices
 
     def __len__(self):
         return len(self.video_list)
