@@ -245,7 +245,10 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         target_var = torch.autograd.Variable(target, volatile=True)
 
         # compute output
-        output, attentions = model(input_var, eval=True)
+        if json_file is not None:
+            output, attentions = model(input_var, eval=True)
+        else:
+            output = model(input_var, eval=True)
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
