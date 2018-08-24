@@ -248,7 +248,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         if json_file is not None:
             output, attentions = model(input_var, eval=True)
         else:
-            print (input_var)
+            # print (input_var)
             output = model(input_var)
         loss = criterion(output, target_var)
 
