@@ -21,9 +21,9 @@ parser.add_argument('--img_feature_dim', default=256, type=int, help="the featur
 parser.add_argument('--key_dim', type=int, help="the feature dimension of memory key")    ##### newly added #####
 parser.add_argument('--value_dim', type=int, help="the feature dimension of memory value")    ##### newly added #####
 parser.add_argument('--query_dim', type=int, help="the feature dimension of query")    ##### newly added #####
-parser.add_argument('--query_update_method', type=str, default="concat", choices=['sum', 'concat']    ##### newly added #####
+parser.add_argument('--query_update_method', type=str, default="concat", choices=['sum', 'concat'])  ##### newly added #####
 parser.add_argument('--hop', default=5, type=int, help="number of hops").    ##### important args #####
-parser.add_argument('--hop_method', type=str, default="iterative", choices=['parallel', 'iterative']    ##### newly added #####
+parser.add_argument('--hop_method', type=str, default="iterative", choices=['parallel', 'iterative'])    ##### newly added #####
 parser.add_argument('--num_CNNs', default=2, type=int, help="number of CNNs to use")
 parser.add_argument('--no_softmax_on_p', action='store_true', help='If true, not use softmax layer calculating p.')    ##### newly added #####
 parser.set_defaults(no_softmax_on_p=False).    ##### newly added #####
