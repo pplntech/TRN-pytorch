@@ -22,6 +22,7 @@ best_prec1 = 0
 def main():
     global args, best_prec1
     args = parser.parse_args()
+    _fill_in_None_args()
     _join_result_path()
     check_rootfolders()
 
@@ -30,18 +31,25 @@ def main():
     num_class = len(categories)
 
 
-    args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.arch_query, args.consensus_type, 'segment%d'% args.num_segments])
+    args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.arch_query, args.consensus_type, 'segment%d'% args.num_segments, \
+        'key%d'%args.key_dim, 'value%d'%args.value_dim, 'query%d'%args.query_dim, 'queryUpdateby%s'%args.query_update_method,\
+        'useSoftmax%s'args.no_softmax_on_p, 'hopMethod%s'%args.hop_method])
     print('storing name: ' + args.store_name)
 
     model = TSN(num_class, args.num_segments, args.modality,
-                base_model=args.arch,
-                query_base_model=args.arch_query,
-                consensus_type=args.consensus_type,
-                dropout=args.dropout,
-                img_feature_dim=args.img_feature_dim,
-                partial_bn=not args.no_partialbn,
-                num_hop=args.hop,
-                num_CNNs=args.num_CNNs)
+                base_model = args.arch,
+                consensus_type = args.consensus_type,
+                dropout = args.dropout,
+                key_dim = args.key_dim,
+                value_dim = args.value_dim,
+                query_dim = args.query_dim,
+                query_update_method = args.query_update_method,
+                partial_bn = not args.no_partialbn,
+                num_hop = args.hop,
+                hop_method = args.hop_method,
+                num_CNNs = args.num_CNNs,
+                no_softmax_on_p = args.no_softmax_on_p,
+                )
 
     crop_size = model.crop_size
     scale_size = model.scale_size
@@ -369,5 +377,9 @@ def _join_result_path():
     args.root_model = os.path.join(args.result_path, args.root_model)
     args.root_output = os.path.join(args.result_path, args.root_output)
 
+def _fill_in_None_args():
+    if args.key_dim is None: args.key_dim = args.img_feature_dim
+    if args.value_dim is None: args.value_dim = args.img_feature_dim
+    if args.query_dim is None: args.query_dim = args.img_feature_dim
 if __name__ == '__main__':
     main()

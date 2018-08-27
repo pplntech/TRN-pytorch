@@ -36,6 +36,10 @@ V08 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v08_MemNNQueryNN_2hops_1CNN/ --workers 20 --num_CNNs 1
 
+v09 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_2hops_1CNN/ --workers 20 --num_CNNs 1
+python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus 0 --root_path /raid/users/km/SthSth/ --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_2hops_1CNN/ --workers 20 --num_CNNs 1
+
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \
 --num_segments 8 --hop 2 --result_path ? --workers 20 --num_CNNs 2 --resume ? --evaluate --evaluation_epoch ?

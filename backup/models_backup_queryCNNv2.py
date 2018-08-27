@@ -7,17 +7,12 @@ from torch.nn.init import normal, constant
 import TRNmodule
 import MemNNmodule
 
-
-# rmed : query_base_model, img_feature_dim
-# added : key_dim, value_dim, query_dim, query_update_method, hop_method, no_softmax_on_p
 class TSN(nn.Module):
     def __init__(self, num_class, num_segments, modality,
-                 base_model='resnet101', new_length=None,
+                 base_model='resnet101', query_base_model='resnet18', new_length=None,
                  consensus_type='avg', before_softmax=True,
-                 dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
-                 crop_num=1, partial_bn=True, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False):
-
+                 dropout=0.8,img_feature_dim=256,
+                 crop_num=1, partial_bn=True, print_spec=True, num_hop=1, num_CNNs=2):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -26,7 +21,7 @@ class TSN(nn.Module):
         self.dropout = dropout
         self.crop_num = crop_num
         self.consensus_type = consensus_type
-        self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
+        self.img_feature_dim = img_feature_dim  # the dimension of the CNN feature to represent each frame
         if not before_softmax and consensus_type != 'avg':
             raise ValueError("Only avg consensus can be used after Softmax")
 
@@ -47,6 +42,8 @@ class TSN(nn.Module):
             """.format(base_model, self.modality, self.num_segments, self.new_length, consensus_type, self.dropout, self.img_feature_dim)))
 
         self._prepare_base_model(base_model) # assign 'self.base_model'
+        if consensus_type in ['MemNN']:
+            self._prepare_query_base_model(query_base_model) # assign 'self.base_model'
 
 
         feature_dim = self._prepare_tsn(num_class)
@@ -54,21 +51,29 @@ class TSN(nn.Module):
         if self.modality == 'Flow':
             print("Converting the ImageNet model to a flow init model")
             self.base_model = self._construct_flow_model(self.base_model)
+            if consensus_type in ['MemNN']:
+                asdf
+                # todo : construct query specific function
+                self.query_base_model = self._construct_flow_model(self.query_base_model)
             print("Done. Flow model ready...")
         elif self.modality == 'RGBDiff':
             print("Converting the ImageNet model to RGB+Diff init model")
             self.base_model = self._construct_diff_model(self.base_model)
+            if consensus_type in ['MemNN']:
+                asdf
+                # todo : construct query specific function
+                self.query_base_model = self._construct_diff_model(self.query_base_model)
             print("Done. RGBDiff model ready.")
 
 
         if consensus_type in ['TRN', 'TRNmultiscale']:
             # plug in the Temporal Relation Network Module
-            self.consensus = TRNmodule.return_TRN(consensus_type, self.img_feature_dim, self.num_segments, num_class) # (relation_type, img_feature_dim, num_frames, num_class)
+            self.consensus = TRNmodule.return_TRN(consensus_type, self.img_feature_dim, self.num_segments, num_class)
+            # (relation_type, img_feature_dim, num_frames, num_class)
         elif consensus_type in ['MemNN']:
-            self.consensus = MemNNmodule.return_MemNN(consensus_type, self.num_segments, num_class, \
-                key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, query_update_method=query_update_method, \
-                no_softmax_on_p=no_softmax_on_p, channel=1024, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs)
-        else: # agv or something else
+            # plug in the Temporal Relation Network Module
+            self.consensus = MemNNmodule.return_MemNN(consensus_type, self.img_feature_dim, self.num_segments, num_class, channel=1024, num_hop=num_hop, num_CNNs=num_CNNs)
+        else:
             self.consensus = ConsensusModule(consensus_type)
 
         if not self.before_softmax:
@@ -87,11 +92,14 @@ class TSN(nn.Module):
 
             elif self.consensus_type in ['MemNN']:
                 self.base_model = nn.Sequential(*list(self.base_model.children())[:-1]) # feature_dim
+                print ('2nd query related function')
+                self.query_base_model = nn.Sequential(*list(self.query_base_model.children())[:-1]) # feature_dim
                 # setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
 
             else:
                 setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, num_class))
             self.new_fc = None
+            self.query_new_fc = None
         else: # dropout not ZERO
             setattr(self.base_model, self.base_model.last_layer_name, nn.Dropout(p=self.dropout))
 
@@ -100,7 +108,10 @@ class TSN(nn.Module):
                 self.new_fc = nn.Linear(feature_dim, self.img_feature_dim)
 
             elif self.consensus_type in ['MemNN']:
+                print ('2nd query related function')
+                setattr(self.query_base_model, self.query_base_model.last_layer_name, nn.Dropout(p=self.dropout))
                 self.new_fc = None
+                self.query_new_fc = None
 
             else:
                 # the default consensus types in TSN
@@ -114,8 +125,9 @@ class TSN(nn.Module):
             else:
                 normal(self.new_fc.weight, 0, std)
                 constant(self.new_fc.bias, 0)
-
-        return feature_dim # 1024 on BNInception
+        # print (self.base_model)
+        # asdf
+        return feature_dim
 
     def _prepare_base_model(self, base_model):
 
@@ -166,6 +178,55 @@ class TSN(nn.Module):
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
 
+    def _prepare_query_base_model(self, base_model):
+        print ('1st query related function')
+        if 'resnet' in base_model or 'vgg' in base_model:
+            self.query_base_model = getattr(torchvision.models, base_model)(True)
+            self.query_base_model.last_layer_name = 'fc'
+            self.input_size = 224
+            self.input_mean = [0.485, 0.456, 0.406]
+            self.input_std = [0.229, 0.224, 0.225]
+
+            if self.modality == 'Flow':
+                self.input_mean = [0.5]
+                self.input_std = [np.mean(self.input_std)]
+            elif self.modality == 'RGBDiff':
+                self.input_mean = self.input_mean + [0] * 3 * self.new_length
+                self.input_std = self.input_std + [np.mean(self.input_std) * 2] * 3 * self.new_length
+        elif base_model == 'BNInception':
+            import model_zoo
+            self.query_base_model = getattr(model_zoo, base_model)()
+            self.query_base_model.last_layer_name = 'fc'
+            self.input_size = 224
+            self.input_mean = [104, 117, 128]
+            self.input_std = [1]
+
+            if self.modality == 'Flow':
+                self.input_mean = [128]
+            elif self.modality == 'RGBDiff':
+                self.input_mean = self.input_mean * (1 + self.new_length)
+        elif base_model == 'InceptionV3':
+            import model_zoo
+            self.query_base_model = getattr(model_zoo, base_model)()
+            self.query_base_model.last_layer_name = 'top_cls_fc'
+            self.input_size = 299
+            self.input_mean = [104,117,128]
+            self.input_std = [1]
+            if self.modality == 'Flow':
+                self.input_mean = [128]
+            elif self.modality == 'RGBDiff':
+                self.input_mean = self.input_mean * (1+self.new_length)
+
+        elif 'inception' in base_model:
+            import model_zoo
+            self.query_base_model = getattr(model_zoo, base_model)()
+            self.query_base_model.last_layer_name = 'classif'
+            self.input_size = 299
+            self.input_mean = [0.5]
+            self.input_std = [0.5]
+        else:
+            raise ValueError('Unknown base model: {}'.format(base_model))
+
     def train(self, mode=True):
         """
         Override the default train() to freeze the BN parameters
@@ -185,6 +246,17 @@ class TSN(nn.Module):
                         m.weight.requires_grad = False
                         m.bias.requires_grad = False
 
+            if self.consensus_type in ['MemNN']:
+                print("Freezing BatchNorm2D except the first one in query_model.")
+                for m in self.query_base_model.modules():
+                    if isinstance(m, nn.BatchNorm2d):
+                        count += 1
+                        if count >= (2 if self._enable_pbn else 1):
+                            m.eval()
+
+                            # shutdown update in frozen mode
+                            m.weight.requires_grad = False
+                            m.bias.requires_grad = False
 
     def partialBN(self, enable):
         self._enable_pbn = enable
@@ -201,6 +273,9 @@ class TSN(nn.Module):
         for name, m in self.named_modules():
             # print (name, type(m))
             if(name=='base_model'):
+                conv_cnt = 0
+                bn_cnt = 0
+            if(name=='query_base_model'):
                 conv_cnt = 0
                 bn_cnt = 0
             # print (name, m)
@@ -257,9 +332,11 @@ class TSN(nn.Module):
         # print (input.view((-1, sample_len) + input.size()[-2:]).size()) # (BS * num_seg, num_channel, h, w)
         base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:]))
         # print (base_out.size()) # (BS * num_seg, 1024) # 1024 is number of channels
+        if self.consensus_type in ['MemNN']:
+            query_out = self.query_base_model(input.view((-1, sample_len) + input.size()[-2:]))
 
 
-        if self.dropout > 0 and self.new_fc is not None:
+        if self.dropout > 0 and self.consensus_type!='MemNN':
             base_out = self.new_fc(base_out) # img_feature_dim
         # print (base_out.size()) # (BS * num_seg, img_feature_dim_OR_final_class_num)
         # base_out is class_logit when TSN, otherwise img_feature_dim when TRN
@@ -267,16 +344,19 @@ class TSN(nn.Module):
         # print (self.before_softmax) # True
         if not self.before_softmax:
             base_out = self.softmax(base_out)
+            if self.consensus_type in ['MemNN']:
+                query_out = self.softmax(query_out)
         # print (base_out.size()) # (BS * num_seg, img_feature_dim_OR_final_class_num)
         if self.reshape:
             base_out = base_out.view((-1, self.num_segments) + base_out.size()[1:])
+            if self.consensus_type in ['MemNN']:
+                query_out = query_out.view((-1, self.num_segments) + query_out.size()[1:])
         # print (base_out.size()) # (BS, NUM_SEG, img_feature_dim_OR_final_class_num)
-
         if self.consensus_type in ['MemNN']:
             if eval:
-                output, attentions = self.consensus(base_out, eval=eval)
+                output, attentions = self.consensus(base_out, query_out, eval=eval)
             else:
-                output = self.consensus(base_out, eval=eval)
+                output = self.consensus(base_out, query_out, eval=eval)
         else:
             output = self.consensus(base_out)
 

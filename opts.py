@@ -10,19 +10,23 @@ parser.add_argument('--store_name', type=str, default="")
 
 # ========================= Model Configs ==========================
 parser.add_argument('--arch', type=str, default="BNInception")
-parser.add_argument('--arch_query', type=str, default="BNInception")
-parser.add_argument('--num_segments', type=int, default=3)
+# parser.add_argument('--arch_query', type=str, default="BNInception")
+parser.add_argument('--num_segments', type=int, default=3)    ##### important args #####
 parser.add_argument('--consensus_type', type=str, default='avg',\
      choices=['avg', 'max', 'topk', 'identity', 'rnn', 'cnn', 'TRN', 'TRNmultiscale', 'MemNN'])
 parser.add_argument('--k', type=int, default=3)
-
-parser.add_argument('--dropout', '--do', default=0.8, type=float,
-                    metavar='DO', help='dropout ratio (default: 0.5)')
-parser.add_argument('--loss_type', type=str, default="nll",
-                    choices=['nll'])
+parser.add_argument('--dropout', '--do', default=0.8, type=float, metavar='DO', help='dropout ratio (default: 0.5)')
+parser.add_argument('--loss_type', type=str, default="nll", choices=['nll'])
 parser.add_argument('--img_feature_dim', default=256, type=int, help="the feature dimension for each frame")
-parser.add_argument('--hop', default=5, type=int, help="number of hops")
+parser.add_argument('--key_dim', type=int, help="the feature dimension of memory key")    ##### newly added #####
+parser.add_argument('--value_dim', type=int, help="the feature dimension of memory value")    ##### newly added #####
+parser.add_argument('--query_dim', type=int, help="the feature dimension of query")    ##### newly added #####
+parser.add_argument('--query_update_method', type=str, default="concat", choices=['sum', 'concat']    ##### newly added #####
+parser.add_argument('--hop', default=5, type=int, help="number of hops").    ##### important args #####
+parser.add_argument('--hop_method', type=str, default="iterative", choices=['parallel', 'iterative']    ##### newly added #####
 parser.add_argument('--num_CNNs', default=2, type=int, help="number of CNNs to use")
+parser.add_argument('--no_softmax_on_p', action='store_true', help='If true, not use softmax layer calculating p.')    ##### newly added #####
+parser.set_defaults(no_softmax_on_p=False).    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',
