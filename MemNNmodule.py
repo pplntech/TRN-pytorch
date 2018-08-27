@@ -82,12 +82,9 @@ class MemNNModule(torch.nn.Module):
                 updated_query_value2 = query_value + retrieved_value1 # (bs, 1024), (bs, value_dim)
                 query_embedding = self.query_embedding1
             if self.query_update_method=='concat':
-                updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1)
+                updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
                 query_embedding = self.query_embedding2
-
-            print (updated_query_value2.size())
-            asdf
-
+                
             retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, self.KeyEmbedding1, self.ValueEmbedding1, query_embedding)
             accumulated_output.append(retrieved_value2)
             attentions.append(p2.cpu())
