@@ -34,18 +34,17 @@ class MemNNModule(torch.nn.Module):
 
 
         # define layers
-        self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
-
+        self.QueryEmbedding1 = nn.Linear(self.channel, self.query_dim)
         self.KeyEmbedding1 = nn.Linear(self.channel, self.key_dim)
         self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
         if self.hops >= 2:
-            if self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
-            # if self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
+            if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+            # if self.query_update_method=='sum': self.QueryEmbedding2 = nn.Linear(self.channel, self.query_dim)
 
         if self.hops >= 3:
-            if self.query_update_method=='concat': self.query_embedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
-            # if self.query_update_method=='sum': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
+            if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+            # if self.query_update_method=='sum': self.QueryEmbedding3 = nn.Linear(self.channel, self.query_dim)
 
         self.classifier = self.fc_fusion()
 
@@ -73,31 +72,31 @@ class MemNNModule(torch.nn.Module):
         attentions = []
 
         # first hop
-        retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
+        retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.QueryEmbedding1)
         accumulated_output.append(retrieved_value1)
         attentions.append(p1.cpu())
 
         if self.hops >= 2:
             if self.query_update_method=='sum':
                 updated_query_value2 = query_value + retrieved_value1 # (bs, 1024), (bs, value_dim)
-                query_embedding = self.query_embedding1
+                QueryEmbedding = self.QueryEmbedding1
             if self.query_update_method=='concat':
                 updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
-                query_embedding = self.query_embedding2
+                QueryEmbedding = self.QueryEmbedding2
 
-            retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, self.KeyEmbedding1, self.ValueEmbedding1, query_embedding)
+            retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, self.KeyEmbedding1, self.ValueEmbedding1, QueryEmbedding)
             accumulated_output.append(retrieved_value2)
             attentions.append(p2.cpu())
 
         if self.hops >= 3:
             if self.query_update_method=='sum':
                 updated_query_value3 = updated_query_value2 + retrieved_value2
-                query_embedding = self.query_embedding1
+                QueryEmbedding = self.QueryEmbedding1
             if self.query_update_method=='concat':
                 updated_query_value3 = torch.cat(updated_query_value2, retrieved_value2, dim=1)
-                query_embedding = self.query_embedding3
+                QueryEmbedding = self.QueryEmbedding3
             
-            retrieved_value3, p3 = self.hop(memory_input, updated_query_value3, self.KeyEmbedding1, self.ValueEmbedding1, query_embedding)
+            retrieved_value3, p3 = self.hop(memory_input, updated_query_value3, self.KeyEmbedding1, self.ValueEmbedding1, QueryEmbedding)
             accumulated_output.append(retrieved_value3)
             attentions.append(p3.cpu())
 
@@ -136,10 +135,10 @@ class MemNNModule(torch.nn.Module):
         value = ValueEmbedding(memory) # (BS * NUM_SEG, value_dim)
         value = value.view(bs, self.num_frames, -1) # (BS, NUM_SEG, value_dim)
 
-        out = torch.bmm(p, value) # (BS, 1, value_dim)
-        out = torch.squeeze(out, 1).contiguous() # (BS, value_dim)
+        retrieved_value = torch.bmm(p, value) # (BS, 1, value_dim)
+        retrieved_value = torch.squeeze(retrieved_value, 1).contiguous() # (BS, value_dim)
 
-        return out, p
+        return (retrieved_value + query_key), p
 
 def return_MemNN(
     relation_type, num_frames, num_class, \

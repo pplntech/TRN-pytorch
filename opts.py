@@ -70,5 +70,3 @@ parser.add_argument('--root_output',type=str, default='output')
 
 # parser.add_argument('--test', action='store_true', help='If true, test is performed.')
 # parser.set_defaults(test=False)
-
-
