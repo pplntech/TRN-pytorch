@@ -25,6 +25,8 @@ def main():
     _fill_in_None_args()
     _join_result_path()
     check_rootfolders()
+    with open(os.path.join(args.result_path, 'opts.json'), 'w') as opt_file:
+        json.dump(vars(args), opt_file)
 
     categories, args.train_list, args.val_list, args.root_path, prefix = datasets_video.return_dataset(args.dataset, args.modality, args.root_path)
     # print(categories, args.train_list, args.val_list, args.root_path, prefix)
