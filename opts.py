@@ -18,9 +18,9 @@ parser.add_argument('--k', type=int, default=3)
 parser.add_argument('--dropout', '--do', default=0.8, type=float, metavar='DO', help='dropout ratio (default: 0.5)')
 parser.add_argument('--loss_type', type=str, default="nll", choices=['nll'])
 parser.add_argument('--img_feature_dim', default=256, type=int, help="the feature dimension for each frame")
-parser.add_argument('--key_dim', type=int, help="the feature dimension of memory key")    ##### newly added #####
-parser.add_argument('--value_dim', type=int, help="the feature dimension of memory value")    ##### newly added #####
-parser.add_argument('--query_dim', type=int, help="the feature dimension of query")    ##### newly added #####
+parser.add_argument('--key_dim', type=int, help="the feature dimension of memory key")
+parser.add_argument('--value_dim', type=int, help="the feature dimension of memory value")
+parser.add_argument('--query_dim', type=int, help="the feature dimension of query")
 parser.add_argument('--query_update_method', type=str, default="concat", choices=['sum', 'concat'])  ##### newly added #####
 parser.add_argument('--hop', default=5, type=int, help="number of hops")    ##### important args #####
 parser.add_argument('--hop_method', type=str, default="iterative", choices=['parallel', 'iterative'])    ##### newly added #####
