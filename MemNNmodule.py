@@ -22,7 +22,7 @@ class MemNNModule(torch.nn.Module):
         self.value_dim = value_dim
         self.query_dim = query_dim
         assert (self.key_dim==self.query_dim)
-        
+
         self.query_update_method = query_update_method
         if query_update_method=='sum':
             assert (channel==self.value_dim)
@@ -78,14 +78,11 @@ class MemNNModule(torch.nn.Module):
         attentions.append(p1.cpu())
 
         if self.hops >= 2:
-            print (query_value.size()) # (bs, 1024)
-            print (retrieved_value1.size()) # (bs, value_dim)
-
             if self.query_update_method=='sum':
-                updated_query_value2 = query_value + retrieved_value1
+                updated_query_value2 = query_value + retrieved_value1 # (bs, 1024), (bs, value_dim)
                 query_embedding = self.query_embedding1
             if self.query_update_method=='concat':
-                updated_query_value2 = torch.cat(query_value,retrieved_value1, dim=1)
+                updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1)
                 query_embedding = self.query_embedding2
 
             print (updated_query_value2.size())
