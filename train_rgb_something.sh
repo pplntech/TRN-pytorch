@@ -52,7 +52,9 @@ python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 --result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1
 
 v10 on DGX
-python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus 0 --root_path /raid/users/km/SthSth/ --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v10_MemNNQueryNN_2hops_concat_parallel_1CNN/ --workers 20 --num_CNNs 1
+python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative\
+ --num_segments 8 --hop 1 --result_path /raid/users/km/SthSth/Experiments/TRN/v10_MemNNQueryNN_2hops_concat_parallel_1CNN/ --workers 20 --num_CNNs 1
 
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \

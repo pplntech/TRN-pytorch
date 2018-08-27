@@ -40,9 +40,6 @@ class MemNNModule(torch.nn.Module):
         self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
         if self.hops >= 2:
-            print (self.hops)
-            print (query_update_method)
-            asdf
             if self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
             # if self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
 
