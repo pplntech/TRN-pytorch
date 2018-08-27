@@ -35,7 +35,7 @@ def main():
 
     args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.arch_query, args.consensus_type, 'segment%d'% args.num_segments, \
         'key%d'%args.key_dim, 'value%d'%args.value_dim, 'query%d'%args.query_dim, 'queryUpdateby%s'%args.query_update_method,\
-        'useSoftmax%s'args.no_softmax_on_p, 'hopMethod%s'%args.hop_method])
+        'useSoftmax%s'%args.no_softmax_on_p, 'hopMethod%s'%args.hop_method])
     print('storing name: ' + args.store_name)
 
     model = TSN(num_class, args.num_segments, args.modality,
