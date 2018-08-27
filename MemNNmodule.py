@@ -40,6 +40,9 @@ class MemNNModule(torch.nn.Module):
         self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
         if self.hops >= 2:
+            print (self.hops)
+            print (query_update_method)
+            asdf
             if self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
             # if self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
 
@@ -84,7 +87,7 @@ class MemNNModule(torch.nn.Module):
             if self.query_update_method=='concat':
                 updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
                 query_embedding = self.query_embedding2
-                
+
             retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, self.KeyEmbedding1, self.ValueEmbedding1, query_embedding)
             accumulated_output.append(retrieved_value2)
             attentions.append(p2.cpu())
