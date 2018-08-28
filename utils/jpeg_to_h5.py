@@ -25,7 +25,7 @@ def main():
     start_time = time.time()
     input_frame_dir = os.path.join(input_jpegs_dir, videoname)
     files = os.listdir(input_frame_dir)
-    files = [os.path.join(input_frame_dir, f) for f in files if not f.startswith('.') and f.lower().endswith(img_ext)]
+    files = [os.path.join(input_frame_dir, f) for f in files if not f.startswith('.') and f.lower().endswith(img_ext.lower())]
     files = sorted(files)
     print (files)
     asdf
