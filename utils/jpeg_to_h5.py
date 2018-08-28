@@ -53,7 +53,7 @@ def main():
   videonames = [f for f in videonames if not f.startswith('.')]
 
   length = len(videonames)
-  Parallel(n_jobs=n_jobs)(delayed(save_h5)(videoname_ind, videoname) for videoname_ind, videoname in enumerate(videonames))
+  Parallel(n_jobs=n_jobs)(delayed(save_h5)(videoname_ind, videoname) for videoname_ind, videoname in enumerate(tqdm(videonames)))
   # for videoname_ind, videoname in enumerate(videonames):
   #   start_time = time.time()
   #   input_frame_dir = os.path.join(input_jpegs_dir, videoname)
