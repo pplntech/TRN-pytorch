@@ -6,6 +6,7 @@ parser.add_argument('--train_list', type=str,default="")
 parser.add_argument('--val_list', type=str, default="")
 parser.add_argument('--root_path', type=str, default="", required=True)
 parser.add_argument('--result_path', type=str, default="", required=True)
+parser.add_argument('--file_type', type=str, default="jpg", choices=['jpg', 'h5'], required=True)
 parser.add_argument('--store_name', type=str, default="")
 
 # ========================= Model Configs ==========================

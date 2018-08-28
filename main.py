@@ -28,7 +28,7 @@ def main():
     with open(os.path.join(args.result_path, 'opts.json'), 'w') as opt_file:
         json.dump(vars(args), opt_file)
 
-    categories, args.train_list, args.val_list, args.root_path, prefix = datasets_video.return_dataset(args.dataset, args.modality, args.root_path)
+    categories, args.train_list, args.val_list, args.root_path, prefix = datasets_video.return_dataset(args.dataset, args.modality, args.root_path, args.file_type)
     # print(categories, args.train_list, args.val_list, args.root_path, prefix)
     num_class = len(categories)
 
@@ -88,7 +88,7 @@ def main():
         data_length = 5
 
     train_loader = torch.utils.data.DataLoader(
-        TSNDataSet(args.root_path, args.train_list, num_segments=args.num_segments,
+        TSNDataSet(args.root_path, args.train_list, args.file_type, num_segments=args.num_segments,
                    new_length=data_length,
                    modality=args.modality,
                    image_tmpl=prefix,
@@ -102,7 +102,7 @@ def main():
         num_workers=args.workers, pin_memory=True)
 
     val_loader = torch.utils.data.DataLoader(
-        TSNDataSet(args.root_path, args.val_list, num_segments=args.num_segments,
+        TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
                    modality=args.modality,
                    image_tmpl=prefix,

@@ -31,7 +31,7 @@ def save_h5(videoname_ind, videoname):
     outfile.close()
     end_time = time.time()
     time_delta = end_time - start_time
-    print('{}/{}. converting jpegs of {} to h5 done. ({} secs)'.format(
+    print('\n{}/{}. converting jpegs of {} to h5 done. ({} secs)'.format(
       videoname_ind+1, length, videoname, time_delta) )
 
 def main():
