@@ -16,7 +16,7 @@ def main():
   dt = h5py.special_dtype(vlen=np.uint8)
 
   videonames = os.listdir(input_jpegs_dir)
-  videonames = [f in videonames if not f.startswith('.')]
+  videonames = [f for f in videonames if not f.startswith('.')]
   print (len(videonames))
 
 
