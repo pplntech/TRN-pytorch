@@ -51,6 +51,7 @@ def main():
 
   videonames = os.listdir(input_jpegs_dir)
   videonames = [f for f in videonames if not f.startswith('.')]
+  videonames = sorted(videonames)
 
   length = len(videonames)
   Parallel(n_jobs=n_jobs)(delayed(save_h5)(videoname_ind, videoname) for videoname_ind, videoname in enumerate(tqdm(videonames)))
