@@ -27,8 +27,6 @@ def main():
     files = os.listdir(input_frame_dir)
     files = [os.path.join(input_frame_dir, f) for f in files if not f.startswith('.') and f.lower().endswith(img_ext.lower())]
     files = sorted(files)
-    print (files)
-    asdf
 
     outfile_path = os.path.join(output_dir, videoname + '_jpegs.h5')
     outfile = h5py.File(outfile_path, 'w')
