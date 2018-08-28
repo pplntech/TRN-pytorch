@@ -138,7 +138,8 @@ class MemNNModule(torch.nn.Module):
         retrieved_value = torch.bmm(p, value) # (BS, 1, value_dim)
         retrieved_value = torch.squeeze(retrieved_value, 1).contiguous() # (BS, value_dim)
 
-        return (retrieved_value + query_key), p
+        return (retrieved_value), p
+        # return (retrieved_value + query_key), p
 
 def return_MemNN(
     relation_type, num_frames, num_class, \
