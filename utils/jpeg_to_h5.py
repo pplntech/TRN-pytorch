@@ -12,12 +12,41 @@ def main():
   input_jpegs_dir = args.input_dir
   output_dir = args.target_dir
   if not os.path.isdir(output_dir): os.makedirs(output_dir)
+  img_ext = args.frame_extension
+
 
   dt = h5py.special_dtype(vlen=np.uint8)
 
   videonames = os.listdir(input_jpegs_dir)
   videonames = [f for f in videonames if not f.startswith('.')]
-  print (len(videonames))
+
+  length = len(videonames)
+  for videoname_ind, videoname in enumerate(videonames):
+    start_time = time.time()
+    input_frame_dir = os.path.join(input_jpegs_dir, videoname)
+    files = os.listdir(input_frame_dir)
+    files = [os.path.join(input_frame_dir, f) for f in files if not f.startswith('.') and f.lower().endswith(img_ext)]
+    print (files)
+    asdf
+    files = sorted(files)
+
+    outfile_path = os.path.join(output_dir, videoname + '_jpegs.h5')
+    outfile = h5py.File(outfile_path, 'w')
+    dset = outfile.create_dataset('jpegs', (len(files),), 
+      maxshape=(len(files),), chunks=True, dtype=dt)
+
+    for f_ind, f in enumerate(tqdm(files)):
+      # read jpeg as binary and put into h5
+      jpeg = open(f, 'rb')
+      binary_data = jpeg.read()
+      dset[f_ind] = np.fromstring(binary_data, dtype=np.uint8)
+      jpeg.close()
+
+    outfile.close()
+    end_time = time.time()
+    time_delta = end_time - start_time
+    print('{}/{}. converting jpegs of {} to h5 done. ({} secs)'.format(
+      videoname_ind+1, length, videoname, time_delta) )
 
 
 
@@ -27,6 +56,8 @@ def get_args():
     help="Target directory to save hdf5 files")
   parser.add_argument('-i', '--input-dir', dest='input_dir', 
     default='./frames', help='Input directory with video frames in each directory')
+  parser.add_argument('-e', '--frame-extension', dest='frame_extension', 
+    default='jpg', help='Extension of frame ')
   args = parser.parse_args()
 
   return args
