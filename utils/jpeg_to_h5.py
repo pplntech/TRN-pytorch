@@ -35,7 +35,7 @@ def save_h5(videoname_ind, videoname):
       videoname_ind+1, length, videoname, time_delta) )
 
 def main():
-  global input_jpegs_dir, output_dir, length, img_ext
+  global input_jpegs_dir, output_dir, length, img_ext, dt
 
   args = get_args()
   
