@@ -137,7 +137,7 @@ def main():
         validate(val_loader, model, criterion, 0, json_file=json_file_path, idx2class=categories)
         return
 
-    log_training = open(os.path.join(args.root_log, '%s.csv' % args.store_name), 'w')
+    log_training = open(os.path.join(args.root_log, '%s.csv' % args.store_name), 'a')
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_steps)
 
@@ -157,6 +157,7 @@ def main():
                 'state_dict': model.state_dict(),
                 'best_prec1': best_prec1,
             }, is_best)
+    log_training.close()
 
 
 def train(train_loader, model, criterion, optimizer, epoch, log):

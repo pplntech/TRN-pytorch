@@ -135,7 +135,7 @@ class TSNDataSet(data.Dataset):
             p = int(seg_ind)
             for i in range(self.new_length):
                 if self.file_type == 'h5':
-                    seg_imgs = Image.open(io.BytesIO(input_h5['jpegs'][p])).convert('RGB')
+                    seg_imgs = [Image.open(io.BytesIO(input_h5['jpegs'][p])).convert('RGB')]
                 else:
                     seg_imgs = self._load_image(record.path, p)
                 images.extend(seg_imgs)
