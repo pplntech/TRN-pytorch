@@ -68,8 +68,8 @@ def main():
     files = [os.path.join(input_frame_dir, f) for f in files if not f.startswith('.') and f.lower().endswith(img_ext.lower())]
     files = sorted(files)
 
-    print (str(videoname))
-    asdf
+    # print (str(videoname))
+    # asdf
     dset = outfile.create_dataset(str(videoname), (len(files),), 
       maxshape=(len(files),), chunks=True, dtype=dt)
 
