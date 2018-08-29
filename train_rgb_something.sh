@@ -52,22 +52,22 @@ python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2
 v09 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+--result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume
 
 v10 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v10_MemNNQueryNN_2hops_concat_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+--result_path /raid/users/km/SthSth/Experiments/TRN/v10_MemNNQueryNN_2hops_concat_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume
 
 v11 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 1024 --query_dim 256 --query_update_method sum --hop_method iterative --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v11_MemNNQueryNN_2hops_sum_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+--result_path /raid/users/km/SthSth/Experiments/TRN/v11_MemNNQueryNN_2hops_sum_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume
 
-v12 on DGX
+v12 on DGX # TEMP version, addWhenQueryUpdating
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 256(must be same with query_dim) --query_dim 256 --num_segments 8 --hop 1 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v12_MemNNQueryNN_1hop_1CNN_queryupdateTEMP/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+--result_path /raid/users/km/SthSth/Experiments/TRN/v12_MemNNQueryNN_1hop_1CNN_queryupdateTEMP/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume
 
 
 
@@ -85,3 +85,6 @@ python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus 0 --r
 python visualize_attention_score_HTML.py --img_root=/media/kyungmin/ThirdDisk1/VideoDataset/20bn-something-something-v1/ \
  --result_root=/media/kyungmin/ThirdDisk1/VideoDataset/Experiments/v07_MemNNQueryNN_2hops_2CNNs/ \
  --epoch=55 --category_path=/media/kyungmin/ThirdDisk1/VideoDataset/category_something-something-v1.txt --prefix={:05d}.jpg
+
+ # create h5 files
+ 

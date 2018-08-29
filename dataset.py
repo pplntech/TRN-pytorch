@@ -135,9 +135,12 @@ class TSNDataSet(data.Dataset):
             p = int(seg_ind)
             for i in range(self.new_length):
                 if self.file_type == 'h5':
-                    seg_imgs = [Image.open(io.BytesIO(input_h5['jpegs'][p])).convert('RGB')]
+                    # n5 save data from idx 0 !
+                    # so, [0] stores information of 000001.jpg
+                    seg_imgs = [Image.open(io.BytesIO(input_h5['jpegs'][p-1])).convert('RGB')]
                 else:
                     seg_imgs = self._load_image(record.path, p)
+
                 images.extend(seg_imgs)
                 if p < record.num_frames:
                     p += 1
@@ -148,23 +151,6 @@ class TSNDataSet(data.Dataset):
 
         process_data = self.transform(images)
         return process_data, record.label, record.path, indices
-
-
-    '''
-    def get(self, record, indices):
-
-        images = list()
-        for seg_ind in indices:
-            p = int(seg_ind)
-            for i in range(self.new_length):
-                seg_imgs = self._load_image(record.path, p)
-                images.extend(seg_imgs)
-                if p < record.num_frames:
-                    p += 1
-
-        process_data = self.transform(images)
-        return process_data, record.label, record.path, indices
-    '''
 
     def __len__(self):
         return len(self.video_list)
