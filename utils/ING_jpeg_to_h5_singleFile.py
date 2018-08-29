@@ -73,7 +73,7 @@ def main():
     dset = outfile.create_dataset(str(videoname), (len(files),), 
       maxshape=(len(files),), chunks=True, dtype=dt)
 
-    for f_ind, f in enumerate(tqdm(files)):
+    for f_ind, f in enumerate(files):
       # read jpeg as binary and put into h5
       jpeg = open(f, 'rb')
       binary_data = jpeg.read()
