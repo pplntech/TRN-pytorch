@@ -146,7 +146,8 @@ def main():
 
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:
-            prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log=log_training)
+	        json_file_path = os.path.join(args.result_path, 'results_epoch%d.json'%(epoch + 1))
+            prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log=log_training, json_file=json_file_path, idx2class=categories)
 
             # remember best prec@1 and save checkpoint
             is_best = prec1 > best_prec1
