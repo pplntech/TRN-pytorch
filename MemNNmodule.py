@@ -41,11 +41,13 @@ class MemNNModule(torch.nn.Module):
         self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
         if self.hops >= 2:
-            if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+            if self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+            # if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
             # if self.query_update_method=='sum': self.QueryEmbedding2 = nn.Linear(self.channel, self.query_dim)
 
         if self.hops >= 3:
-            if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+            if self.query_update_method=='concat': self.query_embedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+            # if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
             # if self.query_update_method=='sum': self.QueryEmbedding3 = nn.Linear(self.channel, self.query_dim)
 
         self.classifier = self.fc_fusion()
@@ -84,7 +86,7 @@ class MemNNModule(torch.nn.Module):
                 QueryEmbedding = self.query_embedding1
             if self.query_update_method=='concat':
                 updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
-                QueryEmbedding = self.QueryEmbedding2
+                QueryEmbedding = self.query_embedding2
 
             retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, self.KeyEmbedding1, self.ValueEmbedding1, QueryEmbedding)
             accumulated_output.append(retrieved_value2)
@@ -96,7 +98,7 @@ class MemNNModule(torch.nn.Module):
                 QueryEmbedding = self.query_embedding1
             if self.query_update_method=='concat':
                 updated_query_value3 = torch.cat(updated_query_value2, retrieved_value2, dim=1)
-                QueryEmbedding = self.QueryEmbedding3
+                QueryEmbedding = self.query_embedding3
             
             retrieved_value3, p3 = self.hop(memory_input, updated_query_value3, self.KeyEmbedding1, self.ValueEmbedding1, QueryEmbedding)
             accumulated_output.append(retrieved_value3)
