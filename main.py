@@ -228,7 +228,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
             print(output)
             log.write(output + '\n')
             log.flush()
-        break
+        # break
 
 
 
@@ -306,7 +306,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
             if log is not None:
                 log.write(output + '\n')
                 log.flush()
-        break
+        # break
 
     output = ('Testing Results: Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f} Loss {loss.avg:.5f}'
           .format(top1=top1, top5=top5, loss=losses))
