@@ -49,7 +49,7 @@ class TSNDataSet(data.Dataset):
 
         if self.file_type == 'h5':
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
-            input_h5 = h5py.File(input_h5file, 'r')
+            self.input_h5 = h5py.File(input_h5file, 'r')
 
     def _load_image(self, directory, idx):
         if self.modality == 'RGB' or self.modality == 'RGBDiff':
@@ -136,7 +136,7 @@ class TSNDataSet(data.Dataset):
                 if self.file_type == 'h5':
                     # n5 save data from idx 0 !
                     # so, [0] stores information of 000001.jpg
-                    seg_imgs = [Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')]
+                    seg_imgs = [Image.open(io.BytesIO(self.input_h5[str(record.path)][p-1])).convert('RGB')]
                     print (record.path, type(record.path))
                     print (seg_imgs)
                     asdf
@@ -147,8 +147,8 @@ class TSNDataSet(data.Dataset):
                 if p < record.num_frames:
                     p += 1
 
-        if self.file_type == 'h5':
-            input_h5.close()
+        # if self.file_type == 'h5':
+        #     input_h5.close()
 
 
         process_data = self.transform(images)
