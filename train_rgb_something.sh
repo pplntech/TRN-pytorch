@@ -87,4 +87,4 @@ python visualize_attention_score_HTML.py --img_root=/media/kyungmin/ThirdDisk1/V
  --epoch=55 --category_path=/media/kyungmin/ThirdDisk1/VideoDataset/category_something-something-v1.txt --prefix={:05d}.jpg
 
  # create h5 files
- 
+ python utils/jpeg_to_h5_singleFile.py -t /raid/km/SthSth/20bn-something-something-v1-hdf5 -i /raid/km/SthSth/20bn-something-something-v1/ -e jpg -j 20
