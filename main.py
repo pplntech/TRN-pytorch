@@ -228,12 +228,12 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
             print(output)
             log.write(output + '\n')
             log.flush()
-        # break
+        break
 
 
 
 def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2class=None):
-    if json_file is not None:
+    if json_file is not None and args.consensus_type in ['MemNN']:
         dicts = {}
         for idx, classstr in enumerate(idx2class):
             dicts[str(idx)] = []
@@ -249,7 +249,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
 
     end = time.time()
     for i, (input, target, ids, indices) in enumerate(val_loader):
-        if json_file is not None:
+        if json_file is not None and args.consensus_type in ['MemNN']:
             bs = indices.size()[0]
             ids_list = [int(x) for x in ids]
             target_list = target.numpy().tolist()
@@ -260,7 +260,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         target_var = torch.autograd.Variable(target, volatile=True)
 
         # compute output
-        if json_file is not None:
+        if json_file is not None and args.consensus_type in ['MemNN']:
             output, attentions = model(input_var, eval=True)
         else:
             # print (input_var)
@@ -269,7 +269,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1,5))
-        if json_file is not None:
+        if json_file is not None and args.consensus_type in ['MemNN']:
             _, pred = output.topk(1, 1, True, True)
             pred = pred.t()
             pred = pred.cpu().data.numpy().tolist()[0]
@@ -282,7 +282,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if json_file is not None:
+        if json_file is not None and args.consensus_type in ['MemNN']:
             for each_bs in range(bs):
                 each_dict = {}
                 each_dict['id'] = ids_list[each_bs]
@@ -306,6 +306,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
             if log is not None:
                 log.write(output + '\n')
                 log.flush()
+        break
 
     output = ('Testing Results: Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f} Loss {loss.avg:.5f}'
           .format(top1=top1, top5=top5, loss=losses))
@@ -316,7 +317,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         log.write(output + ' ' + output_best + '\n')
         log.flush()
 
-    if json_file is not None:
+    if json_file is not None and args.consensus_type in ['MemNN']:
         with open(json_file, 'w') as f:
             json.dump(dicts,f)
 

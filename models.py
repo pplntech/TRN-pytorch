@@ -281,7 +281,7 @@ class TSN(nn.Module):
             output = self.consensus(base_out)
 
 
-        if eval:
+        if eval and self.consensus_type in ['MemNN']:
             return output.squeeze(1), attentions
         else:
             return output.squeeze(1)
