@@ -29,6 +29,7 @@ DGX
 	v06(80, single hop)
 	v07(80, 2 hops, 2 CNNs)
 	v08(80, 2 hops, 1 CNN)
+	--------------vv valid vv--------------
 	v09(30, single hop, 1 CNN)
 	v10(30, 2 hops, parallel, concat, 1 CNN)
 	v11(30, 2 hops, parallel, sum, 1 CNN)
@@ -37,6 +38,10 @@ DGX
 Mine
 	v01
 	v02
+
+V05 on Ciplabthree (Sth-v2)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1 2 --root_path /hdd2/km/SthSth/ \
+--num_segments 8 --hop 1 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v05_twoCNNs --workers 100
 
 V06 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
@@ -54,6 +59,11 @@ v09 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume ? 
+
+V09 on Ciplabthree (Sth-v2, h5)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 90 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5
 
 v10 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \

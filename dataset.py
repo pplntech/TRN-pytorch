@@ -5,6 +5,7 @@ import os
 import os.path
 import numpy as np
 from numpy.random import randint
+import h5py
 
 class VideoRecord(object):
     def __init__(self, row):
