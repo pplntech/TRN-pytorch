@@ -21,7 +21,9 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1
 
 # Experiments (batch_size)
 Ciplabthree
+	v00onV2(256, MultiScaleTRN)
 	v05onV2(39)
+	v09onV2(81)
 DGX
 	v03(128)
 	v04(128)
@@ -34,10 +36,16 @@ DGX
 	v10(30, 2 hops, parallel, concat, 1 CNN)
 	v11(30, 2 hops, parallel, sum, 1 CNN)
 	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN)
-	v13(30, single hop, 1 CNN, no_clip_gradients)
+	v13(30, single hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients
 Mine
 	v01
 	v02
+
+V00 on Ciplabthree (Sth-v2)
+python main.py somethingv2 RGB --consensus_type TRNmultiscale --batch-size 90 --gpus 0 1 2 --root_path /hdd2/km/SthSth/ \
+--img_feature_dim 256 --num_segments 8 --hop 1 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v00_MulitScaleTRN --workers 100 --num_CNNs 1 --epochs 200 --file_type h5\
+
 
 V05 on Ciplabthree (Sth-v2)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1 2 --root_path /hdd2/km/SthSth/ \
@@ -61,7 +69,7 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --result_path /raid/users/km/SthSth/Experiments/TRN/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume ? 
 
 V09 on Ciplabthree (Sth-v2, h5)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 90 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 81 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5
 
