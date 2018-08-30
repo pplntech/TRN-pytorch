@@ -44,6 +44,8 @@ parser.add_argument('--weight-decay', '--wd', default=5e-4, type=float,
                     metavar='W', help='weight decay (default: 5e-4)')
 parser.add_argument('--clip-gradient', '--gd', default=20, type=float,
                     metavar='W', help='gradient norm clipping (default: disabled)')
+parser.add_argument('--no_clip', action='store_true', help='If true, not clipping gradients.')    ##### newly added #####
+parser.set_defaults(no_clip=False)    ##### newly added #####
 parser.add_argument('--no_partialbn', '--npb', default=False, action="store_true")
 
 # ========================= Monitor Configs ==========================
