@@ -37,37 +37,37 @@ DGX
 	v11(30, 2 hops, iterative, sum, 1 CNN)
 	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN)
 	v13(30, single hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients
-	v14(30, 2 hops, parallel, 1 CNN)
+	v14(30, 2 hops, parallel, 1 CNN) # compare with v10
 Mine
 	v01
 	v02
 
 
 Ciplabthree
-V00 on Ciplabthree (Sth-v2)
+v00 on Ciplabthree (Sth-v2)
 python main.py somethingv2 RGB --consensus_type TRNmultiscale --batch-size 81 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
 --img_feature_dim 256 --num_segments 8 --hop 1 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v00_MulitScaleTRN --workers 20 --num_CNNs 1 --epochs 200 --file_type h5
 
-V05 on Ciplabthree (Sth-v2)
+v05 on Ciplabthree (Sth-v2)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1 2 --root_path /hdd2/km/SthSth/ \
 --num_segments 8 --hop 1 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v05_twoCNNs --workers 20
 
-V09 on Ciplabthree (Sth-v2, h5)
+v09 on Ciplabthree (Sth-v2, h5)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 81 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5
 
 DGX
-V06 on DGX
+v06 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 1 --result_path /raid/users/km/SthSth/Experiments/TRN/v06_simulatingTRN_byMemNN_num_seg8/ --workers 20
 
-V07 on DGX
+v07 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v07_MemNNQueryNN_2hops/ --workers 20
 
-V08 on DGX
+v08 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 2 3 --root_path /raid/users/km/SthSth/ \
 --num_segments 8 --hop 2 --result_path /raid/users/km/SthSth/Experiments/TRN/v08_MemNNQueryNN_2hops_1CNN/ --workers 20 --num_CNNs 1
 
@@ -98,9 +98,8 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 
 v14 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
---key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v10_MemNNQueryNN_2hops_concat_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --resume ? 
-
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v14_MemNNQueryNN_2hops_concat_parallel_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
 
 
 

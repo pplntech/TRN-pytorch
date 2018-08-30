@@ -217,7 +217,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
         end = time.time()
 
         if i % args.print_freq == 0:
-            output = ('Epoch: [{0}][{1}/{2}], lr: {lr:.5f}\t'
+            output = ('Epoch: [{0}][{1}/{2}], lr: {lr:.8f}\t'
                     'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                     'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                     'Loss {loss.val:.4f} ({loss.avg:.4f})\t'

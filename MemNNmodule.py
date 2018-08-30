@@ -92,48 +92,48 @@ class MemNNModule(torch.nn.Module):
         attentions.append(p1.cpu())
 
         if self.hops >= 2:
-        	if self.hop_method=='iterative':
-        		KeyEmbedding = self.KeyEmbedding1
-        		ValueEmbedding = self.ValueEmbedding1
+            if self.hop_method=='iterative':
+                KeyEmbedding = self.KeyEmbedding1
+                ValueEmbedding = self.ValueEmbedding1
 
-	            if self.query_update_method=='sum':
-	                updated_query_value2 = query_value + retrieved_value1 # (bs, 1024), (bs, value_dim)
-	                QueryEmbedding = self.query_embedding1
+                if self.query_update_method=='sum':
+                    updated_query_value2 = query_value + retrieved_value1 # (bs, 1024), (bs, value_dim)
+                    QueryEmbedding = self.query_embedding1
 
-	            if self.query_update_method=='concat':
-	                updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
-	                QueryEmbedding = self.query_embedding2
+                if self.query_update_method=='concat':
+                    updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
+                    QueryEmbedding = self.query_embedding2
 
-        	elif self.hop_method=='parallel':
-        		KeyEmbedding = self.KeyEmbedding2
-        		ValueEmbedding = self.ValueEmbedding2
+            elif self.hop_method=='parallel':
+                KeyEmbedding = self.KeyEmbedding2
+                ValueEmbedding = self.ValueEmbedding2
 
-        		updated_query_value2 = query_value
-        		QueryEmbedding = self.query_embedding2
+                updated_query_value2 = query_value
+                QueryEmbedding = self.query_embedding2
 
             retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, KeyEmbedding, ValueEmbedding, QueryEmbedding)
             accumulated_output.append(retrieved_value2)
             attentions.append(p2.cpu())
 
         if self.hops >= 3:
-        	if self.hop_method=='iterative':
-        		KeyEmbedding = self.KeyEmbedding1
-        		ValueEmbedding = self.ValueEmbedding1
+            if self.hop_method=='iterative':
+                KeyEmbedding = self.KeyEmbedding1
+                ValueEmbedding = self.ValueEmbedding1
 
-	            if self.query_update_method=='sum':
-	                updated_query_value3 = updated_query_value2 + retrieved_value2
-	                QueryEmbedding = self.query_embedding1
+                if self.query_update_method=='sum':
+                    updated_query_value3 = updated_query_value2 + retrieved_value2
+                    QueryEmbedding = self.query_embedding1
 
-	            if self.query_update_method=='concat':
-	                updated_query_value3 = torch.cat(updated_query_value2, retrieved_value2, dim=1)
-	                QueryEmbedding = self.query_embedding3
-	                
-        	elif self.hop_method=='parallel':
-        		KeyEmbedding = self.KeyEmbedding3
-        		ValueEmbedding = self.ValueEmbedding3
+                if self.query_update_method=='concat':
+                    updated_query_value3 = torch.cat(updated_query_value2, retrieved_value2, dim=1)
+                    QueryEmbedding = self.query_embedding3
+                    
+            elif self.hop_method=='parallel':
+                KeyEmbedding = self.KeyEmbedding3
+                ValueEmbedding = self.ValueEmbedding3
 
-        		updated_query_value3 = query_value
-        		QueryEmbedding = self.query_embedding3
+                updated_query_value3 = query_value
+                QueryEmbedding = self.query_embedding3
 
             retrieved_value3, p3 = self.hop(memory_input, updated_query_value3, KeyEmbedding, ValueEmbedding, QueryEmbedding)
             accumulated_output.append(retrieved_value3)
