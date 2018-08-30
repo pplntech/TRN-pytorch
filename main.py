@@ -203,6 +203,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
         loss.backward()
 
+        # Clips gradient norm of an iterable of parameters.
         # if args.clip_gradient is not None:
         if not args.no_clip:
             total_norm = clip_grad_norm(model.parameters(), args.clip_gradient)
