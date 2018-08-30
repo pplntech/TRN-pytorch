@@ -140,7 +140,7 @@ class TSNDataSet(data.Dataset):
                     # n5 save data from idx 0 !
                     # so, [0] stores information of 000001.jpg
                     # print (record.path, type(record.path)) # 190641 <class 'str'>
-                    print (Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB'))
+                    print (np.array(Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')))
                     seg_imgs = [Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')]
                     asdf
                 else:
