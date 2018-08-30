@@ -35,9 +35,12 @@ DGX
 	v09(30, single hop, 1 CNN)
 	v10(30, 2 hops, iterative, concat, 1 CNN)
 	v11(30, 2 hops, iterative, sum, 1 CNN)
-	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN)
-	v13(30, single hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients
-	v14(30, 2 hops, parallel, 1 CNN) # compare with v10
+	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN) # just for testing
+	v13(30, single hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients # JUST for testing
+	v14(30, 2 hops, parallel, 1 CNN) # compare with v09,10
+	v15(30, 3 hops, parallel, 1 CNN) # compare with v09,10
+	v16(30, 3 hops, iterative, concat, 1 CNN) # compare with v09,10
+	v17(30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11
 Mine
 	v01
 	v02
@@ -99,7 +102,22 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 v14 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v14_MemNNQueryNN_2hops_concat_parallel_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+--result_path /raid/users/km/SthSth/Experiments/TRN/v14_MemNNQueryNN_2hops_parallel_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+
+v15 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v15_MemNNQueryNN_3hops_parallel_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+
+v16 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v16_MemNNQueryNN_3hops_concat_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
+
+v17 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 1024 --query_dim 256 --query_update_method sum --hop_method iterative --num_segments 8 --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v17_MemNNQueryNN_3hops_sum_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
 
 
 

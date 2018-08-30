@@ -125,7 +125,7 @@ class MemNNModule(torch.nn.Module):
                     QueryEmbedding = self.query_embedding1
 
                 if self.query_update_method=='concat':
-                    updated_query_value3 = torch.cat(updated_query_value2, retrieved_value2, dim=1)
+                    updated_query_value3 = torch.cat((updated_query_value2, retrieved_value2), dim=1)
                     QueryEmbedding = self.query_embedding3
                     
             elif self.hop_method=='parallel':
