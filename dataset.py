@@ -49,8 +49,6 @@ class TSNDataSet(data.Dataset):
         if self.file_type == 'h5':
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
             input_h5 = h5py.File(input_h5file, 'r')
-            print (input_h5file)
-            asdf
 
     def _load_image(self, directory, idx):
         if self.modality == 'RGB' or self.modality == 'RGBDiff':
