@@ -16,11 +16,13 @@ from transforms import *
 from opts import parser
 import datasets_video
 
+from tensorboardX import SummaryWriter
+
 
 best_prec1 = 0
 
 def main():
-    global args, best_prec1
+    global args, best_prec1, num_train_dataset, num_val_dataset, writer
     args = parser.parse_args()
     _fill_in_None_args()
     _join_result_path()
@@ -87,22 +89,21 @@ def main():
     elif args.modality in ['Flow', 'RGBDiff']:
         data_length = 5
 
-    train_loader = torch.utils.data.DataLoader(
-        TSNDataSet(args.root_path, args.train_list, args.file_type, num_segments=args.num_segments,
-                   new_length=data_length,
-                   modality=args.modality,
-                   image_tmpl=prefix,
-                   transform=torchvision.transforms.Compose([
-                       train_augmentation, # GroupMultiScaleCrop[1, .875, .75, .66] AND GroupRandomHorizontalFlip
-                       Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
-                       ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
-                       normalize, # GroupNormalize
-                   ])),
+    train_data = TSNDataSet(args.root_path, args.train_list, args.file_type, num_segments=args.num_segments,
+                       new_length=data_length,
+                       modality=args.modality,
+                       image_tmpl=prefix,
+                       transform=torchvision.transforms.Compose([
+                           train_augmentation, # GroupMultiScaleCrop[1, .875, .75, .66] AND GroupRandomHorizontalFlip
+                           Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
+                           ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
+                           normalize, # GroupNormalize
+                       ]))
+    train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True)
 
-    val_loader = torch.utils.data.DataLoader(
-        TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
+    val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
                    modality=args.modality,
                    image_tmpl=prefix,
@@ -113,9 +114,17 @@ def main():
                        Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
                        ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
                        normalize,
-                   ])),
+                   ]))
+    val_loader = torch.utils.data.DataLoader(val_data,
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
+    num_train_dataset = len(train_data)
+    num_val_dataset = len(val_data)
+
+    # print (num_train_dataset, num_val_dataset)
+    # print (len(train_loader), len(val_loader))
+    # asdf
+    
 
     # define loss function (criterion) and optimizer
     if args.loss_type == 'nll':
@@ -137,6 +146,8 @@ def main():
         validate(val_loader, model, criterion, 0, json_file=json_file_path, idx2class=categories)
         return
 
+
+    writer = SummaryWriter(args.result_path)
     log_training = open(os.path.join(args.root_log, '%s.csv' % args.store_name), 'a')
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_steps)
@@ -147,7 +158,8 @@ def main():
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:
             json_file_path = os.path.join(args.result_path, 'results_epoch%d.json'%(epoch + 1))
-            prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log=log_training, json_file=json_file_path, idx2class=categories)
+            # prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log=log_training, json_file=json_file_path, idx2class=categories)
+            prec1 = validate(val_loader, model, criterion, (epoch + 1) * num_train_dataset, log=log_training, json_file=json_file_path, idx2class=categories)
 
             # remember best prec@1 and save checkpoint
             is_best = prec1 > best_prec1
@@ -159,9 +171,13 @@ def main():
                 'best_prec1': best_prec1,
             }, is_best)
     log_training.close()
+    writer.close()
+
 
 
 def train(train_loader, model, criterion, optimizer, epoch, log):
+    # num_iter = epoch * (num_train_dataset)
+
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -178,6 +194,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
     end = time.time()
     for i, (input, target, ids, indices) in enumerate(train_loader):
+        # num_iter += input.size(0)
         # measure data loading time
         # print (input.size()) # [72, 6, 224, 224]
         # asdf
@@ -228,7 +245,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
             print(output)
             log.write(output + '\n')
             log.flush()
-        break
+        # break
 
     # final print
     output = ('**Sum Up**, lr: {lr:.8f}\t'
@@ -241,6 +258,11 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
     print(output)
     log.write(output + '\n')
     log.flush()
+
+    num_iter = (epoch + 1) * (num_train_dataset)
+    writer.add_scalar('train_loss', float(losses.avg), num_iter)
+    writer.add_scalar('train_acc_top1', float(top1.avg), num_iter)
+
 
 
 
@@ -332,6 +354,9 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
     if json_file is not None and args.consensus_type in ['MemNN']:
         with open(json_file, 'w') as f:
             json.dump(dicts,f)
+
+    writer.add_scalar('val_loss', float(losses.avg), iter)
+    writer.add_scalar('val_acc_top1', float(top1.avg), iter)
 
     return top1.avg
 
