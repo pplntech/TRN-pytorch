@@ -228,10 +228,10 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
             print(output)
             log.write(output + '\n')
             log.flush()
-        # break
+        break
 
     # final print
-    output = ('Sum Up, lr: {lr:.8f}\t'
+    output = ('**Sum Up**, lr: {lr:.8f}\t'
             'Total Time {batch_time.sum:.3f} ({batch_time.avg:.3f})\t'
             'Total Data Load Time {data_time.sum:.3f} ({data_time.avg:.3f})\t'
             'Loss  ({loss.avg:.4f})\t'
