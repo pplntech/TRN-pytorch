@@ -230,6 +230,18 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
             log.flush()
         # break
 
+    # final print
+    output = ('Sum Up, lr: {lr:.8f}\t'
+            'Total Time {batch_time.sum:.3f} ({batch_time.avg:.3f})\t'
+            'Total Data Load Time {data_time.sum:.3f} ({data_time.avg:.3f})\t'
+            'Loss  ({loss.avg:.4f})\t'
+            'Prec@1  ({top1.avg:.3f})\t'
+            'Prec@5  ({top5.avg:.3f})'.format(batch_time=batch_time,
+                data_time=data_time, loss=losses, top1=top1, top5=top5, lr=optimizer.param_groups[-1]['lr']))
+    print(output)
+    log.write(output + '\n')
+    log.flush()
+
 
 
 def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2class=None):

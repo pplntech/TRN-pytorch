@@ -35,7 +35,7 @@ DGX
 	v09(30, single hop, 1 CNN)
 	v10(30, 2 hops, iterative, concat, 1 CNN)
 	v11(30, 2 hops, iterative, sum, 1 CNN)
-	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN) # just for testing
+	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN) # compare with v9! # just for testing
 	v13(30, single hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients # JUST for testing
 	v14(30, 2 hops, parallel, 1 CNN) # compare with v09,10
 	v15(30, 3 hops, parallel, 1 CNN) # compare with v09,10
