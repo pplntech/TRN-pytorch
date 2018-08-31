@@ -40,12 +40,14 @@ class MemNNModule(torch.nn.Module):
 
         if self.hops >= 2:
             if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+            if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
             # if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
             # if self.query_update_method=='sum': self.QueryEmbedding2 = nn.Linear(self.channel, self.query_dim)
             if self.hop_method=='parallel': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
 
         if self.hops >= 3:
             if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+            if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
             # if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
             # if self.query_update_method=='sum': self.QueryEmbedding3 = nn.Linear(self.channel, self.query_dim)
             if self.hop_method=='parallel': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
@@ -66,7 +68,8 @@ class MemNNModule(torch.nn.Module):
     def fc_fusion(self):
         nums = self.hops
         input_dim = (nums * self.value_dim)
-        num_bottleneck = input_dim // 2 # originally, 512
+        num_bottleneck = 512
+        # num_bottleneck = input_dim // 2 # originally, 512
 
         classifier = nn.Sequential(
                 nn.ReLU(),
@@ -98,7 +101,8 @@ class MemNNModule(torch.nn.Module):
 
                 if self.query_update_method=='sum':
                     updated_query_value2 = query_value + retrieved_value1 # (bs, 1024), (bs, value_dim)
-                    QueryEmbedding = self.query_embedding1
+                    QueryEmbedding = self.query_embedding2
+                    # QueryEmbedding = self.query_embedding1
 
                 if self.query_update_method=='concat':
                     updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
@@ -122,7 +126,8 @@ class MemNNModule(torch.nn.Module):
 
                 if self.query_update_method=='sum':
                     updated_query_value3 = updated_query_value2 + retrieved_value2
-                    QueryEmbedding = self.query_embedding1
+                    QueryEmbedding = self.query_embedding3
+                    # QueryEmbedding = self.query_embedding1
 
                 if self.query_update_method=='concat':
                     updated_query_value3 = torch.cat((updated_query_value2, retrieved_value2), dim=1)

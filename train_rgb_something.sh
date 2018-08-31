@@ -25,25 +25,25 @@ Ciplabthree
 	v05onV2(39)
 	v09onV2(81)
 DGX
-	v03(128)
-	v04(128)
-	v05(80)
-	v06(80, single hop)
-	v07(80, 2 hops, 2 CNNs)
-	v08(80, 2 hops, 1 CNN)
+	v03 (128, MemNN, 3 hops, 1 CNN, out, FAILED)
+	v04 (128, TRN, num_seg 7, 31.748)
+	v05 (80, MemNN, 1 hop, 2 CNNs, out+query, 20.040)
+	v06 (80, single hop, JUST for testing, SIMULATING v04 by memNN)
+	v07 (80, 2 hops, 2 CNNs, out+query)
+	v08 (80, 2 hops, 1 CNN, out+query)
 	--------------vv valid vv--------------
-	v09(30, single hop, 1 CNN)
-	v10(30, 2 hops, iterative, concat, 1 CNN)
-	v11(30, 2 hops, iterative, sum, 1 CNN)
-	v12(30, single hop, addWhenQueryUpdating, value256, 1 CNN) # compare with v9! # just for testing
-	v13(30, single hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients # JUST for testing
-	v14(30, 2 hops, parallel, 1 CNN) # compare with v09,10
-	v15(30, 3 hops, parallel, 1 CNN) # compare with v09,10
-	v16(30, 3 hops, iterative, concat, 1 CNN) # compare with v09,10
-	v17(30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11
+	v09 (30, 1 hop, 1 CNN)
+	v10 (30, 2 hops, iterative, concat, 1 CNN)
+	v11 (30, 2 hops, iterative, sum, 1 CNN)
+	# v12 (30, 1 hop, addWhenQueryUpdating, value256, 1 CNN) # compare with v9! # JUST for testing
+	# v13 (30, 1 hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients # JUST for testing
+	v14 (30, 2 hops, parallel, 1 CNN) # compare with v09,10
+	v15 (30, 3 hops, parallel, 1 CNN) # compare with v09,10
+	v16 (30, 3 hops, iterative, concat, 1 CNN) # compare with v09,10
+	v17 (30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11
 Mine
-	v01
-	v02
+	v01 (TRN, num_seg 2, 21.863)
+	v02 (MemNN, 1 hop, 1CNN, out+query_emb, 19.997)
 
 
 Ciplabthree
@@ -137,3 +137,6 @@ python visualize_attention_score_HTML.py --img_root=/media/kyungmin/ThirdDisk1/V
 
  # create h5 files
  python utils/jpeg_to_h5_singleFile.py -t /raid/km/SthSth/20bn-something-something-v1-hdf5 -i /raid/km/SthSth/20bn-something-something-v1/ -e jpg -j 20
+
+ # csv to tensorboard
+ python utils/csv_to_tensorboard.py --result_path /hdd3/VideoDataset/Experiments/v09_MemNNQueryNN_1hop_1CNN/ -n 86017 -v 1 --train_parser [2860/2868] --val_parser [380/385
