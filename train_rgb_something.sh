@@ -32,16 +32,20 @@ DGX
 	v07 (80, 2 hops, 2 CNNs, out+query)
 	v08 (80, 2 hops, 1 CNN, out+query)
 	--------------vv valid vv--------------
-	v09 (30, 1 hop, 1 CNN)
-	v10 (30, 2 hops, iterative, concat, 1 CNN)
+	v09 (30, 1 hop, 1 CNN) && v19 (30, 1 hop, 1 CNN) # same with v09 except for optimizer(Adam) and lr(0.01)
+	v10 (30, 2 hops, iterative, concat, 1 CNN) && v20 (30, 2 hops, iterative, concat, 1 CNN) # same with v10 except for optimizer(Adam) and lr(0.01)
 	v11 (30, 2 hops, iterative, sum, 1 CNN)
 	# v12 (30, 1 hop, addWhenQueryUpdating, value256, 1 CNN) # compare with v9! # JUST for testing
 	# v13 (30, 1 hop, 1 CNN, no_clip_gradients) # same as v9 except for existence of clip_gradients # JUST for testing
-	v14 (30, 2 hops, parallel, 1 CNN) # compare with v09,10
+	v14 (30, 2 hops, parallel, 1 CNN) && v21 (30, 2 hops, parallel, 1 CNN) # same with v14 except for optimizer(Adam) and lr(0.01) [# compare with v09,10]
 	v15 (30, 3 hops, parallel, 1 CNN) # compare with v09,10
 	v16 (30, 3 hops, iterative, concat, 1 CNN) # compare with v09,10
 	# v17 (30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11, Failed
 	v18 (30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11, multiple query embedding
+	--------------vv valid vv--------------
+	
+	
+	
 Mine
 	v01 (TRN, num_seg 2, 21.863)
 	v02 (MemNN, 1 hop, 1CNN, out+query_emb, 19.997)
@@ -115,11 +119,25 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v16_MemNNQueryNN_3hops_concat_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
 
-v17 on DGX
+v17/v18 on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 1024 --query_dim 256 --query_update_method sum --hop_method iterative --num_segments 8 --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v17_MemNNQueryNN_3hops_sum_iter_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg
 
+v19 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v19_MemNNQueryNN_1hop_1CNN_v09/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.01
+
+v20 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.01
+
+v21 on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.01
 
 
 ########################### TEST ########################### ()

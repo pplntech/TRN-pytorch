@@ -28,6 +28,8 @@ parser.add_argument('--hop_method', type=str, default="iterative", choices=['par
 parser.add_argument('--num_CNNs', default=1, type=int, help="number of CNNs to use")
 parser.add_argument('--no_softmax_on_p', action='store_true', help='If true, not use softmax layer calculating p.')    ##### newly added #####
 parser.set_defaults(no_softmax_on_p=False)    ##### newly added #####
+parser.add_argument('--sorting', action='store_true', help='If true, sort multihop results')    ##### newly added #####
+parser.set_defaults(sorting=False)    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',
