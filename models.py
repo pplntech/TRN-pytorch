@@ -231,10 +231,15 @@ class TSN(nn.Module):
             elif len(m._modules) == 0:
                 if len(list(m.parameters())) > 0:
                     raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
+        if self.consensus_type in ['MemNN']:
+            cnn_lr_mul = 1
+        else:
+            cnn_lr_mul = 5
+
         return [
-            {'params': first_conv_weight, 'lr_mult': 5 if self.modality == 'Flow' else 1, 'decay_mult': 1,
+            {'params': first_conv_weight, 'lr_mult': cnn_lr_mul if self.modality == 'Flow' else 1, 'decay_mult': 1,
              'name': "first_conv_weight"},
-            {'params': first_conv_bias, 'lr_mult': 10 if self.modality == 'Flow' else 2, 'decay_mult': 0,
+            {'params': first_conv_bias, 'lr_mult': cnn_lr_mul * 2 if self.modality == 'Flow' else 2, 'decay_mult': 0,
              'name': "first_conv_bias"},
             {'params': normal_weight, 'lr_mult': 1, 'decay_mult': 1,
              'name': "normal_weight"},

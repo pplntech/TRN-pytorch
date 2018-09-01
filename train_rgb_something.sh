@@ -40,7 +40,8 @@ DGX
 	v14 (30, 2 hops, parallel, 1 CNN) # compare with v09,10
 	v15 (30, 3 hops, parallel, 1 CNN) # compare with v09,10
 	v16 (30, 3 hops, iterative, concat, 1 CNN) # compare with v09,10
-	v17 (30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11
+	# v17 (30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11, Failed
+	v18 (30, 3 hops, iterative, sum, 1 CNN) # compare with v09,11, multiple query embedding
 Mine
 	v01 (TRN, num_seg 2, 21.863)
 	v02 (MemNN, 1 hop, 1CNN, out+query_emb, 19.997)

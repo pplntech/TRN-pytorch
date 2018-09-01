@@ -136,10 +136,17 @@ def main():
         print(('group: {} has {} params, lr_mult: {}, decay_mult: {}'.format(
             group['name'], len(group['params']), group['lr_mult'], group['decay_mult'])))
 
-    optimizer = torch.optim.SGD(policies,
-                                args.lr,
-                                momentum=args.momentum,
-                                weight_decay=args.weight_decay)
+    if args.optimizer=='sgd':
+        optimizer = torch.optim.SGD(policies,
+                                    args.lr,
+                                    momentum=args.momentum,
+                                    weight_decay=args.weight_decay)
+    elif args.optimizer=='adam':
+        optimizer = torch.optim.Adam(policies, lr=args.lr, weight_decay=args.weight_decay)
+        # optimizer = torch.optim.SGD(policies,
+        #                             args.lr,
+        #                             momentum=args.momentum,
+        #                             weight_decay=args.weight_decay)
 
     if args.evaluate:
         json_file_path = os.path.join(args.result_path, 'results_epoch%d.json'%args.evaluation_epoch)

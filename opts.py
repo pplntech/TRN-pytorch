@@ -34,6 +34,7 @@ parser.add_argument('--epochs', default=120, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
+parser.add_argument('--optimizer', default='sgd', choices=['sgd', 'adam'], type=str)
 parser.add_argument('--lr', '--learning-rate', default=0.001, type=float,
                     metavar='LR', help='initial learning rate')
 parser.add_argument('--lr_steps', default=[50, 100, 150, 200], type=float, nargs="+",
