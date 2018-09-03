@@ -30,6 +30,8 @@ parser.add_argument('--no_softmax_on_p', action='store_true', help='If true, not
 parser.set_defaults(no_softmax_on_p=False)    ##### newly added #####
 parser.add_argument('--sorting', action='store_true', help='If true, sort multihop results')    ##### newly added #####
 parser.set_defaults(sorting=False)    ##### newly added #####
+parser.add_argument('--equal_policy', action='store_true', help='If true, use policy of equal learning rate')    ##### newly added #####
+parser.set_defaults(equal_policy=False)    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',

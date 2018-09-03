@@ -16,7 +16,7 @@ class TSN(nn.Module):
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False):
+                 num_CNNs=1, no_softmax_on_p=False, equal_policy=False):
 
         super(TSN, self).__init__()
         self.modality = modality
@@ -27,6 +27,8 @@ class TSN(nn.Module):
         self.crop_num = crop_num
         self.consensus_type = consensus_type
         self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
+        self.equal_policy = equal_policy
+
         if not before_softmax and consensus_type != 'avg':
             raise ValueError("Only avg consensus can be used after Softmax")
 
@@ -231,7 +233,8 @@ class TSN(nn.Module):
             elif len(m._modules) == 0:
                 if len(list(m.parameters())) > 0:
                     raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
-        if self.consensus_type in ['MemNN']:
+        # if self.consensus_type in ['MemNN']:
+        if self.equal_policy:
             cnn_lr_mul = 1
         else:
             cnn_lr_mul = 5
