@@ -15,7 +15,7 @@ class TSN(nn.Module):
                  base_model='resnet101', new_length=None,
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
-                 crop_num=1, partial_bn=True, print_spec=True, num_hop=1, hop_method=None, 
+                 crop_num=1, partial_bn=True, freezeBN=False, print_spec=True, num_hop=1, hop_method=None, 
                  num_CNNs=1, no_softmax_on_p=False, equal_policy=False):
 
         super(TSN, self).__init__()
@@ -28,6 +28,7 @@ class TSN(nn.Module):
         self.consensus_type = consensus_type
         self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
         self.equal_policy = equal_policy
+        self.freezeBN = freezeBN
 
         if not before_softmax and consensus_type != 'avg':
             raise ValueError("Only avg consensus can be used after Softmax")
@@ -186,6 +187,15 @@ class TSN(nn.Module):
                         # shutdown update in frozen mode
                         m.weight.requires_grad = False
                         m.bias.requires_grad = False
+        if self.freezeBN:
+            print("Freezing ALL BatchNorm2D in base_model.")
+            for m in self.base_model.modules():
+                if isinstance(m, nn.BatchNorm2d):
+                    m.eval()
+
+                    # shutdown update in frozen mode
+                    m.weight.requires_grad = False
+                    m.bias.requires_grad = False
 
 
     def partialBN(self, enable):
@@ -238,7 +248,7 @@ class TSN(nn.Module):
             cnn_lr_mul = 1
         else:
             cnn_lr_mul = 5
-
+        print ("CNN Learning Rate Multiplier : %d" % cnn_lr_mul)
         return [
             {'params': first_conv_weight, 'lr_mult': cnn_lr_mul if self.modality == 'Flow' else 1, 'decay_mult': 1,
              'name': "first_conv_weight"},

@@ -49,6 +49,7 @@ def main():
                 query_dim = args.query_dim,
                 query_update_method = args.query_update_method,
                 partial_bn = not args.no_partialbn,
+                freezeBN = args.freezeBN,
                 num_hop = args.hop,
                 hop_method = args.hop_method,
                 num_CNNs = args.num_CNNs,
