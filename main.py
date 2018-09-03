@@ -54,8 +54,8 @@ def main():
                 hop_method = args.hop_method,
                 num_CNNs = args.num_CNNs,
                 no_softmax_on_p = args.no_softmax_on_p,
-                equal_policy = args.equal_policy,
-                freezeBackbone = args.freezeBackbone
+                freezeBackbone = args.freezeBackbone,
+                freezeCustom = args.freezeCustom,
                 )
 
     crop_size = model.crop_size
