@@ -34,6 +34,8 @@ parser.add_argument('--equal_policy', action='store_true', help='If true, use po
 parser.set_defaults(equal_policy=False)    ##### newly added #####
 parser.add_argument('--freezeBN', action='store_true', help='If true, freezeBN')    ##### newly added #####
 parser.set_defaults(freezeBN=False)    ##### newly added #####
+parser.add_argument('--freezeBackbone', action='store_true', help='If true, freezeBackbone')    ##### newly added #####
+parser.set_defaults(freezeBackbone=False)    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',

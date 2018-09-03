@@ -16,7 +16,7 @@ class TSN(nn.Module):
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN=False, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False, equal_policy=False):
+                 num_CNNs=1, no_softmax_on_p=False, equal_policy=False, freezeBackbone=False):
 
         super(TSN, self).__init__()
         self.modality = modality
@@ -29,6 +29,7 @@ class TSN(nn.Module):
         self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
         self.equal_policy = equal_policy
         self.freezeBN = freezeBN
+        self.freezeBackbone = freezeBackbone
 
         if not before_softmax and consensus_type != 'avg':
             raise ValueError("Only avg consensus can be used after Softmax")
@@ -202,65 +203,120 @@ class TSN(nn.Module):
         self._enable_pbn = enable
 
     def get_optim_policies(self):
-        first_conv_weight = []
-        first_conv_bias = []
-        normal_weight = []
-        normal_bias = []
-        bn = []
+        if self.freezeBackbone is False:
+            first_conv_weight = []
+            first_conv_bias = []
+            normal_weight = []
+            normal_bias = []
+            bn = []
 
-        conv_cnt = 0
-        bn_cnt = 0
-        for name, m in self.named_modules():
-            # print (name, type(m))
-            if(name=='base_model'):
-                conv_cnt = 0
-                bn_cnt = 0
-            # print (name, m)
-            if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
-                ps = list(m.parameters())
-                conv_cnt += 1
-                if conv_cnt == 1:
-                    first_conv_weight.append(ps[0])
-                    if len(ps) == 2:
-                        first_conv_bias.append(ps[1])
-                else:
+            conv_cnt = 0
+            bn_cnt = 0
+            for name, m in self.named_modules():
+                # print (name, type(m))
+                if(name=='base_model'):
+                    conv_cnt = 0
+                    bn_cnt = 0
+                print (name, m)
+                if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
+                    ps = list(m.parameters())
+                    conv_cnt += 1
+                    if conv_cnt == 1:
+                        first_conv_weight.append(ps[0])
+                        if len(ps) == 2:
+                            first_conv_bias.append(ps[1])
+                    else:
+                        normal_weight.append(ps[0])
+                        if len(ps) == 2:
+                            normal_bias.append(ps[1])
+                elif isinstance(m, torch.nn.Linear):
+                    ps = list(m.parameters())
                     normal_weight.append(ps[0])
                     if len(ps) == 2:
                         normal_bias.append(ps[1])
-            elif isinstance(m, torch.nn.Linear):
-                ps = list(m.parameters())
-                normal_weight.append(ps[0])
-                if len(ps) == 2:
-                    normal_bias.append(ps[1])
 
-            elif isinstance(m, torch.nn.BatchNorm1d):
-                bn.extend(list(m.parameters()))
-            elif isinstance(m, torch.nn.BatchNorm2d):
-                bn_cnt += 1
-                # later BN's are frozen
-                if not self._enable_pbn or bn_cnt == 1:
+                elif isinstance(m, torch.nn.BatchNorm1d):
                     bn.extend(list(m.parameters()))
-            elif len(m._modules) == 0:
-                if len(list(m.parameters())) > 0:
-                    raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
-        # if self.consensus_type in ['MemNN']:
-        if self.equal_policy:
-            cnn_lr_mul = 1
-        else:
-            cnn_lr_mul = 5
-        print ("CNN Learning Rate Multiplier : %d" % cnn_lr_mul)
-        return [
-            {'params': first_conv_weight, 'lr_mult': cnn_lr_mul if self.modality == 'Flow' else 1, 'decay_mult': 1,
-             'name': "first_conv_weight"},
-            {'params': first_conv_bias, 'lr_mult': cnn_lr_mul * 2 if self.modality == 'Flow' else 2, 'decay_mult': 0,
-             'name': "first_conv_bias"},
-            {'params': normal_weight, 'lr_mult': 1, 'decay_mult': 1,
-             'name': "normal_weight"},
-            {'params': normal_bias, 'lr_mult': 2, 'decay_mult': 0,
-             'name': "normal_bias"},
-            {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
-             'name': "BN scale/shift"},
-        ]
+                elif isinstance(m, torch.nn.BatchNorm2d):
+                    bn_cnt += 1
+                    # later BN's are frozen
+                    if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
+                        bn.extend(list(m.parameters()))
+                elif len(m._modules) == 0:
+                    if len(list(m.parameters())) > 0:
+                        raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
+
+
+            # if self.consensus_type in ['MemNN']:
+            if self.equal_policy:
+                cnn_lr_mul = 1
+            else:
+                cnn_lr_mul = 5
+            print ("CNN Learning Rate Multiplier : %d" % cnn_lr_mul)
+            return [
+                {'params': first_conv_weight, 'lr_mult': cnn_lr_mul if self.modality == 'Flow' else 1, 'decay_mult': 1,
+                 'name': "first_conv_weight"},
+                {'params': first_conv_bias, 'lr_mult': cnn_lr_mul * 2 if self.modality == 'Flow' else 2, 'decay_mult': 0,
+                 'name': "first_conv_bias"},
+                {'params': normal_weight, 'lr_mult': 1, 'decay_mult': 1,
+                 'name': "normal_weight"},
+                {'params': normal_bias, 'lr_mult': 2, 'decay_mult': 0,
+                 'name': "normal_bias"},
+                {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
+                 'name': "BN scale/shift"},
+            ]
+        elif self.freezeBackbone:
+            normal_weight = []
+            normal_bias = []
+            bn = []
+            # normal_weight_name = []
+            # normal_bias_name = []
+            # bn_name = []
+
+            for name, m in self.named_modules():
+                # print (name, type(m))
+                if('consensus' in name):
+                    print (name, m)
+
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
+                        ps = list(m.parameters())
+                        normal_weight.append(ps[0])
+                        # normal_weight_name.append(name)
+                        if len(ps) == 2:
+                            normal_bias.append(ps[1])
+                            # normal_bias_name.append(name)
+                    elif isinstance(m, torch.nn.Linear):
+                        ps = list(m.parameters())
+                        normal_weight.append(ps[0])
+                        # normal_weight_name.append(name)
+                        if len(ps) == 2:
+                            normal_bias.append(ps[1])
+                            # normal_bias_name.append(name)
+
+                    elif isinstance(m, torch.nn.BatchNorm1d):
+                        bn.extend(list(m.parameters()))
+                        # bn_name.extend(name)
+                    elif isinstance(m, torch.nn.BatchNorm2d):
+                        if not self._enable_pbn and self.freezeBN is False:
+                            bn.extend(list(m.parameters()))
+                            # bn_name.extend(name)
+                    elif len(m._modules) == 0:
+                        if len(list(m.parameters())) > 0:
+                            raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
+            # print ('------------------------')
+            # print (normal_weight_name)
+            # print (normal_bias_name)
+            # print (bn_name)
+            # asdf
+            
+            return [
+                {'params': normal_weight, 'lr_mult': 1, 'decay_mult': 1,
+                 'name': "normal_weight"},
+                {'params': normal_bias, 'lr_mult': 2, 'decay_mult': 0,
+                 'name': "normal_bias"},
+                {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
+                 'name': "BN scale/shift"},
+            ]
 
     def forward(self, input, eval=False):
         # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
