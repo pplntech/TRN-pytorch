@@ -140,7 +140,7 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001
 
-v20_bnFreeze_Adam_0_00001_step_100200_noclip on DGX
+v20_bnFreeze_Adam_0_00001_step_100200_noclip on DGX (it runs but slow, stopped in the middle)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_bnFreeze_Adam_0_00001_step_100200_noclip_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --no_clip
@@ -150,20 +150,20 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200
 
-v20_bnFreeze_Adam_0_001_freezeBackbone_noclip on DGX
+v20_bnFreeze_Adam_0_001_step_60120_freezeBackbone_noclip on DGX (NOT YET)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_bnFreeze_Adam_0_001_freezeBackbone_noclip_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --no_clip
+--result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_bnFreeze_Adam_0_001_step_60120_freezeBackbone_noclip_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --no_clip --lr_steps 60 120
 
-v20_bnFreeze_Adam_0_001_freezeBackbone_clip on DGX
+v20_bnFreeze_Adam_0_001_step_60120_freezeBackbone_clip on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_bnFreeze_Adam_0_001_freezeBackbone_clip_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone
+--result_path /raid/users/km/SthSth/Experiments/TRN/v20_MemNNQueryNN_2hops_concat_iter_1CNN_bnFreeze_Adam_0_001_step_60120_freezeBackbone_clip_v10/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --lr_steps 60 120
 
 v20_freezeBackbone on my computer (kyungmin)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /hdd3/VideoDataset/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8 --hop 2 \
---result_path /hdd3/VideoDataset/Experiments/tmp_iter_concat_freezeBackbone --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone
+--result_path /hdd3/VideoDataset/Experiments/tmp_iter_concat_freezeBackbone --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --lr_steps 100 200
 
 
 v21 (parallel)
@@ -172,7 +172,7 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001
 
-v21_bnFreeze_Adam_0_00001_step_100200_noclip on DGX
+v21_bnFreeze_Adam_0_00001_step_100200_noclip on DGX (it runs but slow, stopped in the middle)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_noclip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --no_clip
@@ -182,15 +182,15 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200
 
-v21_bnFreeze_Adam_0_001_freezeBackbone_noclip on DGX
+v21_bnFreeze_Adam_0_001_step_60120_freezeBackbone_noclip on DGX (NOT YET)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_001_freezeBackbone_noclip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --no_clip
+--result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_001_step_60120_freezeBackbone_noclip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --no_clip --lr_steps 60 120
 
-v21_bnFreeze_Adam_0_001_freezeBackbone_clip on DGX
+v21_bnFreeze_Adam_0_001_step_60120_freezeBackbone_clip on DGX
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_001_freezeBackbone_clip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone
+--result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_001_step_60120_freezeBackbone_clip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.001 --freezeBN --freezeBackbone --lr_steps 60 120
 
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \

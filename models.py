@@ -203,6 +203,8 @@ class TSN(nn.Module):
         self._enable_pbn = enable
 
     def get_optim_policies(self):
+        # print (self.freezeBackbone)
+        # asdf
         if self.freezeBackbone is False and self.freezeCustom is False:
             first_conv_weight = []
             first_conv_bias = []
@@ -260,6 +262,7 @@ class TSN(nn.Module):
                 {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
                  'name': "BN scale/shift"},
             ]
+
         elif self.freezeBackbone is False and self.freezeCustom:
             backbone_weight = []
             backbone_bias = []
@@ -337,10 +340,10 @@ class TSN(nn.Module):
             # bn_name = []
 
             for name, m in self.named_modules():
-                # print (name, type(m))
+                print (name, type(m))
                 if('consensus' in name):
-                    # print (name, m)
-
+                    print ('--------------------------------------------', name, m, '--------------------------------------------')
+                    asdf
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
                         ps = list(m.parameters())
                         normal_weight.append(ps[0])
