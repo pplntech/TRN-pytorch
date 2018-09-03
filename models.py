@@ -343,7 +343,6 @@ class TSN(nn.Module):
                 print (name, type(m))
                 if('consensus' in name):
                     print ('--------------------------------------------', name, m, '--------------------------------------------')
-                    asdf
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
                         ps = list(m.parameters())
                         normal_weight.append(ps[0])
