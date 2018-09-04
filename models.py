@@ -341,7 +341,7 @@ class TSN(nn.Module):
 
             for name, m in self.named_modules():
                 print (name, type(m))
-                if('consensus' in name):
+                if('consensus' in name) or (isinstance(m, torch.nn.Linear)):
                     print ('--------------------------------------------', name, m, '--------------------------------------------')
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
                         ps = list(m.parameters())
