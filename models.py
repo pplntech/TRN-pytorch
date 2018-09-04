@@ -372,7 +372,7 @@ class TSN(nn.Module):
             # print (normal_weight_name)
             # print (normal_bias_name)
             # print (bn_name)
-            asdf
+            # asdf
 
             return [
                 {'params': normal_weight, 'lr_mult': 1, 'decay_mult': 1,
