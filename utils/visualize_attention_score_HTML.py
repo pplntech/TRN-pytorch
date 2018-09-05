@@ -29,7 +29,7 @@ import os
 import json
 import argparse
 from PIL import Image
-
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_root', type=str, required=True,
@@ -49,6 +49,12 @@ def _makedirs(path):
 
 def _takeid(elem):
     return elem['id']
+
+def normalize(v):
+    norm=np.linalg.norm(v, ord=1)
+    if norm==0:
+        norm=np.finfo(v.dtype).eps
+    return v/norm
 
 if __name__ == '__main__':
     html_root_folder = os.path.join(args.result_root,'html_epoch%d'%args.epoch)
@@ -82,6 +88,9 @@ if __name__ == '__main__':
             colortables_txt = {}
             for each_frame in range(num_of_frames):
                 for each_hop in range(num_of_hops):
+                    # print (each_data['hop_probabilities'][each_hop])
+                    # print (normalize(each_data['hop_probabilities'][each_hop]))
+                    # asfd
                     prob = each_data['hop_probabilities'][each_hop][each_frame]
                     # print (prob, int(prob*len(colors_bg)))
                     # print (min(int(prob*len(colors_bg)),len(colors_bg)-1))

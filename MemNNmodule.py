@@ -11,12 +11,13 @@ import pdb
 class MemNNModule(torch.nn.Module):
     def __init__(self, num_frames, num_class, channel, \
         key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-        num_hop, hop_method, num_CNNs):
+        num_hop, hop_method, num_CNNs, sorting):
         super(MemNNModule, self).__init__()
 
         self.num_frames = num_frames # num of segments
         self.num_class = num_class
         self.channel = channel # 1024
+        self.sorting = sorting
 
         self.key_dim = key_dim
         self.value_dim = value_dim
@@ -144,6 +145,15 @@ class MemNNModule(torch.nn.Module):
             accumulated_output.append(retrieved_value3)
             attentions.append(p3.cpu())
 
+        if self.sorting:
+            # get weighted timestamp
+            standard = list(range(1,self.num_frames+1))
+            print (standard)
+            print (p1)
+            print (np.dot(standard,p1))
+            asdf
+            # permutate according to timestamp
+            pass
 
         accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
@@ -188,12 +198,12 @@ class MemNNModule(torch.nn.Module):
 def return_MemNN(
     relation_type, num_frames, num_class, \
     key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p,
-    channel, num_hop, hop_method, num_CNNs):
+    channel, num_hop, hop_method, num_CNNs, sorting):
 
     if relation_type == 'MemNN':
         MemNNmodel = MemNNModule(num_frames, num_class, channel, \
             key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-            num_hop, hop_method, num_CNNs)
+            num_hop, hop_method, num_CNNs, sorting)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 

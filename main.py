@@ -56,6 +56,7 @@ def main():
                 no_softmax_on_p = args.no_softmax_on_p,
                 freezeBackbone = args.freezeBackbone,
                 freezeCustom = args.freezeCustom,
+                sorting = args.sorting,
                 )
 
     crop_size = model.crop_size
