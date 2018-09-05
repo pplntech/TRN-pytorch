@@ -162,6 +162,7 @@ class MemNNModule(torch.nn.Module):
                 accumulated_time_weight.append(time3)
             accumulated_time_weight = np.squeeze(np.stack(accumulated_time_weight, 1),2)
             arg_time = np.argsort(accumulated_time_weight)
+
             # print (accumulated_time_weight)
             # print (np.argsort(accumulated_time_weight))
             # print (accumulated_time_weight.shape) # (30,2)
@@ -171,24 +172,11 @@ class MemNNModule(torch.nn.Module):
             # for inner_i in range(bs):
             for inner_i in range(bs):
                 # print (accumulated_output[inner_i]) # (512, 2)
-                print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
+                # print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
                 accumulated_output[inner_i] = accumulated_output[inner_i][:,tuple(arg_time[inner_i,:].tolist())]
                 # .permute(tuple(arg_time[inner_i,:].tolist()))
-                print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
-            print ('-----------------')
-            print (accumulated_output[0].cpu().data.numpy(), arg_time[0,:])
-            print (accumulated_output[1].cpu().data.numpy(), arg_time[1,:])
-            print (accumulated_output[2].cpu().data.numpy(), arg_time[2,:])
-            print (accumulated_output[3].cpu().data.numpy(), arg_time[3,:])
-            print (accumulated_output[4].cpu().data.numpy(), arg_time[4,:])
-            print (accumulated_output[5].cpu().data.numpy(), arg_time[5,:])
-            print (accumulated_output[6].cpu().data.numpy(), arg_time[6,:])
-            print (accumulated_output[7].cpu().data.numpy(), arg_time[7,:])
-            print (accumulated_output[8].cpu().data.numpy(), arg_time[8,:])
-            print (accumulated_output[9].cpu().data.numpy(), arg_time[9,:])
-            print (accumulated_output[10].cpu().data.numpy(), arg_time[10,:])
-
-        asdf
+                # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
+                
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
