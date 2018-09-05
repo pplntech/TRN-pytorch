@@ -168,16 +168,12 @@ class MemNNModule(torch.nn.Module):
 
             # permutate according to timestamp
             # print (accumulated_output.size()) # (30, 512, 2)
-            print (accumulated_output[0].cpu().data.numpy()) # (512, 2)
-            print (accumulated_output[1].cpu().data.numpy()) # (512, 2)
-            print (accumulated_output[2].cpu().data.numpy())
-            print (accumulated_output[3].cpu().data.numpy())
-            print (accumulated_output[4].cpu().data.numpy())
-            print (accumulated_output[5].cpu().data.numpy())
-            print (accumulated_output[6].cpu().data.numpy())
-            print (accumulated_output[7].cpu().data.numpy())
+            # for inner_i in range(bs):
             for inner_i in range(bs):
+                print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
                 accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
+                print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
+            print ('-----------------')
             print (accumulated_output[0].cpu().data.numpy(), arg_time[inner_i,:])
             print (accumulated_output[1].cpu().data.numpy(), arg_time[inner_i,:])
             print (accumulated_output[2].cpu().data.numpy(), arg_time[inner_i,:])
@@ -186,6 +182,9 @@ class MemNNModule(torch.nn.Module):
             print (accumulated_output[5].cpu().data.numpy(), arg_time[inner_i,:])
             print (accumulated_output[6].cpu().data.numpy(), arg_time[inner_i,:])
             print (accumulated_output[7].cpu().data.numpy(), arg_time[inner_i,:])
+            print (accumulated_output[8].cpu().data.numpy(), arg_time[inner_i,:])
+            print (accumulated_output[9].cpu().data.numpy(), arg_time[inner_i,:])
+            print (accumulated_output[10].cpu().data.numpy(), arg_time[inner_i,:])
 
         asdf
         accumulated_output = accumulated_output.view(bs, -1)
