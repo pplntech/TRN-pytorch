@@ -146,19 +146,28 @@ class MemNNModule(torch.nn.Module):
             attentions.append(p3.cpu())
 
         if self.sorting:
+            accumulated_time_weight = []
             # get weighted timestamp
             standard = np.array(list(range(1,self.num_frames+1)))
             # standard = np.repeat(np.expand_dims(np.expand_dims(standard,0),0), p1.size()[0], axis=0)
             # print (standard) # [[1 2 3 4 5 6 7 8]]]
             # print (standard.shape) # (30, 1, 8)
-            # print (p1.cpu().data.numpy().shape) # (30, 1, 8)
             # print (np.dot(standard,p1.cpu().data.numpy()))
-            print (standard)
-            print (p1.cpu().data.numpy())
-            print (np.dot(p1.cpu().data.numpy(), standard))
-            print (np.dot(p1.cpu().data.numpy(), standard).shape)
-            asdf
+            # print (standard) [1 2 3 4 5 6 7 8]
+            # print (p1.cpu().data.numpy().shape) # (30, 1, 8)
+            # print (np.dot(p1.cpu().data.numpy(), standard))
+            time1 =  np.dot(p1.cpu().data.numpy(), standard).shape # (30, 1)
+            accumulated_time_weight.append(time1)
             # permutate according to timestamp
+            if self.hops >= 2:
+                time2 =  np.dot(p2.cpu().data.numpy(), standard).shape # (30, 1)
+                accumulated_time_weight.append(time2)
+            if self.hops >= 3:
+                time3 =  np.dot(p3.cpu().data.numpy(), standard).shape # (30, 1)
+                accumulated_time_weight.append(time3)
+            print (accumulated_time_weight)
+            asdf
+
 
         accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
