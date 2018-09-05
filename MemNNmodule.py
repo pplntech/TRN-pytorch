@@ -171,7 +171,7 @@ class MemNNModule(torch.nn.Module):
             # for inner_i in range(bs):
             for inner_i in range(bs):
                 print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
-                accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
+                accumulated_output[inner_i].permute_(tuple(arg_time[inner_i,:].tolist()))
                 print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
             print ('-----------------')
             print (accumulated_output[0].cpu().data.numpy(), arg_time[inner_i,:])
