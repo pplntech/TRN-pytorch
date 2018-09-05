@@ -169,14 +169,14 @@ class MemNNModule(torch.nn.Module):
             # permutate according to timestamp
             # print (accumulated_output.size()) # (30, 512, 2)
             # for inner_i in range(bs):
+            accumulated_output = torch.stack(accumulated_output, -1)
             sorted_accumulated_output = []
             for inner_i in range(bs):
-                each = []
-                print (accumulated_output[inner_i])
-                asdf
-                # print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
-                # accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
-                # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
+                # print (accumulated_output[inner_i])
+                # asdf
+                print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
+                sorted_accumulated_output.append(accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist())))
+                print (sorted_accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
             print ('-----------------')
             # print (accumulated_output[0].cpu().data.numpy(), arg_time[inner_i,:])
             # print (accumulated_output[1].cpu().data.numpy(), arg_time[inner_i,:])
@@ -192,6 +192,7 @@ class MemNNModule(torch.nn.Module):
 
         else:
             accumulated_output = torch.stack(accumulated_output, -1)
+        asdf
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
