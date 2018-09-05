@@ -156,14 +156,14 @@ class MemNNModule(torch.nn.Module):
             # print (standard) [1 2 3 4 5 6 7 8]
             # print (p1.cpu().data.numpy().shape) # (30, 1, 8)
             # print (np.dot(p1.cpu().data.numpy(), standard))
-            time1 =  np.dot(p1.cpu().data.numpy(), standard).shape # (30, 1)
+            time1 =  np.dot(p1.cpu().data.numpy(), standard) # (30, 1)
             accumulated_time_weight.append(time1)
             # permutate according to timestamp
             if self.hops >= 2:
-                time2 =  np.dot(p2.cpu().data.numpy(), standard).shape # (30, 1)
+                time2 =  np.dot(p2.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time2)
             if self.hops >= 3:
-                time3 =  np.dot(p3.cpu().data.numpy(), standard).shape # (30, 1)
+                time3 =  np.dot(p3.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time3)
             accumulated_time_weight = np.stack(accumulated_time_weight, 1)
             print (accumulated_time_weight)
