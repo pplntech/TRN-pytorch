@@ -167,6 +167,7 @@ class MemNNModule(torch.nn.Module):
                 accumulated_time_weight.append(time3)
             accumulated_time_weight = np.squeeze(np.stack(accumulated_time_weight, 1),2)
             print (accumulated_time_weight)
+            print (np.argsort(accumulated_time_weight))
             print (accumulated_time_weight.shape)
             asdf
 
