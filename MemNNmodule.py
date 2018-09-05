@@ -173,11 +173,11 @@ class MemNNModule(torch.nn.Module):
             # print (accumulated_time_weight.shape) # (30,2)
 
             # permutate according to timestamp
-            print (accumulated_output.size()) # (30, 512, 2)
-            print (accumulated_output[0]) # (512, 2)
-            print (accumulated_output[1]) # (512, 2)
+            # print (accumulated_output.size()) # (30, 512, 2)
+            # print (accumulated_output[0]) # (512, 2)
+            # print (accumulated_output[1]) # (512, 2)
             for inner_i in range(bs):
-                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:]))
+                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
             print (accumulated_output[0])
             print (accumulated_output[1])
 
