@@ -147,8 +147,8 @@ class MemNNModule(torch.nn.Module):
 
         if self.sorting:
             # get weighted timestamp
-            standard = list(range(1,self.num_frames+1))
-            print (standard)
+            standard = np.repeat(list(range(1,self.num_frames+1)), p1.size()[0])
+            print (standard) # [1, 2, 3, 4, 5, 6, 7, 8]
             print (p1)
             print (np.dot(standard,p1))
             asdf
