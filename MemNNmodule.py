@@ -148,11 +148,12 @@ class MemNNModule(torch.nn.Module):
         if self.sorting:
             # get weighted timestamp
             standard = np.array(list(range(1,self.num_frames+1)))
-            standard = np.repeat(np.expand_dims(np.expand_dims(standard,0),0), p1.size()[0], axis=0)
-            print (standard)
-            print (standard.shape) # (30, 1, 8)
-            print (p1.cpu().data.numpy().shape) # 30x1x8
-            print (np.dot(standard,p1.cpu().data.numpy()))
+            # standard = np.repeat(np.expand_dims(np.expand_dims(standard,0),0), p1.size()[0], axis=0)
+            # print (standard) # [[1 2 3 4 5 6 7 8]]]
+            # print (standard.shape) # (30, 1, 8)
+            # print (p1.cpu().data.numpy().shape) # (30, 1, 8)
+            # print (np.dot(standard,p1.cpu().data.numpy()))
+            print (np.dot(p1.cpu().data.numpy(), standard))
             asdf
             # permutate according to timestamp
             pass
