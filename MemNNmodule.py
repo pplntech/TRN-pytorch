@@ -145,20 +145,13 @@ class MemNNModule(torch.nn.Module):
             accumulated_output.append(retrieved_value3)
             attentions.append(p3.cpu())
 
-        print (accumulated_output)
-        asdf
+        accumulated_output = torch.stack(accumulated_output, -1)
         if self.sorting:
             bs = p1.size()[0]
             accumulated_time_weight = []
+
             # get weighted timestamp
             standard = np.array(list(range(1,self.num_frames+1)))
-            # standard = np.repeat(np.expand_dims(np.expand_dims(standard,0),0), p1.size()[0], axis=0)
-            # print (standard) # [[1 2 3 4 5 6 7 8]]]
-            # print (standard.shape) # (30, 1, 8)
-            # print (np.dot(standard,p1.cpu().data.numpy()))
-            # print (standard) [1 2 3 4 5 6 7 8]
-            # print (p1.cpu().data.numpy().shape) # (30, 1, 8)
-            # print (np.dot(p1.cpu().data.numpy(), standard))
             time1 =  np.dot(p1.cpu().data.numpy(), standard) # (30, 1)
             accumulated_time_weight.append(time1)
             if self.hops >= 2:
@@ -178,12 +171,12 @@ class MemNNModule(torch.nn.Module):
             print (accumulated_output[0]) # (512, 2)
             print (accumulated_output[1]) # (512, 2)
             for inner_i in range(bs):
-                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
+                accumulated_output[inner_i] = torch.permute(accumulated_output[inner_i], tuple(arg_time[inner_i,:].tolist()))
+                # accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
             print (accumulated_output[0])
             print (accumulated_output[1])
 
         asdf
-        accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
