@@ -145,7 +145,7 @@ class MemNNModule(torch.nn.Module):
             accumulated_output.append(retrieved_value3)
             attentions.append(p3.cpu())
 
-        accumulated_output = torch.stack(accumulated_output, -1)
+        # accumulated_output = torch.stack(accumulated_output, -1)
         if self.sorting:
             bs = p1.size()[0]
             accumulated_time_weight = []
@@ -169,24 +169,30 @@ class MemNNModule(torch.nn.Module):
             # permutate according to timestamp
             # print (accumulated_output.size()) # (30, 512, 2)
             # for inner_i in range(bs):
+            sorted_accumulated_output = []
             for inner_i in range(bs):
-                print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
-                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
-                print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
+                each = []
+                print (accumulated_output[inner_i])
+                asdf
+                # print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
+                # accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
+                # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
             print ('-----------------')
-            print (accumulated_output[0].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[1].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[2].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[3].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[4].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[5].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[6].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[7].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[8].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[9].cpu().data.numpy(), arg_time[inner_i,:])
-            print (accumulated_output[10].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[0].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[1].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[2].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[3].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[4].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[5].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[6].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[7].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[8].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[9].cpu().data.numpy(), arg_time[inner_i,:])
+            # print (accumulated_output[10].cpu().data.numpy(), arg_time[inner_i,:])
 
         asdf
+        else:
+            accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
