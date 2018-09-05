@@ -145,7 +145,9 @@ class MemNNModule(torch.nn.Module):
             accumulated_output.append(retrieved_value3)
             attentions.append(p3.cpu())
 
+        accumulated_output = torch.stack(accumulated_output, -1)
         if self.sorting:
+            bs = p1.size()[0]
             accumulated_time_weight = []
             # get weighted timestamp
             standard = np.array(list(range(1,self.num_frames+1)))
@@ -158,7 +160,6 @@ class MemNNModule(torch.nn.Module):
             # print (np.dot(p1.cpu().data.numpy(), standard))
             time1 =  np.dot(p1.cpu().data.numpy(), standard) # (30, 1)
             accumulated_time_weight.append(time1)
-            # permutate according to timestamp
             if self.hops >= 2:
                 time2 =  np.dot(p2.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time2)
@@ -166,13 +167,20 @@ class MemNNModule(torch.nn.Module):
                 time3 =  np.dot(p3.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time3)
             accumulated_time_weight = np.squeeze(np.stack(accumulated_time_weight, 1),2)
-            print (accumulated_time_weight)
-            print (np.argsort(accumulated_time_weight))
-            print (accumulated_time_weight.shape)
-            asdf
+            # print (accumulated_time_weight)
+            # print (np.argsort(accumulated_time_weight))
+            # print (accumulated_time_weight.shape) # (30,2)
 
-
-        accumulated_output = torch.stack(accumulated_output, -1)
+            # permutate according to timestamp
+            print (accumulated_output.size())
+            print (accumulated_output[0])
+            print (accumulated_output[1])
+            for inner_i in range(bs):
+                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(accumulated_time_weight[inner_i,:]))
+            print (accumulated_output[0])
+            print (accumulated_output[1])
+        
+        asdf
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
