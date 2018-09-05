@@ -149,11 +149,10 @@ class MemNNModule(torch.nn.Module):
             # get weighted timestamp
             standard = np.array(list(range(1,self.num_frames+1)))
             standard = np.repeat(np.expand_dims(np.expand_dims(standard,0),0), p1.size()[0], axis=0)
-            print (standard.shape) # (30, 8)
-            # standard = np.repeat(np.expand_dims(np.array(list(range(1,self.num_frames+1)))), p1.size()[0], axis=2)
-            # print (standard) # [1, 2, 3, 4, 5, 6, 7, 8]
-            print (p1)
-            print (np.dot(standard,p1))
+            print (standard)
+            print (standard.shape) # (30, 1, 8)
+            print (p1.cpu().data.numpy().shape) # 30x1x8
+            print (np.dot(standard,p1.cpu().data.numpy()))
             asdf
             # permutate according to timestamp
             pass
