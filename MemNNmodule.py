@@ -170,8 +170,9 @@ class MemNNModule(torch.nn.Module):
             # print (accumulated_output.size()) # (30, 512, 2)
             # for inner_i in range(bs):
             for inner_i in range(bs):
+                print (accumulated_output[inner_i]) # (512, 2)
                 print (accumulated_output[inner_i].cpu().data.numpy()) # (512, 2)
-                accumulated_output = accumulated_output[inner_i][:,tuple(arg_time[inner_i,:].tolist())]
+                accumulated_output[inner_i] = accumulated_output[inner_i][:,tuple(arg_time[inner_i,:].tolist())]
                 # .permute(tuple(arg_time[inner_i,:].tolist()))
                 print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
             print ('-----------------')
