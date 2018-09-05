@@ -167,19 +167,20 @@ class MemNNModule(torch.nn.Module):
                 time3 =  np.dot(p3.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time3)
             accumulated_time_weight = np.squeeze(np.stack(accumulated_time_weight, 1),2)
+            arg_time = np.argsort(accumulated_time_weight)
             # print (accumulated_time_weight)
             # print (np.argsort(accumulated_time_weight))
             # print (accumulated_time_weight.shape) # (30,2)
 
             # permutate according to timestamp
-            print (accumulated_output.size())
-            print (accumulated_output[0])
-            print (accumulated_output[1])
+            print (accumulated_output.size()) # (30, 512, 2)
+            print (accumulated_output[0]) # (512, 2)
+            print (accumulated_output[1]) # (512, 2)
             for inner_i in range(bs):
-                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(accumulated_time_weight[inner_i,:]))
+                accumulated_output[inner_i] = accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:]))
             print (accumulated_output[0])
             print (accumulated_output[1])
-        
+
         asdf
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
