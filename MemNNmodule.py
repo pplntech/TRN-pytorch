@@ -153,10 +153,12 @@ class MemNNModule(torch.nn.Module):
             # print (standard.shape) # (30, 1, 8)
             # print (p1.cpu().data.numpy().shape) # (30, 1, 8)
             # print (np.dot(standard,p1.cpu().data.numpy()))
+            print (standard)
+            print (p1.cpu().data.numpy())
             print (np.dot(p1.cpu().data.numpy(), standard))
+            print (np.dot(p1.cpu().data.numpy(), standard).shape)
             asdf
             # permutate according to timestamp
-            pass
 
         accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
