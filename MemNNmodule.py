@@ -165,7 +165,7 @@ class MemNNModule(torch.nn.Module):
             if self.hops >= 3:
                 time3 =  np.dot(p3.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time3)
-            accumulated_time_weight = np.stack(accumulated_time_weight, 1)
+            accumulated_time_weight = np.squeeze(np.stack(accumulated_time_weight, 1),2)
             print (accumulated_time_weight)
             print (accumulated_time_weight.shape)
             asdf
