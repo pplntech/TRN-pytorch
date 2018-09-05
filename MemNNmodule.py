@@ -147,8 +147,9 @@ class MemNNModule(torch.nn.Module):
 
         if self.sorting:
             # get weighted timestamp
-            standard = np.repeat(np.expand_dims(np.array(list(range(1,self.num_frames+1))),0), p1.size()[0], axis=0)
-            print (standard.shape) # [1, 2, 3, 4, 5, 6, 7, 8]
+            standard = np.array(list(range(1,self.num_frames+1)))
+            standard = np.repeat(np.expand_dims(np.expand_dims(standard,0),0), p1.size()[0], axis=0)
+            print (standard.shape) # (30, 8)
             # standard = np.repeat(np.expand_dims(np.array(list(range(1,self.num_frames+1)))), p1.size()[0], axis=2)
             # print (standard) # [1, 2, 3, 4, 5, 6, 7, 8]
             print (p1)
