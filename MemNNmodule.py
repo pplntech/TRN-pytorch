@@ -190,7 +190,6 @@ class MemNNModule(torch.nn.Module):
             # print (accumulated_output[9].cpu().data.numpy(), arg_time[inner_i,:])
             # print (accumulated_output[10].cpu().data.numpy(), arg_time[inner_i,:])
 
-        asdf
         else:
             accumulated_output = torch.stack(accumulated_output, -1)
         accumulated_output = accumulated_output.view(bs, -1)
