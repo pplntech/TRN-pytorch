@@ -173,6 +173,9 @@ class MemNNModule(torch.nn.Module):
             print (accumulated_output[2].cpu().data.numpy())
             print (accumulated_output[3].cpu().data.numpy())
             print (accumulated_output[4].cpu().data.numpy())
+            print (accumulated_output[5].cpu().data.numpy())
+            print (accumulated_output[6].cpu().data.numpy())
+            print (accumulated_output[7].cpu().data.numpy())
             for inner_i in range(bs):
                 accumulated_output[inner_i].permute(tuple(arg_time[inner_i,:].tolist()))
             print (accumulated_output[0].cpu().data.numpy(), arg_time[inner_i,:])
@@ -180,6 +183,9 @@ class MemNNModule(torch.nn.Module):
             print (accumulated_output[2].cpu().data.numpy(), arg_time[inner_i,:])
             print (accumulated_output[3].cpu().data.numpy(), arg_time[inner_i,:])
             print (accumulated_output[4].cpu().data.numpy(), arg_time[inner_i,:])
+            print (accumulated_output[5].cpu().data.numpy(), arg_time[inner_i,:])
+            print (accumulated_output[6].cpu().data.numpy(), arg_time[inner_i,:])
+            print (accumulated_output[7].cpu().data.numpy(), arg_time[inner_i,:])
 
         asdf
         accumulated_output = accumulated_output.view(bs, -1)
