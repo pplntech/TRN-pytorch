@@ -239,14 +239,15 @@ class TSN(nn.Module):
                     if len(ps) == 2:
                         normal_bias.append(ps[1])
                 elif isinstance(m, torch.nn.modules.rnn.LSTM):
-                    print (m)
-                    print (list(m.parameters()))
-                    print (len(list(m.parameters())))
+                    # print (m)
+                    # print (list(m.parameters()))
+                    # print (len(list(m.parameters())))
                     ps = list(m.parameters())
                     normal_weight.append(ps[0])
-                    if len(ps) == 2:
-                        normal_bias.append(ps[1])
-                    asdf
+                    normal_weight.append(ps[1])
+                    if len(ps) == 4:
+                        normal_bias.append(ps[2])
+                        normal_bias.append(ps[3])
 
                 elif isinstance(m, torch.nn.BatchNorm1d):
                     bn.extend(list(m.parameters()))
@@ -295,13 +296,12 @@ class TSN(nn.Module):
                         consensus_weight.append(ps[0])
                         if len(ps) == 2: consensus_bias.append(ps[1])
                     elif isinstance(m, torch.nn.modules.rnn.LSTM):
-                        print (m)
-                        print (m.parameters())
                         ps = list(m.parameters())
                         normal_weight.append(ps[0])
-                        if len(ps) == 2:
-                            normal_bias.append(ps[1])
-                        asdf
+                        normal_weight.append(ps[1])
+                        if len(ps) == 4:
+                            normal_bias.append(ps[2])
+                            normal_bias.append(ps[3])
 
                     elif isinstance(m, torch.nn.BatchNorm1d):
                         bn.extend(list(m.parameters()))
@@ -324,13 +324,12 @@ class TSN(nn.Module):
                         backbone_weight.append(ps[0])
                         if len(ps) == 2: backbone_bias.append(ps[1])
                     elif isinstance(m, torch.nn.modules.rnn.LSTM):
-                        print (m)
-                        print (m.parameters())
                         ps = list(m.parameters())
                         normal_weight.append(ps[0])
-                        if len(ps) == 2:
-                            normal_bias.append(ps[1])
-                        asdf
+                        normal_weight.append(ps[1])
+                        if len(ps) == 4:
+                            normal_bias.append(ps[2])
+                            normal_bias.append(ps[3])
 
                     elif isinstance(m, torch.nn.BatchNorm1d):
                         bn.extend(list(m.parameters()))
@@ -385,13 +384,12 @@ class TSN(nn.Module):
                             normal_bias.append(ps[1])
                             # normal_bias_name.append(name)
                     elif isinstance(m, torch.nn.modules.rnn.LSTM):
-                        print (m)
-                        print (m.parameters())
                         ps = list(m.parameters())
                         normal_weight.append(ps[0])
-                        if len(ps) == 2:
-                            normal_bias.append(ps[1])
-                        asdf
+                        normal_weight.append(ps[1])
+                        if len(ps) == 4:
+                            normal_bias.append(ps[2])
+                            normal_bias.append(ps[3])
 
                     elif isinstance(m, torch.nn.BatchNorm1d):
                         bn.extend(list(m.parameters()))
