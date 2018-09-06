@@ -35,6 +35,12 @@ class MemNNModule(torch.nn.Module):
         self.hop_method = hop_method
         self.num_CNNs = num_CNNs
 
+        if self.how_to_get_query=='lstm':
+            '''
+            input : 1024
+            output : 1024
+            '''
+            query_lstm = nn.LSTM(self.channel, self.channel)
 
         # define layers
         self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
@@ -86,6 +92,20 @@ class MemNNModule(torch.nn.Module):
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
 
+
+        # Calculate query_value
+
+        if self.how_to_get_query=='lstm':
+            '''
+            inputs : (temporal, batch, dim)
+            '''
+            # out, query_value = query_lstm(memory_input.permute(1,0,2), hidden)
+            out, query_value = query_lstm(memory_input.permute(1,0,2))
+            print (out.size())
+            print (query_value.size())
+            asdf
+            
+        elif self.how_to_get_query=='mean':
         if self.num_CNNs==1: query_value = torch.mean(memory_input, 1) # (BS, 1024)
         elif self.num_CNNs>1: raise ValueError('not supporting more than one CNNs')
 
@@ -169,7 +189,7 @@ class MemNNModule(torch.nn.Module):
             # print (np.argsort(accumulated_time_weight))
             # print (accumulated_time_weight.shape) # (30,2)
 
-            # permutate according to timestamp
+            # permute according to timestamp
             # print (accumulated_output.size()) # (30, 512, 2)
             # for inner_i in range(bs):
             for inner_i in range(bs):
