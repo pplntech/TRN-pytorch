@@ -241,6 +241,7 @@ class TSN(nn.Module):
                 elif isinstance(m, torch.nn.modules.rnn.LSTM):
                     print (m)
                     print (list(m.parameters()))
+                    print (len(list(m.parameters())))
                     ps = list(m.parameters())
                     normal_weight.append(ps[0])
                     if len(ps) == 2:
