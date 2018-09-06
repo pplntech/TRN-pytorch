@@ -202,6 +202,11 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_LSTM_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting --how_to_get_query lstm
 
+v21_bnFreeze_Adam_0_00001_step_100200_sorting_nosoftmax on DGX
+python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_nosoftmax_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting --no_softmax_on_p
+
 v21_bnFreeze_Adam_0_00001_step_100200_nosoftmax on kyungmin
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
