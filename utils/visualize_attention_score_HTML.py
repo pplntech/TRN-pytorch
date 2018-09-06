@@ -103,19 +103,115 @@ if __name__ == '__main__':
             html = '<html><head>'
             html += '<style>'
             html += 'th, td {text-align: right;}'
+            html += '#tblOne th, td {text-align: center; vertical-align: middle;}'
+            html += '#tblTwo th, td {text-align: center; vertical-align: middle;}'
+            html += '#upper {margin:10px;}'
+            html += '#bottom {margin:10px;}'
+            html += '#left {margin:10px;}'
+            html += '#right {margin:10px;}'
+            # html += 'div {display: block;}'
+
             # for k, b in colortables_bg.items():
             #     html += '%s { background-color : %s; color: black;}' %(k, b)
             html += '</style>'
             # html += '<style>{width: 100%;border: 1px solid #444444;}th, td {border: 1px solid #444444;}</style>'
             html += '</head>'
+            # html +='</tbody></table>'
 
             # titles
-            html += '<body><h1>{}</h1>'.format('%s [ID : %s]'%(idx2class[class_int], each_data['id']))
-            html += '\n<h2>Predicted : {}</h2>'.format(idx2class[each_data['Predict']])
+            html += '<body>'
+            html +=  '<h2>{}</h2>'.format('ID : %s'%(each_data['id']))
+            html +=  '<h2>[Groundtruth Label]&ensp;&ensp; {}</h2>'.format('%s'%(idx2class[class_int]))
+            html += '\n<h2>[Predicted Label]&ensp;&ensp;&ensp;&ensp;&ensp; {}</h2>'.format(idx2class[each_data['Predict']])
 
 
+            # configs
+            with open (os.path.join(args.result_root,'opts.json'),'r') as f:
+                configs = json.load(f)
+
+
+            model_configs_to_print = ['consensus_type', 'hop', 'num_segments', 'how_to_get_query', 'hop_method', \
+            'query_update_method', 'sorting', 'query_dim', 'value_dim', 'key_dim', 'no_softmax_on_p']
+            model_num_column = 3
+            model_num_row = len(model_configs_to_print) // model_num_column
+            if len(model_configs_to_print) % model_num_column !=0:
+                model_num_row += 1
+
+            count = 0
+            html += '<div id="upper">'
+            html += '<span style="width:50%" id="left"><table id="tblOne" style="width:50%; float:left" border="1px solid gray">'
+            html += '<caption align="top" style="text-align:left"><h3>Model Configs</h3></caption>'
+            html += '\n<thead><tr>'
+            for i in range(model_num_column):
+                html += '<td>configs</td><td>values</td>'
+            html += '</tr></thead>'
+
+            html +='<tbody>'
+            for i in range(model_num_row):
+                html += '\n<tr>'
+                for j in range(model_num_column):
+                    # print (model_configs_to_print, count)
+                    # print (configs.keys())
+                    try:
+                        if model_configs_to_print[count] in configs.keys():
+                            value = str(configs[model_configs_to_print[count]])
+                        else:
+                            value = '-'
+                        # print (model_configs_to_print[count])
+                        html += '<td><b>{}</b></td><td>{}</td>'.format(model_configs_to_print[count], value)
+                        count += 1
+                    except:
+                        html += '<td>{}</td><td>{}</td>'.format('-', '-')
+                    # if count >= len(model_configs_to_print):
+                    #     break
+                html += '</tr>'
+            html +='</tbody></table></span>'
+
+            learning_configs_to_print = ['optimizer', 'lr', 'lr_steps', 'freezeBN', 'batch_size', 'no_clip']
+            learning_num_column = 3
+            learning_num_row = len(learning_configs_to_print) // learning_num_column
+            if len(learning_configs_to_print) % learning_num_column !=0:
+                learning_num_row += 1
+
+            count = 0
+            html += '<span style="width:50%" id="right"><table id="tblTwo" style="width:50%; float:left" border="1px solid gray">'
+            html += '<caption align="top" style="text-align:left"><h3>Learning Configs</h3></caption>'
+            html += '\n<thead><tr>'
+            for i in range(learning_num_column):
+                html += '<td>configs</td><td>values</td>'
+            html += '</tr></thead>'
+
+            html +='<tbody>'
+            for i in range(model_num_row):
+                html += '\n<tr>'
+                for j in range(learning_num_column):
+                    # print (learning_configs_to_print, count)
+                    # print (configs.keys())
+                    try:
+                        if learning_configs_to_print[count] in configs.keys():
+                            value = str(configs[learning_configs_to_print[count]])
+                        else:
+                            value = '-'
+                        # print (learning_configs_to_print[count])
+                        html += '<td><b>{}</b></td><td>{}</td>'.format(learning_configs_to_print[count], value)
+                        count += 1
+                    except:
+                        html += '<td>{}</td><td>{}</td>'.format('-', '-')
+                    # if count >= len(learning_configs_to_print):
+                    #     break
+                html += '</tr>'
+            html +='</tbody></table></span>'
+            html += '</div>'
+            html +='<br/>'
+            html +='<br/>'
+            html +='<br/>'
+            # html +='<div><table></table></div>'
+
+
+            # visualization
             # create the first row
-            html += '<table border="1px solid gray" style="width=100%">'
+            html += '<div id="bottom">'
+            html += '\n<div style="width:100%"><table border="1px solid gray" style="width=100%">'
             html += '\n<thead><tr><td><b>images</b></td>'
             for each_hop in range(num_of_hops):
                 html += '<td><b>{}</b></td>'.format('hop%d'%(each_hop+1))
@@ -129,7 +225,10 @@ if __name__ == '__main__':
                     # html += '<td bgcolor="{}" color="{}">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)],\
                     html += '<td style="background-color:{};color:{};">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)], each_data['hop_probabilities'][each_hop][frame_idx])
                 html +='</tr>'
-            html +='</tbody></table>'
+            html +='</tbody></table></div>'
+            html += '</div>'
+            # html +='</p>'
+            html += '</body></html>'
             # create the last row
             # print(each_data['id'], each_data['framenums'], each_data['hop_probabilities'], each_data['Predict'], each_data['GT'])
             with open(html_file_name, 'w') as f:

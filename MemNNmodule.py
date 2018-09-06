@@ -11,13 +11,15 @@ import pdb
 class MemNNModule(torch.nn.Module):
     def __init__(self, num_frames, num_class, channel, \
         key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-        num_hop, hop_method, num_CNNs, sorting):
+        num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query):
         super(MemNNModule, self).__init__()
 
         self.num_frames = num_frames # num of segments
         self.num_class = num_class
         self.channel = channel # 1024
         self.sorting = sorting
+        self.AdditionalLoss = AdditionalLoss
+        self.how_to_get_query = how_to_get_query
 
         self.key_dim = key_dim
         self.value_dim = value_dim
@@ -176,7 +178,7 @@ class MemNNModule(torch.nn.Module):
                 accumulated_output[inner_i] = accumulated_output[inner_i][:,tuple(arg_time[inner_i,:].tolist())]
                 # .permute(tuple(arg_time[inner_i,:].tolist()))
                 # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
-                
+
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
@@ -219,12 +221,12 @@ class MemNNModule(torch.nn.Module):
 def return_MemNN(
     relation_type, num_frames, num_class, \
     key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p,
-    channel, num_hop, hop_method, num_CNNs, sorting):
+    channel, num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query):
 
     if relation_type == 'MemNN':
         MemNNmodel = MemNNModule(num_frames, num_class, channel, \
             key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-            num_hop, hop_method, num_CNNs, sorting)
+            num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 

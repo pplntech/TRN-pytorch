@@ -16,8 +16,7 @@ class TSN(nn.Module):
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN=False, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, freezeCustom=False, sorting=False):
-
+                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, freezeCustom=False, sorting=False, AdditionalLoss=False, how_to_get_query='mean'):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -30,6 +29,7 @@ class TSN(nn.Module):
         self.freezeBN = freezeBN
         self.freezeBackbone = freezeBackbone
         self.freezeCustom = freezeCustom
+        self.AdditionalLoss = AdditionalLoss
         # self.sorting = sorting
 
         if not before_softmax and consensus_type != 'avg':
@@ -72,7 +72,8 @@ class TSN(nn.Module):
         elif consensus_type in ['MemNN']:
             self.consensus = MemNNmodule.return_MemNN(consensus_type, self.num_segments, num_class, \
                 key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, query_update_method=query_update_method, \
-                no_softmax_on_p=no_softmax_on_p, channel=1024, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, sorting=sorting)
+                no_softmax_on_p=no_softmax_on_p, channel=1024, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
+                sorting=sorting, AdditionalLoss=AdditionalLoss, how_to_get_query=how_to_get_query)
         else: # agv or something else
             self.consensus = ConsensusModule(consensus_type)
 

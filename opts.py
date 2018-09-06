@@ -36,6 +36,9 @@ parser.add_argument('--freezeBackbone', action='store_true', help='If true, free
 parser.set_defaults(freezeBackbone=False)    ##### newly added #####
 parser.add_argument('--freezeCustom', action='store_true', help='If true, customize freezing')    ##### newly added #####
 parser.set_defaults(freezeCustom=False)    ##### newly added #####
+parser.add_argument('--AdditionalLoss', action='store_true', help='If true, use additional loss every hop')    ##### newly added #####
+parser.set_defaults(AdditionalLoss=False)    ##### newly added #####
+parser.add_argument('--how_to_get_query', type=str, default="mean", choices=['mean', 'lstm'])  ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',

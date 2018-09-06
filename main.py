@@ -57,6 +57,8 @@ def main():
                 freezeBackbone = args.freezeBackbone,
                 freezeCustom = args.freezeCustom,
                 sorting = args.sorting,
+                AdditionalLoss=args.AdditionalLoss,
+                how_to_get_query=args.how_to_get_query,
                 )
 
     crop_size = model.crop_size
