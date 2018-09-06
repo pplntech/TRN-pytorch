@@ -100,11 +100,12 @@ class MemNNModule(torch.nn.Module):
             inputs : (temporal, batch, dim)
             '''
             # out, query_value = query_lstm(memory_input.permute(1,0,2), hidden)
-            out, query_value = self.query_lstm(memory_input.permute(1,0,2)) # out : (8, 30, 1024)
-            print (out.size())
-            print (len(query_value))
+            out, hidden = self.query_lstm(memory_input.permute(1,0,2)) # out : (8, 30, 1024), hidden : tuple
+            query_value = hidden[1].squeeze(0)
+            # print (out.size())
+            # print (len(query_value))
             print (query_value)
-            # print (query_value.size())
+            print (query_value.size())
             asdf
 
         elif self.how_to_get_query=='mean':
