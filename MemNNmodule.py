@@ -106,8 +106,8 @@ class MemNNModule(torch.nn.Module):
             asdf
             
         elif self.how_to_get_query=='mean':
-        if self.num_CNNs==1: query_value = torch.mean(memory_input, 1) # (BS, 1024)
-        elif self.num_CNNs>1: raise ValueError('not supporting more than one CNNs')
+            if self.num_CNNs==1: query_value = torch.mean(memory_input, 1) # (BS, 1024)
+            elif self.num_CNNs>1: raise ValueError('not supporting more than one CNNs')
 
         accumulated_output = []
         attentions = []
