@@ -240,7 +240,7 @@ class TSN(nn.Module):
                         normal_bias.append(ps[1])
                 elif isinstance(m, torch.nn.modules.rnn.LSTM):
                     print (m)
-                    print (m.parameters())
+                    print (list(m.parameters()))
                     ps = list(m.parameters())
                     normal_weight.append(ps[0])
                     if len(ps) == 2:
