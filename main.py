@@ -306,8 +306,8 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
         
-        print (input_var)
-        asdf
+        # print (input_var)
+        # asdf
 
         # compute output
         if json_file is not None and args.consensus_type in ['MemNN']:
