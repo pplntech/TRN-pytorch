@@ -21,6 +21,10 @@ parser.add_argument(
     "dataset",
     type=str, choices=['something','jester','moments', 'somethingv2', 'charades'],
     help='name of dataset')
+parser.add_argument(
+    "format",
+    type=str,default='20bn-%s',
+    help='format of image containing folder name')
 args = parser.parse_args()
 
 if args.dataset=='something':
@@ -87,7 +91,7 @@ for (filename_input, filename_output) in zip(files_input, files_output):
         curFolder = folders[i]
         curIDX = idx_categories[i]
         # counting the number of frames in each video folders
-        dir_files = os.listdir(os.path.join(args.root_dir, '20bn-%s'%dataset_name, curFolder))
+        dir_files = os.listdir(os.path.join(args.root_dir, args.format%dataset_name, curFolder))
         output.append('%s %d %d'%(curFolder, len(dir_files), curIDX))
         print('%d/%d'%(i, len(folders)))
     with open(os.path.join(args.root_dir,filename_output),'w') as f:
