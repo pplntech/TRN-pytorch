@@ -296,8 +296,6 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
 
     end = time.time()
     for i, (input, target, ids, indices) in enumerate(val_loader):
-        print (input_var)
-        asdf
         if json_file is not None and args.consensus_type in ['MemNN']:
             bs = indices.size()[0]
             ids_list = [int(x) for x in ids]
@@ -307,6 +305,9 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
+        
+        print (input_var)
+        asdf
 
         # compute output
         if json_file is not None and args.consensus_type in ['MemNN']:
