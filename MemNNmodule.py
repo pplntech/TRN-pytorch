@@ -78,6 +78,9 @@ class MemNNModule(torch.nn.Module):
     def fc_fusion(self):
         nums = self.hops
         input_dim = (nums * self.value_dim)
+        if self.only_query:
+            input_dim = 1024
+
         num_bottleneck = 512
         # num_bottleneck = input_dim // 2 # originally, 512
 
@@ -107,6 +110,13 @@ class MemNNModule(torch.nn.Module):
 
         accumulated_output = []
         attentions = []
+        if self.only_query:
+            output = self.classifier(query_value)
+            if eval:
+                attentions = [[1.0/self.num_frames for x in range(self.num_frames)] for y in range(self.num_hop)] 
+                return output, attentions
+            else:
+                return output
 
         # first hop
         retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
