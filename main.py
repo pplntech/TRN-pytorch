@@ -37,7 +37,7 @@ def main():
 
     args.store_name = '_'.join([args.consensus_type, args.dataset, args.modality, args.arch, args.consensus_type, 'segment%d'% args.num_segments, \
         'key%d'%args.key_dim, 'value%d'%args.value_dim, 'query%d'%args.query_dim, 'queryUpdateby%s'%args.query_update_method,\
-        'useSoftmax%s'%args.no_softmax_on_p, 'hopMethod%s'%args.hop_method])
+        'NoSoftmax%s'%args.no_softmax_on_p, 'hopMethod%s'%args.hop_method])
     print('storing name: ' + args.store_name)
 
     model = TSN(num_class, args.num_segments, args.modality,
@@ -305,7 +305,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
-        
+
         # print (input_var)
         # asdf
 
