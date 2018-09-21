@@ -201,6 +201,8 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_0001_step_50100_freezeBackbone_Noclip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.0001 --freezeBN --freezeBackbone --lr_steps 50 100 --no_clip
 
+
+
 v21_bnFreeze_Adam_0_00001_step_100200_sorting on DGX (b)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
@@ -208,7 +210,15 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 (V2_GPU0)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5 --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_v14/ --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting
+(V2_GPU0 same network setting but different training setting.. such as  learning_step & learing_rate & custompolicy)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_0001_step_50100_clip_SORTING_v14/ --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --lr_steps 50 100 --sorting --CustomPolicy
+
+
 
 v21_bnFreeze_Adam_0_00001_step_100200_sorting_lstm on DGX (c)
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
@@ -219,6 +229,8 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 -
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_LSTM_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5 --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting --how_to_get_query lstm
 
+
+
 v21_bnFreeze_Adam_0_00001_step_100200_sorting_nosoftmax on DGX (compare with (b))
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
@@ -226,12 +238,23 @@ python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --r
 (V2_GPU1)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
---result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_NOsoftmax_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5 --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting --no_softmax_on_p
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_SORTING_NOsoftmax_v14/ --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --sorting --no_softmax_on_p
+
+(V2_GPU1 same network setting but different training setting.. such as  learning_step & learing_rate)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_0001_stepLR_default_clip_SORTING_NOsoftmax_v14/ --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --no_softmax_on_p
+
+
 
 v21_bnFreeze_Adam_0_00001_step_100200_nosoftmax on kyungmin (compare with (a))
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 2 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/v21_MemNNQueryNN_2hops_parallel_1CNN_bnFreeze_Adam_0_00001_step_100200_clip_v14/ --workers 20 --num_CNNs 1 --epochs 250 --file_type jpg --optimizer adam --lr 0.00001 --freezeBN --lr_steps 100 200 --no_softmax_on_p
+
+
 
 v21_bnFreeze_Adam_0_00001_step_100200_sorting_lstm on DGX (compare with (c))
 python main.py something RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /raid/users/km/SthSth/ \

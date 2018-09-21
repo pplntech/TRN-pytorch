@@ -16,7 +16,7 @@ class TSN(nn.Module):
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN=False, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, freezeCustom=False, sorting=False, AdditionalLoss=False, how_to_get_query='mean'):
+                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, how_to_get_query='mean', only_query=False):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -28,7 +28,7 @@ class TSN(nn.Module):
         self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
         self.freezeBN = freezeBN
         self.freezeBackbone = freezeBackbone
-        self.freezeCustom = freezeCustom
+        self.CustomPolicy = CustomPolicy
         self.AdditionalLoss = AdditionalLoss
         # self.sorting = sorting
 
@@ -73,7 +73,7 @@ class TSN(nn.Module):
             self.consensus = MemNNmodule.return_MemNN(consensus_type, self.num_segments, num_class, \
                 key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, query_update_method=query_update_method, \
                 no_softmax_on_p=no_softmax_on_p, channel=1024, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
-                sorting=sorting, AdditionalLoss=AdditionalLoss, how_to_get_query=how_to_get_query)
+                sorting=sorting, AdditionalLoss=AdditionalLoss, how_to_get_query=how_to_get_query, only_query=only_query)
         else: # agv or something else
             self.consensus = ConsensusModule(consensus_type)
 
@@ -207,7 +207,7 @@ class TSN(nn.Module):
     def get_optim_policies(self):
         # print (self.freezeBackbone)
         # asdf
-        if self.freezeBackbone is False and self.freezeCustom is False:
+        if self.freezeBackbone is False and self.CustomPolicy is False:
             first_conv_weight = []
             first_conv_bias = []
             normal_weight = []
@@ -275,7 +275,7 @@ class TSN(nn.Module):
                  'name': "BN scale/shift"},
             ]
 
-        elif self.freezeBackbone is False and self.freezeCustom:
+        elif self.freezeBackbone is False and self.CustomPolicy:
             backbone_weight = []
             backbone_bias = []
             consensus_weight = []

@@ -55,10 +55,11 @@ def main():
                 num_CNNs = args.num_CNNs,
                 no_softmax_on_p = args.no_softmax_on_p,
                 freezeBackbone = args.freezeBackbone,
-                freezeCustom = args.freezeCustom,
+                CustomPolicy = args.CustomPolicy,
                 sorting = args.sorting,
                 AdditionalLoss=args.AdditionalLoss,
                 how_to_get_query=args.how_to_get_query,
+                only_query=args.only_query
                 )
 
     crop_size = model.crop_size

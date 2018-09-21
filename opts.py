@@ -34,11 +34,13 @@ parser.add_argument('--freezeBN', action='store_true', help='If true, freezeBN')
 parser.set_defaults(freezeBN=False)    ##### newly added #####
 parser.add_argument('--freezeBackbone', action='store_true', help='If true, freezeBackbone')    ##### newly added #####
 parser.set_defaults(freezeBackbone=False)    ##### newly added #####
-parser.add_argument('--freezeCustom', action='store_true', help='If true, customize freezing')    ##### newly added #####
-parser.set_defaults(freezeCustom=False)    ##### newly added #####
+parser.add_argument('--CustomPolicy', action='store_true', help='If true, customize freezing')    ##### newly added #####
+parser.set_defaults(CustomPolicy=False)    ##### newly added #####
 parser.add_argument('--AdditionalLoss', action='store_true', help='If true, use additional loss every hop')    ##### newly added #####
 parser.set_defaults(AdditionalLoss=False)    ##### newly added #####
 parser.add_argument('--how_to_get_query', type=str, default="mean", choices=['mean', 'lstm'])  ##### newly added #####
+parser.add_argument('--only_query', action='store_true', help='If true, use only query to predict the final')    ##### newly added #####
+parser.set_defaults(only_query=False)    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',
