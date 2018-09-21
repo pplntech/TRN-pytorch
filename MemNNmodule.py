@@ -11,7 +11,7 @@ import pdb
 class MemNNModule(torch.nn.Module):
     def __init__(self, num_frames, num_class, channel, \
         key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-        num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query):
+        num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query):
         super(MemNNModule, self).__init__()
 
         self.num_frames = num_frames # num of segments
@@ -20,6 +20,7 @@ class MemNNModule(torch.nn.Module):
         self.sorting = sorting
         self.AdditionalLoss = AdditionalLoss
         self.how_to_get_query = how_to_get_query
+        self.only_query = only_query
 
         self.key_dim = key_dim
         self.value_dim = value_dim
@@ -236,12 +237,12 @@ class MemNNModule(torch.nn.Module):
 def return_MemNN(
     relation_type, num_frames, num_class, \
     key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p,
-    channel, num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query):
+    channel, num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query):
 
     if relation_type == 'MemNN':
         MemNNmodel = MemNNModule(num_frames, num_class, channel, \
             key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-            num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query)
+            num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 
