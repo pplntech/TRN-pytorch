@@ -139,6 +139,7 @@ class TSNDataSet(data.Dataset):
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
             input_h5 = h5py.File(input_h5file, 'r')
 
+        assert (len(input_h5[str(record.path)])==record.num_frames)
         # print (indices, ', len : ', len(input_h5[str(record.path)]))
         for seg_ind in indices:
             p = int(seg_ind)
