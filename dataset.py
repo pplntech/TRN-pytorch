@@ -95,7 +95,7 @@ class TSNDataSet(data.Dataset):
             print (offsets.dtype)
         else:
             offsets = np.linspace(0,self.num_segments-1,self.num_segments)
-            print (offsets.dtype, record.path)
+            print (offsets.dtype, record.path,dtype='int64')
             asdf
             # offsets = np.zeros((self.num_segments,), dtype=)
         return offsets + 1
