@@ -137,7 +137,7 @@ class TSNDataSet(data.Dataset):
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
             input_h5 = h5py.File(input_h5file, 'r')
 
-        print (indices, ', len : ', len(input_h5[str(record.path)]))
+        # print (indices, ', len : ', len(input_h5[str(record.path)]))
         for seg_ind in indices:
             p = int(seg_ind)
             for i in range(self.new_length):
@@ -146,6 +146,8 @@ class TSNDataSet(data.Dataset):
                     # so, [0] stores information of 000001.jpg
                     # print (record.path, type(record.path)) # 190641 <class 'str'>
                     # print (np.array(Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')))
+                    print (p-1, len(input_h5[str(record.path)]))
+                    print (input_h5[str(record.path)])
                     seg_imgs = [Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')]
                     # asdf
                 else:
