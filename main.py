@@ -24,8 +24,9 @@ best_prec1 = 0
 
 from torch._six import string_classes, int_classes
 import collections
-
+_use_shared_memory = False
 def default_collate_km(batch):
+    
     "Puts each data field into a tensor with outer dimension batch size"
 
     error_msg = "batch must contain tensors, numbers, dicts or lists; found {}"
@@ -62,7 +63,7 @@ def default_collate_km(batch):
     elif isinstance(batch[0], collections.Sequence):
         transposed = zip(*batch)
         return [default_collate_km(samples) for samples in transposed]
-        
+
     raise TypeError((error_msg.format(type(batch[0]))))
 
 def main():
