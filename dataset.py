@@ -132,7 +132,7 @@ class TSNDataSet(data.Dataset):
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
             input_h5 = h5py.File(input_h5file, 'r')
 
-        print (indices)
+        # print (indices)
         for seg_ind in indices:
             p = int(seg_ind)
             for i in range(self.new_length):
@@ -155,6 +155,7 @@ class TSNDataSet(data.Dataset):
 
 
         process_data = self.transform(images)
+        print (indices, record.num_frames, record.path)
         return process_data, record.label, record.path, indices
 
     def __len__(self):
