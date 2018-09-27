@@ -21,15 +21,16 @@ from tensorboardX import SummaryWriter
 
 best_prec1 = 0
 
-'''
+
 from torch._six import string_classes, int_classes
-from torch._six import container_abcs
+import collections
+
 def default_collate_km(batch):
-    r"""Puts each data field into a tensor with outer dimension batch size"""
+    "Puts each data field into a tensor with outer dimension batch size"
 
     error_msg = "batch must contain tensors, numbers, dicts or lists; found {}"
     elem_type = type(batch[0])
-    if isinstance(batch[0], torch.Tensor):
+    if torch.is_tensor(batch[0]):
         out = None
         if _use_shared_memory:
             # If we're in a background process, concatenate directly into a
@@ -56,14 +57,14 @@ def default_collate_km(batch):
         return torch.DoubleTensor(batch)
     elif isinstance(batch[0], string_classes):
         return batch
-    elif isinstance(batch[0], container_abcs.Mapping):
-        return {key: default_collate([d[key] for d in batch]) for key in batch[0]}
-    elif isinstance(batch[0], container_abcs.Sequence):
+    elif isinstance(batch[0], collections.Mapping):
+        return {key: default_collate_km([d[key] for d in batch]) for key in batch[0]}
+    elif isinstance(batch[0], collections.Sequence):
         transposed = zip(*batch)
-        return [default_collate(samples) for samples in transposed]
-
+        return [default_collate_km(samples) for samples in transposed]
+        
     raise TypeError((error_msg.format(type(batch[0]))))
-'''
+
 def main():
     global args, best_prec1, num_train_dataset, num_val_dataset, writer
     args = parser.parse_args()
@@ -151,8 +152,8 @@ def main():
                        ]))
     train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True)
-        # num_workers=args.workers, pin_memory=True, collate_fn=default_collate_km)
+        # num_workers=args.workers, pin_memory=True)
+        num_workers=args.workers, pin_memory=True, collate_fn=default_collate_km)
 
     val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
