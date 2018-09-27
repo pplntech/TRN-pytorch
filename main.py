@@ -49,6 +49,7 @@ def default_collate_km(batch):
             if re.search('[SaUO]', elem.dtype.str) is not None:
                 raise TypeError(error_msg.format(elem.dtype))
 
+            print ('-------------------------', torch.stack([torch.from_numpy(b) for b in batch], 0), '-------------------------')
             return torch.stack([torch.from_numpy(b) for b in batch], 0)
         if elem.shape == ():  # scalars
             py_type = float if elem.dtype.name.startswith('float') else int
