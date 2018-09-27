@@ -94,7 +94,7 @@ class TSNDataSet(data.Dataset):
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
             # print (offsets.dtype)
         else:
-            offsets = np.linspace(0,self.num_segments-2,self.num_segments,dtype='int64')
+            offsets = np.linspace(0,self.num_segments-1,self.num_segments,dtype='int64')
             # print (offsets.dtype, record.path)
             # asdf
             # offsets = np.zeros((self.num_segments,), dtype=)
@@ -137,7 +137,7 @@ class TSNDataSet(data.Dataset):
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
             input_h5 = h5py.File(input_h5file, 'r')
 
-        # print (indices)
+        print (indices, ', len : ', len(input_h5[str(record.path)]))
         for seg_ind in indices:
             p = int(seg_ind)
             for i in range(self.new_length):
