@@ -140,20 +140,21 @@ class TSNDataSet(data.Dataset):
         # print (indices, ', len : ', len(input_h5[str(record.path)]))
         for seg_ind in indices:
             p = int(seg_ind)
+            print (self.new_length)
             for i in range(self.new_length):
                 if self.file_type == 'h5':
                     # n5 save data from idx 0 !
                     # so, [0] stores information of 000001.jpg
                     # print (record.path, type(record.path)) # 190641 <class 'str'>
                     # print (np.array(Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')))
-                    print (p-1, len(input_h5[str(record.path)]), input_h5[str(record.path)][p-1])
+                    # print (p-1, len(input_h5[str(record.path)]), input_h5[str(record.path)][p-1])
                     seg_imgs = [Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')]
                     # asdf
                 else:
                     seg_imgs = self._load_image(record.path, p)
 
                 images.extend(seg_imgs)
-                if p < record.num_frames:
+                if (p < record.num_frames and self.file_type!='h5') or p < record.num_frames-1 and self.file_type=='h5':
                     p += 1
 
         if self.file_type == 'h5':
