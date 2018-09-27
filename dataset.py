@@ -105,14 +105,17 @@ class TSNDataSet(data.Dataset):
             tick = (record.num_frames - self.new_length + 1) / float(self.num_segments)
             offsets = np.array([int(tick / 2.0 + tick * x) for x in range(self.num_segments)])
         else:
-            offsets = np.zeros((self.num_segments,))
+            offsets = np.linspace(0,record.num_frames-1,self.num_segments,dtype='int64')
+            # offsets = np.zeros((self.num_segments,))
         return offsets + 1
 
     def _get_test_indices(self, record):
-
-        tick = (record.num_frames - self.new_length + 1) / float(self.num_segments)
-
-        offsets = np.array([int(tick / 2.0 + tick * x) for x in range(self.num_segments)])
+        if record.num_frames > self.num_segments + self.new_length - 1:
+            tick = (record.num_frames - self.new_length + 1) / float(self.num_segments)
+            offsets = np.array([int(tick / 2.0 + tick * x) for x in range(self.num_segments)])
+        else:
+            offsets = np.linspace(0,record.num_frames-1,self.num_segments,dtype='int64')
+            # offsets = np.zeros((self.num_segments,))
 
         return offsets + 1
 
