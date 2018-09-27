@@ -26,7 +26,7 @@ from torch._six import string_classes, int_classes
 import collections
 _use_shared_memory = False
 def default_collate_km(batch):
-    
+
     "Puts each data field into a tensor with outer dimension batch size"
 
     error_msg = "batch must contain tensors, numbers, dicts or lists; found {}"
@@ -154,7 +154,7 @@ def main():
     train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
         # num_workers=args.workers, pin_memory=True)
-        num_workers=args.workers, pin_memory=True, collate_fn=default_collate_km)
+        num_workers=1, pin_memory=True, collate_fn=default_collate_km)
 
     val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
