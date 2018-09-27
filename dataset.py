@@ -155,7 +155,7 @@ class TSNDataSet(data.Dataset):
 
 
         process_data = self.transform(images)
-        print (indices, record.num_frames, record.path)
+        print (indices, record.num_frames, record.path, process_data)
         return process_data, record.label, record.path, indices
 
     def __len__(self):
