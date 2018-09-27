@@ -82,7 +82,6 @@ class TSNDataSet(data.Dataset):
 
     def _sample_indices(self, record):
         """
-
         :param record: VideoRecord
         :return: list
         """
@@ -132,7 +131,8 @@ class TSNDataSet(data.Dataset):
         if self.file_type == 'h5':
             input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
             input_h5 = h5py.File(input_h5file, 'r')
-        
+
+        print (indices)
         for seg_ind in indices:
             p = int(seg_ind)
             for i in range(self.new_length):

@@ -113,7 +113,7 @@ class MemNNModule(torch.nn.Module):
         if self.only_query:
             output = self.classifier(query_value)
             if eval:
-                attentions = [[1.0/self.num_frames for x in range(self.num_frames)] for y in range(self.num_hop)] 
+                attentions = [[[1.0/self.num_frames for x in range(self.num_frames)] for y in range(self.hops)] for z in range(bs)]
                 return output, attentions
             else:
                 return output
@@ -212,7 +212,9 @@ class MemNNModule(torch.nn.Module):
         attentions = attentions.permute(0, 1, 3, 2)
         attentions = attentions.squeeze(1)
         attentions = attentions.data.numpy().tolist()
-
+        # print (attentions)
+        # print (len(attentions))
+        # asdf
         if eval:
             return output, attentions
         else:

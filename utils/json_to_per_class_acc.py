@@ -47,9 +47,9 @@ def save(txt_filename, gt, pred, idx2class):
 
     # dic_acc.sort(key=_take2nd)
     with open(txt_filename, 'a+') as f:
-        f.write('CLASS\t\t\t\t\t\t\t\t  / NUM_OF_DATA / ACC\n')
+        f.write('%-100s / NUM_OF_DATA / ACC\n' % 'CLASS')
         for each_class_int, value in dic_acc:
-            f.write('%s\t\t\t\t\t\t\t\t / %d / %f\n' %
+            f.write('%-100s / %-4d / %f\n' %
              (idx2class[each_class_int], total[each_class_int], value))
 
     ####################### Confusion Matrix #######################
@@ -75,7 +75,7 @@ def save(txt_filename, gt, pred, idx2class):
         for number, idx in enumerate(indices[::-1]):
             gt_label = idx[0]
             pred_label = idx[1]
-            f.write('%dth : (%s, %s : %d/%d)\n' %
+            f.write('%-2dth : (%-100s, %-100s : %-5d/%-5d)\n' %
              (number+1, idx2class[gt_label], idx2class[pred_label],\
              cm[gt_label][pred_label], len(gt)))
     ####################### Confusion Matrix #######################
