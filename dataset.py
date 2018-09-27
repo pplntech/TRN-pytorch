@@ -145,10 +145,8 @@ class TSNDataSet(data.Dataset):
         for seg_ind in indices:
             p = int(seg_ind)
             if(len(input_h5[str(record.path)])<p):
-                print ('ERROR')
-                print (record.path, len(input_h5[str(record.path)]))
-                print (indices)
-                print (p)
+                print ('ERROR on id : %d whose lenght is %d' % (record.path, len(input_h5[str(record.path)])))
+                print (indices, p)
             # print (self.new_length)
             for i in range(self.new_length):
                 if self.file_type == 'h5':
