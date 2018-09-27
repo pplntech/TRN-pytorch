@@ -89,14 +89,14 @@ class TSNDataSet(data.Dataset):
         average_duration = (record.num_frames - self.new_length + 1) // self.num_segments
         if average_duration > 0:
             offsets = np.multiply(list(range(self.num_segments)), average_duration) + randint(average_duration, size=self.num_segments)
-            print (offsets.dtype)
+            # print (offsets.dtype)
         elif record.num_frames > self.num_segments:
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
-            print (offsets.dtype)
+            # print (offsets.dtype)
         else:
             offsets = np.linspace(0,self.num_segments-1,self.num_segments,dtype='int64')
-            print (offsets.dtype, record.path)
-            asdf
+            # print (offsets.dtype, record.path)
+            # asdf
             # offsets = np.zeros((self.num_segments,), dtype=)
         return offsets + 1
 
@@ -160,7 +160,7 @@ class TSNDataSet(data.Dataset):
 
 
         process_data = self.transform(images)
-        print (process_data.type(), process_data.size(), record.path)
+        # print (process_data.type(), process_data.size(), record.path)
         # print (indices, record.num_frames, record.path, process_data)
         return process_data, record.label, record.path, indices
 

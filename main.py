@@ -21,7 +21,7 @@ from tensorboardX import SummaryWriter
 
 best_prec1 = 0
 
-
+'''
 from torch._six import string_classes, int_classes
 import collections
 import re
@@ -68,6 +68,7 @@ def default_collate_km(batch):
         return [default_collate_km(samples) for samples in transposed]
 
     raise TypeError((error_msg.format(type(batch[0]))))
+'''
 
 def main():
     global args, best_prec1, num_train_dataset, num_val_dataset, writer
@@ -156,8 +157,8 @@ def main():
                        ]))
     train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
-        # num_workers=args.workers, pin_memory=True)
-        num_workers=1, pin_memory=True, collate_fn=default_collate_km)
+        num_workers=args.workers, pin_memory=True)
+        # num_workers=1, pin_memory=True, collate_fn=default_collate_km)
 
     val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
