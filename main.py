@@ -22,6 +22,7 @@ from tensorboardX import SummaryWriter
 best_prec1 = 0
 
 from torch._six import string_classes, int_classes
+from torch._six import container_abcs
 def default_collate_km(batch):
     r"""Puts each data field into a tensor with outer dimension batch size"""
 
