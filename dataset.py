@@ -94,7 +94,7 @@ class TSNDataSet(data.Dataset):
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
             print (offsets.dtype)
         else:
-            offsets = np.linspace(0,self.num_segments-1,self.num_segments,,dtype='int64')
+            offsets = np.linspace(0,self.num_segments-1,self.num_segments,dtype='int64')
             print (offsets.dtype, record.path)
             asdf
             # offsets = np.zeros((self.num_segments,), dtype=)
