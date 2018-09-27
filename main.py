@@ -21,6 +21,7 @@ from tensorboardX import SummaryWriter
 
 best_prec1 = 0
 
+'''
 from torch._six import string_classes, int_classes
 from torch._six import container_abcs
 def default_collate_km(batch):
@@ -62,7 +63,7 @@ def default_collate_km(batch):
         return [default_collate(samples) for samples in transposed]
 
     raise TypeError((error_msg.format(type(batch[0]))))
-
+'''
 def main():
     global args, best_prec1, num_train_dataset, num_val_dataset, writer
     args = parser.parse_args()
