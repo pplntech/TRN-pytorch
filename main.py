@@ -24,6 +24,7 @@ best_prec1 = 0
 
 from torch._six import string_classes, int_classes
 import collections
+import re
 _use_shared_memory = False
 def default_collate_km(batch):
 
