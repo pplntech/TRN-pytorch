@@ -146,8 +146,7 @@ class TSNDataSet(data.Dataset):
                     # so, [0] stores information of 000001.jpg
                     # print (record.path, type(record.path)) # 190641 <class 'str'>
                     # print (np.array(Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')))
-                    print (p-1, len(input_h5[str(record.path)]))
-                    print (input_h5[str(record.path)][p-1])
+                    print (p-1, len(input_h5[str(record.path)]), input_h5[str(record.path)][p-1])
                     seg_imgs = [Image.open(io.BytesIO(input_h5[str(record.path)][p-1])).convert('RGB')]
                     # asdf
                 else:
