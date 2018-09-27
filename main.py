@@ -151,7 +151,8 @@ def main():
                        ]))
     train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True, collate_fn=default_collate_km)
+        num_workers=args.workers, pin_memory=True)
+        # num_workers=args.workers, pin_memory=True, collate_fn=default_collate_km)
 
     val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
