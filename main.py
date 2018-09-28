@@ -137,7 +137,7 @@ def main():
 
     # define loss function (criterion) and optimizer
     if args.loss_type == 'nll':
-        criterion = torch.nn.CrossEntropyLoss().cuda()
+        criterion = torch.nn.CrossEntropyLoss(reduce=False).cuda()
     else:
         raise ValueError("Unknown loss type")
 
@@ -221,8 +221,10 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
         target_var = torch.autograd.Variable(target)
 
         # compute output
-        output = model(input_var)
-        loss = criterion(output, target_var)
+        output, loss = model(input_var, criterion, phase='train', target=target_var) # torch.nn.CrossEntropyLoss().cuda()
+        
+        # output = model(input_var)
+        # loss = criterion(output, target_var)
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1,5))
@@ -314,11 +316,13 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
 
         # compute output
         if json_file is not None and args.consensus_type in ['MemNN']:
-            output, attentions = model(input_var, eval=True)
+            output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
+            # output, attentions = model(input_var, eval=True)
         else:
             # print (input_var)
-            output = model(input_var)
-        loss = criterion(output, target_var)
+            output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=False)
+            # output = model(input_var)
+        # loss = criterion(output, target_var)
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1,5))

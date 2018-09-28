@@ -46,36 +46,49 @@ class MemNNModule(torch.nn.Module):
             self.query_lstm = nn.LSTM(self.channel, self.channel)
 
         # define layers
-        self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
-        # query_embedding1
-        # self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
+        if not self.only_query:
+            self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
+            # query_embedding1
+            # self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
 
-        if self.hops >= 2:
-            if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
-            if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
-            # if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
-            # if self.query_update_method=='sum': self.QueryEmbedding2 = nn.Linear(self.channel, self.query_dim)
-            if self.hop_method=='parallel': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
+            if self.hops >= 2:
+                if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+                if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
+                # if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+                # if self.query_update_method=='sum': self.QueryEmbedding2 = nn.Linear(self.channel, self.query_dim)
+                if self.hop_method=='parallel': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
 
-        if self.hops >= 3:
-            if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
-            if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
-            # if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
-            # if self.query_update_method=='sum': self.QueryEmbedding3 = nn.Linear(self.channel, self.query_dim)
-            if self.hop_method=='parallel': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
+            if self.hops >= 3:
+                if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+                if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
+                # if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+                # if self.query_update_method=='sum': self.QueryEmbedding3 = nn.Linear(self.channel, self.query_dim)
+                if self.hop_method=='parallel': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
 
-        self.KeyEmbedding1 = nn.Linear(self.channel, self.key_dim)
-        self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
+            self.KeyEmbedding1 = nn.Linear(self.channel, self.key_dim)
+            self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
-        if self.hops >= 2:
-            if self.hop_method=='parallel': self.KeyEmbedding2 = nn.Linear(self.channel, self.key_dim)
-            if self.hop_method=='parallel': self.ValueEmbedding2 = nn.Linear(self.channel, self.value_dim)
+            if self.hops >= 2:
+                if self.hop_method=='parallel': self.KeyEmbedding2 = nn.Linear(self.channel, self.key_dim)
+                if self.hop_method=='parallel': self.ValueEmbedding2 = nn.Linear(self.channel, self.value_dim)
 
-        if self.hops >= 3:
-            if self.hop_method=='parallel': self.KeyEmbedding3 = nn.Linear(self.channel, self.key_dim)
-            if self.hop_method=='parallel': self.ValueEmbedding3 = nn.Linear(self.channel, self.value_dim)
+            if self.hops >= 3:
+                if self.hop_method=='parallel': self.KeyEmbedding3 = nn.Linear(self.channel, self.key_dim)
+                if self.hop_method=='parallel': self.ValueEmbedding3 = nn.Linear(self.channel, self.value_dim)
 
         self.classifier = self.fc_fusion()
+
+        if self.AdditionalLoss:
+            self.query_prediction = nn.Linear(self.channel, self.num_class)
+
+            if self.hop_method=='iterative':
+                if self.hops >= 2:
+                    if self.query_update_method=='concat': self.hop1_prediction = nn.Linear(self.channel + self.value_dim, self.num_class)
+                    if self.query_update_method=='sum': self.hop1_prediction = nn.Linear(self.channel, self.num_class)
+                if self.hops >= 3:
+                    if self.query_update_method=='concat': self.hop2_prediction = nn.Linear(self.channel + self.value_dim*2, self.num_class)
+                    if self.query_update_method=='sum': self.hop2_prediction = nn.Linear(self.channel, self.num_class)
+
 
     def fc_fusion(self):
         nums = self.hops
@@ -95,6 +108,7 @@ class MemNNModule(torch.nn.Module):
         return classifier
 
     def forward(self, memory_input, eval): # (BS, num_frames, channel)
+        outputs = []
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
 
@@ -114,11 +128,15 @@ class MemNNModule(torch.nn.Module):
         attentions = []
         if self.only_query:
             output = self.classifier(query_value)
+            outputs.append(output.squeeze(1))
             if eval:
                 attentions = [[[1.0/self.num_frames for x in range(self.num_frames)] for y in range(self.hops)] for z in range(bs)]
-                return output, attentions
+                return outputs, attentions
             else:
-                return output
+                return outputs
+
+        if self.AdditionalLoss:
+            outputs.append(self.query_prediction(query_value).squeeze(1))
 
         # first hop
         retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
@@ -127,6 +145,7 @@ class MemNNModule(torch.nn.Module):
 
         if self.hops >= 2:
             if self.hop_method=='iterative':
+
                 KeyEmbedding = self.KeyEmbedding1
                 ValueEmbedding = self.ValueEmbedding1
 
@@ -138,6 +157,9 @@ class MemNNModule(torch.nn.Module):
                 if self.query_update_method=='concat':
                     updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
                     QueryEmbedding = self.query_embedding2
+
+                if self.AdditionalLoss:
+                    outputs.append(self.hop1_prediction(updated_query_value2).squeeze(1))
 
             elif self.hop_method=='parallel':
                 KeyEmbedding = self.KeyEmbedding2
@@ -152,6 +174,7 @@ class MemNNModule(torch.nn.Module):
 
         if self.hops >= 3:
             if self.hop_method=='iterative':
+
                 KeyEmbedding = self.KeyEmbedding1
                 ValueEmbedding = self.ValueEmbedding1
 
@@ -164,6 +187,9 @@ class MemNNModule(torch.nn.Module):
                     updated_query_value3 = torch.cat((updated_query_value2, retrieved_value2), dim=1)
                     QueryEmbedding = self.query_embedding3
                     
+                if self.AdditionalLoss:
+                    outputs.append(self.hop2_prediction(updated_query_value3).squeeze(1))
+
             elif self.hop_method=='parallel':
                 KeyEmbedding = self.KeyEmbedding3
                 ValueEmbedding = self.ValueEmbedding3
@@ -217,10 +243,15 @@ class MemNNModule(torch.nn.Module):
         # print (attentions)
         # print (len(attentions))
         # asdf
+        outputs.append(output.squeeze(1))
+
+        if self.AdditionalLoss:
+            pass
+
         if eval:
-            return output, attentions
+            return outputs, attentions
         else:
-            return output
+            return outputs
 
     def hop(self, memory, query_value, KeyEmbedding, ValueEmbedding, QueryEmbedding):
         bs = memory.size(0)

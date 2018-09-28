@@ -460,7 +460,7 @@ class TSN(nn.Module):
 
         return torch.autograd.Variable(allgrids.cuda())
 
-    def forward(self, input, eval=False):
+    def forward(self, input, criterion, phase='eval', target=None, eval=False):
         # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
 
         sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
@@ -503,24 +503,52 @@ class TSN(nn.Module):
         # print (self.before_softmax) # True
         if not self.before_softmax:
             base_out = self.softmax(base_out)
-        # print (base_out.size()) # (BS * num_seg, img_feature_dim_OR_final_class_num)
+
         if self.reshape:
             base_out = base_out.view((-1, self.num_segments) + base_out.size()[1:])
-        # print (base_out.size()) # (BS, NUM_SEG, img_feature_dim_OR_final_class_num)
+            # ^^ bf : (BS * NUM_SEG, img_feature_dim_OR_final_class_num)
+            # ^^ af : (BS, NUM_SEG, img_feature_dim_OR_final_class_num)
 
+
+        # outputs : list of outputs of each prediction_branch (logits)
         if self.consensus_type in ['MemNN']:
             if eval:
-                output, attentions = self.consensus(base_out, eval=eval)
+                outputs, attentions = self.consensus(base_out, eval=eval) # output : logit
             else:
-                output = self.consensus(base_out, eval=eval)
+                outputs = self.consensus(base_out, eval=eval) # output : logit
         else:
-            output = self.consensus(base_out)
+            outputs = [self.consensus(base_out).squeeze(1)]
+        # output = output.squeeze(1)
+        # print (len(outputs))
+        # for idx, output in enumerate(outputs):
+        #     print (idx, ' : ', output)
+        # asdf
 
+        # Calculate Loss
+        # output : list of logits
+        # loss = criterion(output, target_var)
+        # print (len(outputs))
+
+        total_loss = None
+        total_output = None
+        for output in outputs:
+            if total_loss is None:
+                # output.size() : 
+                # target.size() : 
+                total_loss = criterion(output, target)
+                total_output = nn.functional.softmax(output,1) # BS x 174
+            else:
+                total_loss += criterion(output, target)
+                total_output += nn.functional.softmax(output,1) # BS x 174
+
+        total_output = total_output / len(outputs)
+        total_loss = total_loss / len(outputs)
+        total_loss = total_loss.mean()
 
         if eval and self.consensus_type in ['MemNN']:
-            return output.squeeze(1), attentions
+            return total_output, attentions, total_loss
         else:
-            return output.squeeze(1)
+            return total_output, total_loss
 
     def _get_diff(self, input, keep_rgb=False):
         input_c = 3 if self.modality in ["RGB", "RGBDiff"] else 2
