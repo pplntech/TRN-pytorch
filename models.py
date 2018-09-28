@@ -15,8 +15,8 @@ class TSN(nn.Module):
                  base_model='resnet101', new_length=None,
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
-                 crop_num=1, partial_bn=True, freezeBN=False, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, how_to_get_query='mean', only_query=False):
+                 crop_num=1, partial_bn=True, freezeBN=False, freezeBN_Grad=False, print_spec=True, num_hop=1, hop_method=None, 
+                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, how_to_get_query='mean', only_query=False, CC=False, channel=1024):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -27,9 +27,11 @@ class TSN(nn.Module):
         self.consensus_type = consensus_type
         self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
         self.freezeBN = freezeBN
+        self.freezeBN_Grad = freezeBN_Grad
         self.freezeBackbone = freezeBackbone
         self.CustomPolicy = CustomPolicy
         self.AdditionalLoss = AdditionalLoss
+        self.CC = CC
         # self.sorting = sorting
 
         if not before_softmax and consensus_type != 'avg':
@@ -41,15 +43,15 @@ class TSN(nn.Module):
             self.new_length = new_length
         if print_spec == True:
             print(("""
-    Initializing TSN with base model: {}.
-    TSN Configurations:
-        input_modality:     {}
-        num_segments:       {}
-        new_length:         {}
-        consensus_module:   {}
-        dropout_ratio:      {}
-        img_feature_dim:    {}
-            """.format(base_model, self.modality, self.num_segments, self.new_length, consensus_type, self.dropout, self.img_feature_dim)))
+                Initializing TSN with base model: {}.
+                TSN Configurations:
+                input_modality:     {}
+                num_segments:       {}
+                new_length:         {}
+                consensus_module:   {}
+                dropout_ratio:      {}
+                img_feature_dim:    {}
+                """.format(base_model, self.modality, self.num_segments, self.new_length, consensus_type, self.dropout, self.img_feature_dim)))
 
         self._prepare_base_model(base_model) # assign 'self.base_model'
 
@@ -72,8 +74,8 @@ class TSN(nn.Module):
         elif consensus_type in ['MemNN']:
             self.consensus = MemNNmodule.return_MemNN(consensus_type, self.num_segments, num_class, \
                 key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, query_update_method=query_update_method, \
-                no_softmax_on_p=no_softmax_on_p, channel=1024, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
-                sorting=sorting, AdditionalLoss=AdditionalLoss, how_to_get_query=how_to_get_query, only_query=only_query)
+                no_softmax_on_p=no_softmax_on_p, channel=channel, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
+                sorting=sorting, AdditionalLoss=AdditionalLoss, how_to_get_query=how_to_get_query, only_query=only_query, CC=CC)
         else: # agv or something else
             self.consensus = ConsensusModule(consensus_type)
 
@@ -86,7 +88,7 @@ class TSN(nn.Module):
 
     def _prepare_tsn(self, num_class):
         feature_dim = getattr(self.base_model, self.base_model.last_layer_name).in_features # 1024
-        # print (self.base_model)
+
         if self.dropout == 0:
             if self.consensus_type in ['TRN','TRNmultiscale']:
                 setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
@@ -98,6 +100,7 @@ class TSN(nn.Module):
             else:
                 setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, num_class))
             self.new_fc = None
+
         else: # dropout not ZERO
             setattr(self.base_model, self.base_model.last_layer_name, nn.Dropout(p=self.dropout))
 
@@ -124,10 +127,17 @@ class TSN(nn.Module):
         return feature_dim # 1024 on BNInception
 
     def _prepare_base_model(self, base_model):
-
         if 'resnet' in base_model or 'vgg' in base_model:
             self.base_model = getattr(torchvision.models, base_model)(True)
             self.base_model.last_layer_name = 'fc'
+            # print (self.base_model)# (conv1, bn1, relu, maxpool, layer1, layer2, layer3, layer4, avgpool, fc)
+
+            if self.CC: # CC
+                self.base_model_first_conv = self.base_model.conv1
+                self.base_model_cc = nn.Conv2d(3, 64, 1, 2)
+                self.base_model = nn.Sequential(*list(self.base_model.children())[1:])
+
+                self.base_model.last_layer_name = '8'
             self.input_size = 224
             self.input_mean = [0.485, 0.456, 0.406]
             self.input_std = [0.229, 0.224, 0.225]
@@ -138,6 +148,7 @@ class TSN(nn.Module):
             elif self.modality == 'RGBDiff':
                 self.input_mean = self.input_mean + [0] * 3 * self.new_length
                 self.input_std = self.input_std + [np.mean(self.input_std) * 2] * 3 * self.new_length
+
         elif base_model == 'BNInception':
             import model_zoo
             self.base_model = getattr(model_zoo, base_model)()
@@ -150,6 +161,16 @@ class TSN(nn.Module):
                 self.input_mean = [128]
             elif self.modality == 'RGBDiff':
                 self.input_mean = self.input_mean * (1 + self.new_length)
+
+            if self.CC:
+                raise ValueError("CC is not supported on BNInception architecture.")
+
+                # self.base_model_first_conv = nn.Sequential(*list(self.base_model.children())[:1])
+                # self.base_model_cc = nn.Conv2d(3, 64, 1, 2)
+
+                # self.base_model = self.base_model.children()
+                # self.base_model.last_layer_name = '218'
+
         elif base_model == 'InceptionV3':
             import model_zoo
             self.base_model = getattr(model_zoo, base_model)()
@@ -161,7 +182,6 @@ class TSN(nn.Module):
                 self.input_mean = [128]
             elif self.modality == 'RGBDiff':
                 self.input_mean = self.input_mean * (1+self.new_length)
-
         elif 'inception' in base_model:
             import model_zoo
             self.base_model = getattr(model_zoo, base_model)()
@@ -171,15 +191,15 @@ class TSN(nn.Module):
             self.input_std = [0.5]
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
-
     def train(self, mode=True):
         """
         Override the default train() to freeze the BN parameters
         :return:
         """
         super(TSN, self).train(mode)
+
         count = 0
-        if self._enable_pbn:
+        if self._enable_pbn: # partial batch norm
             print("Freezing BatchNorm2D except the first one in base_model.")
             for m in self.base_model.modules():
                 if isinstance(m, nn.BatchNorm2d):
@@ -190,6 +210,7 @@ class TSN(nn.Module):
                         # shutdown update in frozen mode
                         m.weight.requires_grad = False
                         m.bias.requires_grad = False
+
         if self.freezeBN:
             print("Freezing ALL BatchNorm2D in base_model.")
             for m in self.base_model.modules():
@@ -197,9 +218,12 @@ class TSN(nn.Module):
                     m.eval()
 
                     # shutdown update in frozen mode
-                    m.weight.requires_grad = False
-                    m.bias.requires_grad = False
-
+                    if self.freezeBN_Grad:
+                        m.weight.requires_grad = True
+                        m.bias.requires_grad = True
+                    else:
+                        m.weight.requires_grad = False
+                        m.bias.requires_grad = False
 
     def partialBN(self, enable):
         self._enable_pbn = enable
@@ -415,6 +439,26 @@ class TSN(nn.Module):
                 {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
                  'name': "BN scale/shift"},
             ]
+    def Generate_grid(self, bs, temporal_length, size):
+        oneset = []
+        for t in range(temporal_length):
+            tmap = torch.zeros(size) + t
+            tmap = tmap / float(temporal_length)
+            y = 0
+            hmap = torch.arange(start=y, end=y+size[0]).view(-1,1).repeat(1,size[1]).float()
+            hmap = hmap / 224.
+            x = 0
+            wmap = torch.arange(start=x, end=x+size[1]).view(1,-1).repeat(size[0], 1).float()
+            wmap = wmap / 224.
+            # print (torch.stack([tmap, hmap, wmap], dim=0))
+            oneset.append(torch.stack([tmap, hmap, wmap], dim=0)) # 3, 224, 224
+            # grid = torch.stack([tmap, hmap, wmap], dim=0)
+        oneset = torch.stack(oneset,dim=0) # 8, 3, 224, 224
+        allgrids = oneset.repeat(bs, 1, 1, 1) # bs*num_seg, 3, 224, 224
+        # print (allgrids.view((bs, -1, 3) + size)) # bs, num_seg, 3, 224, 224
+        # asdf
+
+        return torch.autograd.Variable(allgrids.cuda())
 
     def forward(self, input, eval=False):
         # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
@@ -427,8 +471,28 @@ class TSN(nn.Module):
             input = self._get_diff(input)
 
         # print (input.view((-1, sample_len) + input.size()[-2:]).size()) # (BS * num_seg, num_channel, h, w)
-        base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:]))
-        # print (base_out.size()) # (BS * num_seg, 1024) # 1024 is number of channels
+        if self.CC == False:
+            base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:])) # BS * num_seg, num_channel, h, w
+            # print (self.base_model)
+            # print ('input size : ', input.view((-1, sample_len) + input.size()[-2:]).size()) # [120, 3, 224, 224]
+            # print ('output size : ', base_out.size()) # [120, 2048]
+        elif self.CC:
+            # print (input.size()) # [bs, channel(3)*num_seg(8), 224, 224]
+            # print (input.view((-1, sample_len) + input.size()[-2:]).size()) # [bs*num_seg(8), 3, 224, 224]
+            first_conv_out = self.base_model_first_conv(input.view((-1, sample_len) + input.size()[-2:])) # 240, 64, 112, 112
+
+            cc_grid = self.Generate_grid(input.size()[0], self.num_segments, (input.size()[2], input.size()[3])) # bs*num_seg(8), 3, 224, 224
+            cc_out = self.base_model_cc(cc_grid) # 240, 64, 112, 112
+
+            summation = first_conv_out + cc_out # 240, 64, 112, 112)
+
+            base_out = self.base_model(summation) # 120(bs*num_seg), last_fc_dim, 1, 1 (1024 for BNInception, 2048 for ResNet50)
+            base_out = base_out.squeeze(2)
+            base_out = base_out.squeeze(2)
+
+            # print (self.base_model)
+            # print ('input size : ', summation.size()) # [120, 64, 112, 112]
+            # print ('output size : ', base_out.size()) # [120, 2048, 1, 1]
 
 
         if self.dropout > 0 and self.new_fc is not None:

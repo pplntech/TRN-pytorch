@@ -283,6 +283,11 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 -
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_stepLR_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_v14/ --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy
+(V2_GPU3 hop3 same network setting but different training setting.. such as  learning_step & learing_rate & custompolicy && num_segments 16)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 18 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v21_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_stepLR_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_numseg16_v14/ \
+--workers 20 --num_CNNs 1 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy
 
 
 v22 SingleScaleTRN on V2
@@ -309,12 +314,20 @@ python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus 0 --r
 
 
 # create HTML files
-python visualize_attention_score_HTML.py --img_root=/media/kyungmin/ThirdDisk1/VideoDataset/20bn-something-something-v1/ \
+python ./utils/visualize_attention_score_HTML.py --img_root=/media/kyungmin/ThirdDisk1/VideoDataset/20bn-something-something-v1/ \
  --result_root=/media/kyungmin/ThirdDisk1/VideoDataset/Experiments/v07_MemNNQueryNN_2hops_2CNNs/ \
  --epoch=55 --category_path=/media/kyungmin/ThirdDisk1/VideoDataset/category_something-something-v1.txt --prefix={:05d}.jpg
+ python ./utils/visualize_attention_score_HTML.py --img_root=/media/kyungmin/ThirdDisk1/VideoDataset/20bn-something-something-v2/ \
+ --result_root=/media/kyungmin/ThirdDisk1/VideoDataset/Experiments/V2/v21_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_stepLR_default_clip_SORTING_LSTM_CustomPolicy_v14/ \
+ --epoch=200 --category_path=/media/kyungmin/ThirdDisk1/VideoDataset/category_something-something-v2.txt  --prefix={:06d}.jpg
 
  # create h5 files
  python utils/jpeg_to_h5_singleFile.py -t /raid/km/SthSth/20bn-something-something-v1-hdf5 -i /raid/km/SthSth/20bn-something-something-v1/ -e jpg -j 20
+
+ # json to accuracy
+ python ./utils/json_to_per_class_acc.py --img_root=/media/kyungmin/ThirdDisk1/VideoDataset/20bn-something-something-v2 \
+ --result_root=/media/kyungmin/ThirdDisk1/VideoDataset/Experiments/V2/v21_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_stepLR_default_clip_SORTING_LSTM_CustomPolicy_v14/ \
+ --epoch=200 --category_path=/media/kyungmin/ThirdDisk1/VideoDataset/category_something-something-v2.txt --confusion_topk=20
 
  # csv to tensorboard
  python utils/csv_to_tensorboard.py --result_path /hdd3/VideoDataset/Experiments/v09_MemNNQueryNN_1hop_1CNN/ -n 86017 -v 1 --train_parser [2860/2868] --val_parser [380/385

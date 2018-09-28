@@ -11,7 +11,7 @@ import pdb
 class MemNNModule(torch.nn.Module):
     def __init__(self, num_frames, num_class, channel, \
         key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-        num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query):
+        num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query, CC):
         super(MemNNModule, self).__init__()
 
         self.num_frames = num_frames # num of segments
@@ -35,6 +35,8 @@ class MemNNModule(torch.nn.Module):
         self.hops = num_hop
         self.hop_method = hop_method
         self.num_CNNs = num_CNNs
+
+        self.CC = CC
 
         if self.how_to_get_query=='lstm':
             '''
@@ -79,7 +81,7 @@ class MemNNModule(torch.nn.Module):
         nums = self.hops
         input_dim = (nums * self.value_dim)
         if self.only_query:
-            input_dim = 1024
+            input_dim = self.channel
 
         num_bottleneck = 512
         # num_bottleneck = input_dim // 2 # originally, 512
@@ -92,7 +94,7 @@ class MemNNModule(torch.nn.Module):
                 )
         return classifier
 
-    def forward(self, memory_input, eval): # (BS, num_frames, 1024), (BS, num_frames, 1024)
+    def forward(self, memory_input, eval): # (BS, num_frames, channel)
         bs = memory_input.size()[0]
         assert (memory_input.size()[1]==self.num_frames)
 
@@ -249,12 +251,12 @@ class MemNNModule(torch.nn.Module):
 def return_MemNN(
     relation_type, num_frames, num_class, \
     key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p,
-    channel, num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query):
+    channel, num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query, CC):
 
     if relation_type == 'MemNN':
         MemNNmodel = MemNNModule(num_frames, num_class, channel, \
             key_dim, value_dim, query_dim, query_update_method, no_softmax_on_p, \
-            num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query)
+            num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, how_to_get_query, only_query, CC)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 

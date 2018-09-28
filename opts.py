@@ -11,6 +11,7 @@ parser.add_argument('--store_name', type=str, default="")
 
 # ========================= Model Configs ==========================
 parser.add_argument('--arch', type=str, default="BNInception")
+parser.add_argument('--channel', default=1024, type=int, help="dimension of 2D architecture's last fc")    ##### important args #####
 # parser.add_argument('--arch_query', type=str, default="BNInception")
 parser.add_argument('--num_segments', type=int, default=3)    ##### important args #####
 parser.add_argument('--consensus_type', type=str, default='avg',\
@@ -32,10 +33,14 @@ parser.add_argument('--sorting', action='store_true', help='If true, sort multih
 parser.set_defaults(sorting=False)    ##### newly added #####
 parser.add_argument('--freezeBN', action='store_true', help='If true, freezeBN')    ##### newly added #####
 parser.set_defaults(freezeBN=False)    ##### newly added #####
+parser.add_argument('--freezeBN_Grad', action='store_true', help='If true, freezeBN but require_grad True for weight and bias')    ##### newly added #####
+parser.set_defaults(freezeBN_Grad=False)    ##### newly added #####
 parser.add_argument('--freezeBackbone', action='store_true', help='If true, freezeBackbone')    ##### newly added #####
 parser.set_defaults(freezeBackbone=False)    ##### newly added #####
 parser.add_argument('--CustomPolicy', action='store_true', help='If true, customize freezing')    ##### newly added #####
 parser.set_defaults(CustomPolicy=False)    ##### newly added #####
+parser.add_argument('--CC', action='store_true', help='If true, add CC')    ##### newly added #####
+parser.set_defaults(CC=False)    ##### newly added #####
 parser.add_argument('--AdditionalLoss', action='store_true', help='If true, use additional loss every hop')    ##### newly added #####
 parser.set_defaults(AdditionalLoss=False)    ##### newly added #####
 parser.add_argument('--how_to_get_query', type=str, default="mean", choices=['mean', 'lstm'])  ##### newly added #####
