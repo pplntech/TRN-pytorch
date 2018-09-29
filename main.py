@@ -222,7 +222,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
         # compute output
         output, loss = model(input_var, criterion, phase='train', target=target_var) # torch.nn.CrossEntropyLoss().cuda()
-        
+        loss = loss.mean()
         # output = model(input_var)
         # loss = criterion(output, target_var)
 

@@ -535,7 +535,7 @@ class TSN(nn.Module):
 
         total_output = total_output / len(outputs)
         total_loss = total_loss / len(outputs)
-        total_loss = total_loss.mean()
+        # total_loss = total_loss.mean()
 
         if eval and self.consensus_type in ['MemNN']:
             return total_output, attentions, total_loss
