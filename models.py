@@ -518,20 +518,12 @@ class TSN(nn.Module):
                 outputs = self.consensus(base_out, eval=eval) # output : logit
         else:
             outputs = [self.consensus(base_out).squeeze(1)]
-        # output = output.squeeze(1)
-        # print (len(outputs))
-        # for idx, output in enumerate(outputs):
-        #     print (idx, ' : ', output)
-        # asdf
+
 
         # Calculate Loss
-        # output : list of logits
-        # loss = criterion(output, target_var)
-        # print (len(outputs))
-
         total_loss = None
         total_output = None
-        for output in outputs:
+        for output in outputs: # outputs : list of logits
             if total_loss is None:
                 # output.size() : 
                 # target.size() : 
