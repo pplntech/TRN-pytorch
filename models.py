@@ -461,7 +461,7 @@ class TSN(nn.Module):
         return torch.autograd.Variable(allgrids.cuda())
 
     def forward(self, input, criterion, phase='eval', target=None, eval=False):
-        # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
+        print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
 
         sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
         # new_length is 1 when RGB, otherwise 5
