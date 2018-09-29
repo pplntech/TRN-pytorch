@@ -321,12 +321,19 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v24_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_LSTM_NOsoftmax_CustomPolicy_CC_ResNet50_numseg16/ --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb
 
-v25 hop3 ResNet50 CC AdditionalLoss iterative num_segments_16 (ciplabthree GPU0,1)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1 --root_path /ssd/km/SthSth/ \
+v25 hop3 ResNet50 CC AdditionalLoss iterative num_segments_8 (ciplabthree GPU0)
+CUDA_VISIBLE_DEVICES=0 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 --root_path /ssd/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8  --hop 3 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v25_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_iterative_numseg8/ --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss
+
+v25 hop3 ResNet50 CC AdditionalLoss iterative num_segments_16 (ciplabthree GPU1)
+CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v25_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_iterative_numseg16/ --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --eval-freq 1
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss
 
 
 v26 hop3 ResNet50 CC AdditionalLoss parallel num_segments_16
