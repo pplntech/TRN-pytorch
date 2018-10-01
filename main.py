@@ -110,7 +110,7 @@ def main():
                        ]))
     train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True, drop_last=True)
+        num_workers=args.workers, pin_memory=False, drop_last=True)
 
     val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
                    new_length=data_length,
@@ -126,7 +126,7 @@ def main():
                    ]))
     val_loader = torch.utils.data.DataLoader(val_data,
         batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True, drop_last=True)
+        num_workers=args.workers, pin_memory=False, drop_last=True)
     num_train_dataset = len(train_data)
     num_val_dataset = len(val_data)
 
