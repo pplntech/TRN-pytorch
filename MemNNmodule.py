@@ -79,7 +79,8 @@ class MemNNModule(torch.nn.Module):
         self.classifier = self.fc_fusion()
 
         if self.AdditionalLoss:
-            self.query_prediction = nn.Linear(self.channel, self.num_class)
+            self.query_prediction = self.fc_fusion(self.channel)
+            # self.query_prediction = nn.Linear(self.channel, self.num_class)
 
             if self.hop_method=='iterative':
                 if self.hops >= 2:
@@ -90,12 +91,13 @@ class MemNNModule(torch.nn.Module):
                     if self.query_update_method=='sum': self.hop2_prediction = nn.Linear(self.channel, self.num_class)
 
 
-    def fc_fusion(self):
+    def fc_fusion(self, given_input_dim=None):
         nums = self.hops
         input_dim = (nums * self.value_dim)
         if self.only_query:
             input_dim = self.channel
-
+        if given_input_dim is not None:
+            input_dim = given_input_dim
         num_bottleneck = 512
         # num_bottleneck = input_dim // 2 # originally, 512
 

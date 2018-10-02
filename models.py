@@ -191,6 +191,7 @@ class TSN(nn.Module):
             self.input_std = [0.5]
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
+            
     def train(self, mode=True):
         """
         Override the default train() to freeze the BN parameters

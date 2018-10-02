@@ -309,6 +309,12 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 -
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
 --result_path /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_numseg16 --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query
+v23 only_LSTM num_seg 16 (dgx GPU3)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 10 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ResNet50_ONLYLSTM_numseg16 --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query \
+--arch resnet50 --channel 2048 --freezeBN_Grad --npb
 
 v24 hop3 ResNet50 CC (ciplabthree GPU2)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 --root_path /ssd/km/SthSth/ \
