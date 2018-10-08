@@ -75,12 +75,12 @@ class MemNNModule(torch.nn.Module):
             # self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
             if self.hops >= 2:
-                if self.hop_method=='parallel': self.KeyEmbedding2 = nn.Linear(self.channel, self.key_dim)
-                if self.hop_method=='parallel': self.ValueEmbedding2 = nn.Linear(self.channel, self.value_dim)
+                if self.hop_method=='parallel': self.KeyEmbedding2 = nn.Conv2d(self.channel, self.key_dim, kernel_size=1) # nn.Linear(self.channel, self.key_dim)
+                if self.hop_method=='parallel': self.ValueEmbedding2 = nn.Conv2d(self.channel, self.value_dim, kernel_size=1) # nn.Linear(self.channel, self.value_dim)
 
             if self.hops >= 3:
-                if self.hop_method=='parallel': self.KeyEmbedding3 = nn.Linear(self.channel, self.key_dim)
-                if self.hop_method=='parallel': self.ValueEmbedding3 = nn.Linear(self.channel, self.value_dim)
+                if self.hop_method=='parallel': self.KeyEmbedding3 = nn.Conv2d(self.channel, self.key_dim, kernel_size=1) # nn.Linear(self.channel, self.key_dim)
+                if self.hop_method=='parallel': self.ValueEmbedding3 = nn.Conv2d(self.channel, self.value_dim, kernel_size=1) # nn.Linear(self.channel, self.value_dim)
 
         self.classifier = self.fc_fusion()
 
@@ -274,6 +274,9 @@ class MemNNModule(torch.nn.Module):
         query_key = QueryEmbedding(query_value) # (BS, query_dim)
         query = query_key.unsqueeze(1) # (BS, 1, query_dim)
 
+        # print (memory.size()) # [32, 2048, 1, 1]
+        # print (KeyEmbedding) # Conv2d (2048, 256, kernel_size=(1, 1), stride=(1, 1))
+        
         key = KeyEmbedding(memory) # ([BS*num_frames, img_dim, h, w]) >> ([BS*num_frames, key_dim, h, w])
         key = key.view(bs, T, self.key_dim, H, W) # (BS, num_frames, key_dim, h, w)
         key = torch.transpose(key,1,2).contiguous() # (BS, key_dim, num_frames, h, w)
