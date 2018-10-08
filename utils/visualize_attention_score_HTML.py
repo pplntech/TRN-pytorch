@@ -30,7 +30,9 @@ import json
 import argparse
 from PIL import Image
 import numpy as np
+import scipy.misc
 
+import matplotlib.cm as cm
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_root', type=str, required=True,
                     help='root directory that contains images')
@@ -56,9 +58,28 @@ def normalize(v):
         norm=np.finfo(v.dtype).eps
     return v/norm
 
+def overlay(array1, array2, alpha=0.5):
+    """Overlays `array1` onto `array2` with `alpha` blending.
+    Args:
+        array1: The first numpy array.
+        array2: The second numpy array.
+        alpha: The alpha value of `array1` as overlayed onto `array2`. This value needs to be between [0, 1],
+            with 0 being `array2` only to 1 being `array1` only (Default value = 0.5).
+    Returns:
+        The `array1`, overlayed with `array2` using `alpha` blending.
+    """
+    if alpha < 0. or alpha > 1.:
+        raise ValueError("`alpha` needs to be between [0, 1]")
+    if array1.shape != array2.shape:
+        raise ValueError('`array1` and `array2` must have the same shapes')
+
+    return (array1 * alpha + array2 * (1. - alpha)).astype(array1.dtype)
+
 if __name__ == '__main__':
     html_root_folder = os.path.join(args.result_root,'html_epoch%d'%args.epoch)
+    img_root_folder = os.path.join(args.result_root,'img_epoch%d'%args.epoch)
     _makedirs(html_root_folder)
+    _makedirs(img_root_folder)
 
     with open(args.category_path) as f:
         lines = f.readlines()
@@ -75,29 +96,43 @@ if __name__ == '__main__':
         class_data = data[each_class]
         class_data.sort(key=_takeid)
         html_folder = os.path.join(html_root_folder,'%s'%(idx2class[class_int].replace(' ','_').replace(',','')))
+        img_folder = os.path.join(img_root_folder,'%s'%(idx2class[class_int].replace(' ','_').replace(',','')))
         _makedirs(html_folder)
+        _makedirs(img_folder)
 
         # per each data, create html files
         for idx, each_data in enumerate(class_data):
             html_file_name = os.path.join(html_folder,'%d.html' % each_data['id'])
+            each_img_folder_name = os.path.join(img_folder, str(each_data['id']))
+            _makedirs(each_img_folder_name)
+
+
             num_of_frames = len(each_data['framenums'])
             num_of_hops = len(each_data['hop_probabilities'])
 
             # create color tables // keys : 'hop%d_frame%d'%(each_hop,frame_idx) // values : colors
             colortables_bg = {}
             colortables_txt = {}
-            for each_frame in range(num_of_frames):
+            nparray = np.asarray(each_data['hop_probabilities']) # (3, 8, 7, 7)
+            for each_frame, real_frame_num in enumerate(each_data['framenums']):
+            # for each_frame in range(num_of_frames):
+                img_container = scipy.misc.imread(os.path.join(args.img_root,str(each_data['id']),args.prefix.format(real_frame_num)))
                 for each_hop in range(num_of_hops):
                     # print (each_data['hop_probabilities'][each_hop])
                     # print (normalize(each_data['hop_probabilities'][each_hop]))
                     # asfd
-                    prob = each_data['hop_probabilities'][each_hop][each_frame]
+                    nparray = np.asarray(each_data['hop_probabilities'][each_hop][each_frame]) # (7, 7)
+                    prob = np.sum(nparray)
+                    jet_heatmap = np.uint8(cm.jet(nparray)[..., :3] * 255)
+                    scipy.misc.imsave(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,each_frame)), \
+                    overlay(scipy.misc.imresize(jet_heatmap,[img_container.shape[0],img_container.shape[1]]), img_container)) # jet_heatmap.shape : (7, 7, 3)
+                    # prob = each_data['hop_probabilities'][each_hop][each_frame] # (bs, hop, num_seg, h, w)
                     # print (prob, int(prob*len(colors_bg)))
                     # print (min(int(prob*len(colors_bg)),len(colors_bg)-1))
                     colortables_bg['hop%d_frame%d'%(each_hop,each_frame)] = colors_bg[min(int(prob*len(colors_bg)),len(colors_bg)-1)]
                     colortables_txt['hop%d_frame%d'%(each_hop,each_frame)] = colors_txt[min(int(prob*len(colors_txt)),len(colors_txt)-1)]
-                    if prob>0.9:
-                        print (each_data['id'])
+                    # if prob>0.9:
+                    #     print (each_data['id'])
 
             # styles
             html = '<html><head>'
@@ -214,7 +249,7 @@ if __name__ == '__main__':
             html += '\n<div style="width:100%"><table border="1px solid gray" style="width=100%">'
             html += '\n<thead><tr><td><b>images</b></td>'
             for each_hop in range(num_of_hops):
-                html += '<td><b>{}</b></td>'.format('hop%d'%(each_hop+1))
+                html += '<td  colspan="2"><b>{}</b></td>'.format('hop%d'%(each_hop+1))
             html +='</tr></thead><tbody>'
 
             for frame_idx, each_frame in enumerate(each_data['framenums']):
@@ -223,7 +258,11 @@ if __name__ == '__main__':
                 for each_hop in range(num_of_hops):
                     # html += '<td class="{}">{}</td>'.format('hop%d_frame%d'%(each_hop,frame_idx), each_data['hop_probabilities'][each_hop][frame_idx])
                     # html += '<td bgcolor="{}" color="{}">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)],\
-                    html += '<td style="background-color:{};color:{};">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)], each_data['hop_probabilities'][each_hop][frame_idx])
+                    nparray = np.asarray(each_data['hop_probabilities'][each_hop][frame_idx])
+                    prob = np.sum(nparray)
+                    prob = float("{0:.2f}".format(prob))
+                    html += '<td><img src="{}"></td>'.format(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,frame_idx)))
+                    html += '<td style="background-color:{};color:{};">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)], prob)
                 html +='</tr>'
             html +='</tbody></table></div>'
             html += '</div>'

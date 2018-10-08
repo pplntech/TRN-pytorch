@@ -65,7 +65,7 @@ v05 on Ciplabthree (Sth-v2)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 1 2 --root_path /hdd2/km/SthSth/ \
 --num_segments 8 --hop 1 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v05_twoCNNs --workers 20
 
-v09 on Ciplabthree (Sth-v2, h5)
+v09 on Ciplabthree (Sth-v2)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 81 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --num_segments 8 --hop 1 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v09_MemNNQueryNN_1hop_1CNN/ --workers 20 --num_CNNs 1 --epochs 250 --file_type h5
@@ -298,29 +298,42 @@ TRN-fr7
 python main.py somethingv2 RGB --consensus_type TRN --batch-size 27 --gpus 0 \
 --root_path /ssd/km/SthSth/ --img_feature_dim 256 --num_segments 7 --hop 1 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v22_SingleScaleTRN_frame7 \
 --workers 20 --num_CNNs 1 --epochs 250 --file_type h5
+TRN-fr16 (ciplabeight)
+CUDA_VISIBLE_DEVICES=1,2,3 python main.py something RGB --consensus_type TRN --batch-size 36 --gpus 0 1 2 --root_path /ssd1/users/km/VideoDataset/ \
+--img_feature_dim 256 --num_segments 16 --hop 1 --result_path /hdd1/users/km/SthSth/Experiments/TRN/V1/TMP \
+--workers 20 --num_CNNs 1 --epochs 350 --file_type h5
+
 
 v23 only_LSTM (on my computer)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 --root_path /ssd2/VideoDataset/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
 --result_path /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query
+v23 only_LSTM (on my computer) ResNet50 frame_num 8
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 15 --gpus 0 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_Res50_num8 --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query \
+--arch resnet50 --channel 2048 --freezeBN_Grad --npb
 v23 only_LSTM num_seg_16 (on my computer)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 --root_path /ssd2/VideoDataset/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
 --result_path /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_numseg16 --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query
 v23 only_LSTM num_seg 16 (dgx GPU3)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 10 --gpus 0 --root_path /raid/users/km/SthSth/ \
+CUDA_VISIBLE_DEVICES=2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ResNet50_ONLYLSTM_numseg16 --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query \
---arch resnet50 --channel 2048 --freezeBN_Grad --npb
+--arch resnet50 --channel 2048 --freezeBN_Grad --npb --resume /raid/users/km/SthSth/Experiments/TRN/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ResNet50_ONLYLSTM_numseg16/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment16_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_best.pth.tar
 
 v24 hop3 ResNet50 CC (ciplabthree GPU2)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 --root_path /ssd/km/SthSth/ \
+CUDA_VISIBLE_DEVICES=2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v24_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_LSTM_NOsoftmax_CustomPolicy_CC_ResNet50/ --workers 20 --num_CNNs 1 \
---epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --lr_steps 55 70 \
+--resume /hdd2/km/SthSth/Experiments/TRN/V2/v24_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_LSTM_NOsoftmax_CustomPolicy_CC_ResNet50/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment8_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_best.pth.tar
+
 v24 hop3 ResNet50 CC num_seg 16 (ciplabthree GPU0,1)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16  --hop 3 \
@@ -332,28 +345,39 @@ CUDA_VISIBLE_DEVICES=0 python main.py somethingv2 RGB --consensus_type MemNN --b
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v25_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_iterative_numseg8/ --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --lr_steps 35 70 \
+--resume /hdd2/km/SthSth/Experiments/TRN/V2/v25_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_iterative_numseg8/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment8_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethoditerative_best.pth.tar
 
 v25 hop3 ResNet50 CC AdditionalLoss iterative num_segments_16 (ciplabthree GPU1)
 CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 6 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v25_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_iterative_numseg16/ --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --lr_steps 35 70 \
+--resume /hdd2/km/SthSth/Experiments/TRN/V2/v25_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_iterative_numseg16/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment16_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethoditerative_best.pth.tar
 
-v26 hop3 ResNet50 CC AdditionalLoss parallel num_segments_8 (dgx GPU1)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 18 --gpus 0 --root_path /raid/users/km/SthSth/ \
+v26 hop3 ResNet50 CC AdditionalLoss parallel num_segments_8 (dgx GPU0)
+CUDA_VISIBLE_DEVICES=0 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 18 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v26_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_parallel_numseg8 --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --lr_steps 35 70 \
+--resume /raid/users/km/SthSth/Experiments/TRN/V2/v26_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_parallel_numseg8/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment8_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_best.pth.tar
 
 v26 hop3 ResNet50 CC AdditionalLoss parallel num_segments_16 (dgx GPU1)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /raid/users/km/SthSth/ \
+CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v26_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_parallel_numseg16 --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --lr_steps 35 70 \
+--resume /raid/users/km/SthSth/Experiments/TRN/V2/v26_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_parallel_numseg16/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment16_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_best.pth.tar
+
+v27 (on my computer) 2D
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8  --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/TMP --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --how_to_get_query mean --CustomPolicy \
+--CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --AdditionalLoss_MLP --memory_dim 2
 
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \
@@ -381,4 +405,9 @@ python ./utils/visualize_attention_score_HTML.py --img_root=/media/kyungmin/Thir
  --epoch=200 --category_path=/media/kyungmin/ThirdDisk1/VideoDataset/category_something-something-v2.txt --confusion_topk=20
 
  # csv to tensorboard
- python utils/csv_to_tensorboard.py --result_path /hdd3/VideoDataset/Experiments/v09_MemNNQueryNN_1hop_1CNN/ -n 86017 -v 1 --train_parser [2860/2868] --val_parser [380/385
+ python utils/csv_to_tensorboard.py --result_path /hdd3/VideoDataset/Experiments/v09_MemNNQueryNN_1hop_1CNN/ -n 86017 -v 1 --train_parser [2860/2868] --val_parser [380/385]
+
+ # nvidia-docker (ciplabeight)
+docker pull yonsei-cip2.synology.me:5443/km/pytorch_angusism:latest
+NV_GPU=0,1,2,3 nvidia-docker run -ti --name KM_STHSTH_gpu0123 --ipc=host \
+-v /home/ciplab/users:/workspace -v /media/volume1:/hdd1 -v /media/volume2:/hdd2 -v /media/ssd1:/ssd1 yonsei-cip2.synology.me:5443/km/pytorch_angusism:latest

@@ -24,6 +24,10 @@ best_prec1 = 0
 def main():
     global args, best_prec1, num_train_dataset, num_val_dataset, writer
     args = parser.parse_args()
+    # if args.no_cudnn:
+    #     torch.backends.cudnn.benchmark = False
+    # print (torch.backends.cudnn.benchmark)
+    # asdf
     _fill_in_None_args()
     _join_result_path()
     check_rootfolders()
@@ -59,10 +63,13 @@ def main():
                 CustomPolicy = args.CustomPolicy,
                 sorting = args.sorting,
                 AdditionalLoss=args.AdditionalLoss,
+                AdditionalLoss_MLP=args.AdditionalLoss_MLP,
                 how_to_get_query=args.how_to_get_query,
                 only_query=args.only_query,
-                CC=args.CC, channel=args.channel
+                CC=args.CC, channel=args.channel,
+                memory_dim=args.memory_dim,
                 )
+
 
     crop_size = model.crop_size
     scale_size = model.scale_size
@@ -242,7 +249,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
         # if args.clip_gradient is not None:
         if not args.no_clip:
             total_norm = clip_grad_norm(model.parameters(), args.clip_gradient)
-            if total_norm > args.clip_gradient:
+            if total_norm > args.clip_gradient and total_norm > 100:
                 print("clipping gradient: {} with coef {}".format(total_norm, args.clip_gradient / total_norm))
 
         optimizer.step()

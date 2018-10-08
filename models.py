@@ -16,7 +16,8 @@ class TSN(nn.Module):
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN=False, freezeBN_Grad=False, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, how_to_get_query='mean', only_query=False, CC=False, channel=1024):
+                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, AdditionalLoss_MLP=False, \
+                 how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -32,6 +33,7 @@ class TSN(nn.Module):
         self.CustomPolicy = CustomPolicy
         self.AdditionalLoss = AdditionalLoss
         self.CC = CC
+        self.memory_dim = memory_dim
         # self.sorting = sorting
 
         if not before_softmax and consensus_type != 'avg':
@@ -73,9 +75,9 @@ class TSN(nn.Module):
             self.consensus = TRNmodule.return_TRN(consensus_type, self.img_feature_dim, self.num_segments, num_class) # (relation_type, img_feature_dim, num_frames, num_class)
         elif consensus_type in ['MemNN']:
             self.consensus = MemNNmodule.return_MemNN(consensus_type, self.num_segments, num_class, \
-                key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, query_update_method=query_update_method, \
+                key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, memory_dim=memory_dim, query_update_method=query_update_method, \
                 no_softmax_on_p=no_softmax_on_p, channel=channel, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
-                sorting=sorting, AdditionalLoss=AdditionalLoss, how_to_get_query=how_to_get_query, only_query=only_query, CC=CC)
+                sorting=sorting, AdditionalLoss=AdditionalLoss, AdditionalLoss_MLP=AdditionalLoss_MLP, how_to_get_query=how_to_get_query, only_query=only_query, CC=CC)
         else: # agv or something else
             self.consensus = ConsensusModule(consensus_type)
 
@@ -87,14 +89,19 @@ class TSN(nn.Module):
             self.partialBN(True)
 
     def _prepare_tsn(self, num_class):
-        feature_dim = getattr(self.base_model, self.base_model.last_layer_name).in_features # 1024
+        try:
+            feature_dim = getattr(self.base_model, self.base_model.last_layer_name).in_features # 1024
+        except:
+            feature_dim = None
+            if self.base_model.last_layer_name is not None:
+                raise ValueError("Something Wrong. Check")
 
         if self.dropout == 0:
             if self.consensus_type in ['TRN','TRNmultiscale']:
                 setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
 
             elif self.consensus_type in ['MemNN']:
-                self.base_model = nn.Sequential(*list(self.base_model.children())[:-1]) # feature_dim
+                self.base_model = nn.Sequential(*list(self.base_model.children())[:-1]) # remove final FC layer
                 # setattr(self.base_model, self.base_model.last_layer_name, nn.Linear(feature_dim, self.img_feature_dim))
 
             else:
@@ -102,7 +109,11 @@ class TSN(nn.Module):
             self.new_fc = None
 
         else: # dropout not ZERO
-            setattr(self.base_model, self.base_model.last_layer_name, nn.Dropout(p=self.dropout))
+            try:
+                setattr(self.base_model, self.base_model.last_layer_name, nn.Dropout(p=self.dropout))
+            except:
+                if self.base_model.last_layer_name is not None:
+                    raise ValueError("Something Wrong. Check")
 
             if self.consensus_type in ['TRN','TRNmultiscale']:
                 # create a new linear layer as the frame feature
@@ -138,6 +149,11 @@ class TSN(nn.Module):
                 self.base_model = nn.Sequential(*list(self.base_model.children())[1:])
 
                 self.base_model.last_layer_name = '8'
+
+            if self.memory_dim == 2:
+                self.base_model = nn.Sequential(*list(self.base_model.children())[:-2])
+                self.base_model.last_layer_name = None
+
             self.input_size = 224
             self.input_mean = [0.485, 0.456, 0.406]
             self.input_std = [0.229, 0.224, 0.225]
@@ -165,6 +181,8 @@ class TSN(nn.Module):
             if self.CC:
                 raise ValueError("CC is not supported on BNInception architecture.")
 
+            if self.memory_dim == 2:
+                raise ValueError("memory_dim larger than 1 is not supported on BNInception architecture.")
                 # self.base_model_first_conv = nn.Sequential(*list(self.base_model.children())[:1])
                 # self.base_model_cc = nn.Conv2d(3, 64, 1, 2)
 
@@ -191,7 +209,7 @@ class TSN(nn.Module):
             self.input_std = [0.5]
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
-            
+
     def train(self, mode=True):
         """
         Override the default train() to freeze the BN parameters
@@ -247,7 +265,7 @@ class TSN(nn.Module):
                 #     conv_cnt = 0
                 #     bn_cnt = 0
                 print (name, m)
-                if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
+                if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                     ps = list(m.parameters())
                     conv_cnt += 1
                     if conv_cnt == 1:
@@ -312,7 +330,7 @@ class TSN(nn.Module):
                 # print (name, type(m))
                 print (name, m)
                 if('consensus' in name):
-                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                         ps = list(m.parameters())
                         consensus_weight.append(ps[0])
                         if len(ps) == 2: consensus_bias.append(ps[1])
@@ -340,7 +358,7 @@ class TSN(nn.Module):
                             raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
 
                 elif('base_model' in name):
-                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                         ps = list(m.parameters())
                         backbone_weight.append(ps[0])
                         if len(ps) == 2: backbone_bias.append(ps[1])
@@ -394,7 +412,7 @@ class TSN(nn.Module):
                 print (name, type(m))
                 if('consensus' in name) or (isinstance(m, torch.nn.Linear)):
                     print ('--------------------------------------------', name, m, '--------------------------------------------')
-                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                         ps = list(m.parameters())
                         normal_weight.append(ps[0])
                         # normal_weight_name.append(name)
@@ -477,6 +495,9 @@ class TSN(nn.Module):
             # print (self.base_model)
             # print ('input size : ', input.view((-1, sample_len) + input.size()[-2:]).size()) # [120, 3, 224, 224]
             # print ('output size : ', base_out.size()) # [120, 2048]
+            if self.consensus_type in ['MemNN'] and self.memory_dim==1:
+                base_out = base_out.unsqueeze(-1)
+                base_out = base_out.unsqueeze(-1)
         elif self.CC:
             # print (input.size()) # [bs, channel(3)*num_seg(8), 224, 224]
             # print (input.view((-1, sample_len) + input.size()[-2:]).size()) # [bs*num_seg(8), 3, 224, 224]
@@ -487,9 +508,10 @@ class TSN(nn.Module):
 
             summation = first_conv_out + cc_out # 240, 64, 112, 112)
 
-            base_out = self.base_model(summation) # 120(bs*num_seg), last_fc_dim, 1, 1 (1024 for BNInception, 2048 for ResNet50)
-            base_out = base_out.squeeze(2)
-            base_out = base_out.squeeze(2)
+            base_out = self.base_model(summation) # 120(bs*num_seg), last_fc_dim, 1, 1 (1024 for BNInception, 2048 for ResNet50) # (bs*num_seg, last_feature_dim, 7, 7)
+            # if self.consensus_type not in ['MemNN']:
+            # base_out = base_out.squeeze(2)
+            # base_out = base_out.squeeze(2)
 
             # print (self.base_model)
             # print ('input size : ', summation.size()) # [120, 64, 112, 112]
@@ -507,8 +529,8 @@ class TSN(nn.Module):
 
         if self.reshape:
             base_out = base_out.view((-1, self.num_segments) + base_out.size()[1:])
-            # ^^ bf : (BS * NUM_SEG, img_feature_dim_OR_final_class_num)
-            # ^^ af : (BS, NUM_SEG, img_feature_dim_OR_final_class_num)
+            # ^^ bf : (BS * NUM_SEG, img_feature_dim_OR_final_class_num), (BS * NUM_SEG, img_feature_dim_OR_final_class_num, H, W)
+            # ^^ af : (BS, NUM_SEG, img_feature_dim_OR_final_class_num), (BS, NUM_SEG, img_feature_dim_OR_final_class_num, H, W)
 
 
         # outputs : list of outputs of each prediction_branch (logits)

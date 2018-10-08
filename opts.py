@@ -44,6 +44,8 @@ parser.add_argument('--CC', action='store_true', help='If true, add CC')    ####
 parser.set_defaults(CC=False)    ##### newly added #####
 parser.add_argument('--AdditionalLoss', action='store_true', help='If true, use additional loss every hop')    ##### newly added #####
 parser.set_defaults(AdditionalLoss=False)    ##### newly added #####
+parser.add_argument('--AdditionalLoss_MLP', action='store_true', help='If true, use MLP for lstm estimation')    ##### newly added #####
+parser.set_defaults(AdditionalLoss_MLP=False)    ##### newly added #####
 parser.add_argument('--how_to_get_query', type=str, default="mean", choices=['mean', 'lstm'])  ##### newly added #####
 parser.add_argument('--only_query', action='store_true', help='If true, use only query to predict the final')    ##### newly added #####
 parser.set_defaults(only_query=False)    ##### newly added #####
@@ -88,6 +90,7 @@ parser.add_argument('--flow_prefix', default="", type=str)
 parser.add_argument('--root_log',type=str, default='log')
 parser.add_argument('--root_model', type=str, default='model')
 parser.add_argument('--root_output',type=str, default='output')
-
+parser.add_argument('--no_cudnn', action='store_true', help='If true, not using cudnn_benchmark.')    ##### newly added #####
+parser.set_defaults(no_cudnn=False)    ##### newly added #####
 # parser.add_argument('--test', action='store_true', help='If true, test is performed.')
 # parser.set_defaults(test=False)

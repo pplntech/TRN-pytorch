@@ -69,8 +69,8 @@ class MemNNModule(torch.nn.Module):
 
 
             # Key / Value Embedding
-            self.KeyEmbedding1 = nn.Conv2d(self.channel, self.key_dim, kernel_size=1) # input : (N,Cin,H,W)
-            self.ValueEmbedding1 = nn.Conv2d(self.channel, self.value_dim, kernel_size=1) # output :  (N,Cout,Hout,Wout)
+            self.KeyEmbedding1 = nn.Conv3d(self.channel, self.key_dim, kernel_size=1) # input : (N,Cin,D,H,W)
+            self.ValueEmbedding1 = nn.Conv3d(self.channel, self.value_dim, kernel_size=1) # output :  (N,Cout,Dout,Hout,Wout) 
             # self.KeyEmbedding1 = nn.Linear(self.channel, self.key_dim)
             # self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
@@ -220,13 +220,13 @@ class MemNNModule(torch.nn.Module):
 
             # get weighted timestamp
             standard = np.array(list(range(1,self.num_frames+1)))
-            time1 =  np.dot(p1.mean(-1).mean(-1).cpu().data.numpy(), standard) # (30, 1)
+            time1 =  np.dot(p1.cpu().data.numpy(), standard) # (30, 1)
             accumulated_time_weight.append(time1)
             if self.hops >= 2:
-                time2 =  np.dot(p2.mean(-1).mean(-1).cpu().data.numpy(), standard) # (30, 1)
+                time2 =  np.dot(p2.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time2)
             if self.hops >= 3:
-                time3 =  np.dot(p3.mean(-1).mean(-1).cpu().data.numpy(), standard) # (30, 1)
+                time3 =  np.dot(p3.cpu().data.numpy(), standard) # (30, 1)
                 accumulated_time_weight.append(time3)
             accumulated_time_weight = np.squeeze(np.stack(accumulated_time_weight, 1),2)
             arg_time = np.argsort(accumulated_time_weight)
@@ -245,16 +245,16 @@ class MemNNModule(torch.nn.Module):
                 # .permute(tuple(arg_time[inner_i,:].tolist()))
                 # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
 
-
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
-        # p1, p2, p3 : (4, 1, num_seg, h, w)
-        attentions = torch.stack(attentions,-1) # (bs, 1, num_seg, h, w, hop)
-        attentions = attentions.permute(0, 1, 5, 2, 3, 4) # (bs, 1, hop, num_seg, h, w)
-        attentions = attentions.squeeze(1) # (bs, hop, num_seg, h, w)
+        attentions = torch.stack(attentions,-1)
+        attentions = attentions.permute(0, 1, 3, 2)
+        attentions = attentions.squeeze(1)
         attentions = attentions.data.numpy().tolist()
-        # print (len(attentions)) # bs
+        # print (attentions)
+        # print (len(attentions))
+        # asdf
         outputs.append(output.squeeze(1))
 
         if self.AdditionalLoss:
@@ -266,36 +266,33 @@ class MemNNModule(torch.nn.Module):
             return outputs
 
     def hop(self, memory, query_value, KeyEmbedding, ValueEmbedding, QueryEmbedding):
-        # memory : (BS, num_frames, channel, H, W)
-        bs, T, H, W = memory.size(0), memory.size(1), memory.size(3), memory.size(4)
-
-        memory = memory.view(bs*T, -1, H, W) # (BS*num_frames, channel, H, W)
+        # memory : (BS, num_frames, channel) >> (BS, num_frames, channel, H, W)
+        bs = memory.size(0)
 
         query_key = QueryEmbedding(query_value) # (BS, query_dim)
         query = query_key.unsqueeze(1) # (BS, 1, query_dim)
 
-        key = KeyEmbedding(memory) # ([BS*num_frames, img_dim, h, w]) >> ([BS*num_frames, key_dim, h, w])
-        key = key.view(bs, T, self.key_dim, H, W) # (BS, num_frames, key_dim, h, w)
-        key = torch.transpose(key,1,2).contiguous() # (BS, key_dim, num_frames, h, w)
-        key = key.view(bs, self.key_dim, -1) # (B, key_dim, num_frames*h*w)
+        memory = memory.view(memory.size(0)*self.num_frames, -1) # (BS * NUM_SEG, channel)
 
-        p = torch.bmm(query, key) # (BS, 1, num_frames*h*w)
+        # Conv3d
+        # input  : (N,Cin,D,H,W)
+        # output : (N,Cout,Dout,Hout,Wout)
+        key = KeyEmbedding(memory) # (BS * NUM_SEG, key_dim)
+        key = key.view(bs, self.num_frames, -1) # (BS, NUM_SEG, key_dim)
+        key = torch.transpose(key, 1, 2) # (BS, key_dim, NUM_SEG)
+
+        p = torch.bmm(query, key) # (BS, 1, NUM_SEG)
         if self.no_softmax_on_p is False:
-            p = F.softmax(p.view(-1, p.size()[1]*p.size()[2]), dim=1).view(-1, p.size()[1], p.size()[2]) # (BS, 1, NUM_SEG) (BS, 1, num_frames*h*w)
+            p = F.softmax(p.view(-1, p.size()[1]*p.size()[2]), dim=1).view(-1, p.size()[1], p.size()[2]) # (BS, 1, NUM_SEG)
+        # print (p)
 
-        value = ValueEmbedding(memory) # ([BS*num_frames, img_dim, h, w]) >> ([BS*num_frames, value_dim, h, w])
-        value = value.view(bs, T, self.value_dim, H, W) # (BS, num_frames, value_dim, h, w)
-        value = value.permute(0, 1, 3, 4, 2).contiguous() # (BS, num_frames, h, w, value_dim)
-        value = value.view(bs, -1, self.value_dim) # (BS, num_frames*hw, value_dim)
-
-        # value = torch.transpose(value, 1, 2).contiguous() # (BS, value_dim, num_frames, h, w)
-        # value = value.view(bs, self.value_dim, -1) # (BS, value_dim, num_frames*hw)
-        # value = torch.transpose(value, 1, 2) # (BS, num_frames*h*w, value_dim)
+        value = ValueEmbedding(memory) # (BS * NUM_SEG, value_dim)
+        value = value.view(bs, self.num_frames, -1) # (BS, NUM_SEG, value_dim)
 
         retrieved_value = torch.bmm(p, value) # (BS, 1, value_dim)
         retrieved_value = torch.squeeze(retrieved_value, 1).contiguous() # (BS, value_dim)
 
-        return (retrieved_value), p.view(bs, 1, T, H, W)
+        return (retrieved_value), p
         # return (retrieved_value + query_key), p
 
 def return_MemNN(
