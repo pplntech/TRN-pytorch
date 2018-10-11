@@ -48,7 +48,7 @@ def extract(video, tmpl='%06d.jpg'):
         cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=-1:320 -sws_flags bilinear -q:v 5 \"{}/{}/{}\"'.\
         format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
     else:
-        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=320:-1 -sws_flags bilinear -q:v 5 {} \"{}/{}/{}\"'.\
+        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=320:-1 -sws_flags bilinear -q:v 5 \"{}/{}/{}\"'.\
         format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
 
     # cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=256:256 \"{}/{}/{}\"'.\

@@ -420,3 +420,6 @@ python ./utils/visualize_attention_score_HTML.py --img_root=/media/kyungmin/Thir
 docker pull yonsei-cip2.synology.me:5443/km/pytorch_angusism:latest
 NV_GPU=0,1,2,3 nvidia-docker run -ti --name KM_STHSTH_gpu0123 --ipc=host \
 -v /home/ciplab/users:/workspace -v /media/volume1:/hdd1 -v /media/volume2:/hdd2 -v /media/ssd1:/ssd1 yonsei-cip2.synology.me:5443/km/pytorch_angusism:latest
+
+# extract jpeg v2
+python utils/extract_frames.py --video_root /raid/km/SthSth/20bn-something-something-v2-vids/ --frame_root /raid/km/SthSth/20bn-something-something-v2-frames_320_jpegQual5 --num_threads 20
