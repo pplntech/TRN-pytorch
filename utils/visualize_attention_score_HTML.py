@@ -122,6 +122,8 @@ if __name__ == '__main__':
                     # print (normalize(each_data['hop_probabilities'][each_hop]))
                     # asfd
                     nparray = np.asarray(each_data['hop_probabilities'][each_hop][each_frame]) # (7, 7)
+                    print (nparray)
+                    asdf
                     prob = np.sum(nparray)
                     jet_heatmap = np.uint8(cm.jet(nparray)[..., :3] * 255)
                     scipy.misc.imsave(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,each_frame)), \

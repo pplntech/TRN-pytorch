@@ -15,7 +15,7 @@ class TSN(nn.Module):
                  base_model='resnet101', new_length=None,
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
-                 crop_num=1, partial_bn=True, freezeBN=False, freezeBN_Grad=False, print_spec=True, num_hop=1, hop_method=None, 
+                 crop_num=1, partial_bn=True, freezeBN_Eval=False, freezeBN_Require_Grad_True=False, print_spec=True, num_hop=1, hop_method=None, 
                  num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, AdditionalLoss_MLP=False, \
                  how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1):
         super(TSN, self).__init__()
@@ -27,8 +27,8 @@ class TSN(nn.Module):
         self.crop_num = crop_num
         self.consensus_type = consensus_type
         self.img_feature_dim = key_dim  # the dimension of the CNN feature to represent each frame
-        self.freezeBN = freezeBN
-        self.freezeBN_Grad = freezeBN_Grad
+        self.freezeBN_Eval = freezeBN_Eval
+        self.freezeBN_Require_Grad_True = freezeBN_Require_Grad_True
         self.freezeBackbone = freezeBackbone
         self.CustomPolicy = CustomPolicy
         self.AdditionalLoss = AdditionalLoss
@@ -219,7 +219,7 @@ class TSN(nn.Module):
 
         count = 0
         if self._enable_pbn: # partial batch norm
-            print("Freezing BatchNorm2D except the first one in base_model.")
+            print("[Partial Batcn Norm] Freezing BatchNorm2D except the first one in base_model.")
             for m in self.base_model.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     count += 1
@@ -230,19 +230,22 @@ class TSN(nn.Module):
                         m.weight.requires_grad = False
                         m.bias.requires_grad = False
 
-        if self.freezeBN:
-            print("Freezing ALL BatchNorm2D in base_model.")
+        if self.freezeBN_Eval:
+            print("[Freezing BN] Make ALL BatchNorm2D eval mode in base_model.")
             for m in self.base_model.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     m.eval()
 
-                    # shutdown update in frozen mode
-                    if self.freezeBN_Grad:
-                        m.weight.requires_grad = True
-                        m.bias.requires_grad = True
-                    else:
-                        m.weight.requires_grad = False
-                        m.bias.requires_grad = False
+        for m in self.base_model.modules():
+            if isinstance(m, nn.BatchNorm2d):
+
+                # shutdown update in frozen mode
+                if self.freezeBN_Require_Grad_True:
+                    m.weight.requires_grad = True
+                    m.bias.requires_grad = True
+                else:
+                    m.weight.requires_grad = False
+                    m.bias.requires_grad = False
 
     def partialBN(self, enable):
         self._enable_pbn = enable
@@ -297,7 +300,7 @@ class TSN(nn.Module):
                 elif isinstance(m, torch.nn.BatchNorm2d):
                     bn_cnt += 1
                     # later BN's are frozen
-                    if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
+                    if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
                         bn.extend(list(m.parameters()))
                 elif len(m._modules) == 0:
                     if len(list(m.parameters())) > 0:
@@ -351,7 +354,8 @@ class TSN(nn.Module):
                     elif isinstance(m, torch.nn.BatchNorm2d):
                         bn_cnt += 1
                         # later BN's are frozen
-                        if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
+                        # if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
+                        if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
                             bn.extend(list(m.parameters()))
                     elif len(m._modules) == 0:
                         if len(list(m.parameters())) > 0:
@@ -379,7 +383,8 @@ class TSN(nn.Module):
                     elif isinstance(m, torch.nn.BatchNorm2d):
                         bn_cnt += 1
                         # later BN's are frozen
-                        if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
+                        # if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
+                        if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
                             bn.extend(list(m.parameters()))
                     elif len(m._modules) == 0:
                         if len(list(m.parameters())) > 0:
@@ -438,7 +443,8 @@ class TSN(nn.Module):
                         bn.extend(list(m.parameters()))
                         # bn_name.extend(name)
                     elif isinstance(m, torch.nn.BatchNorm2d):
-                        if not self._enable_pbn and self.freezeBN is False:
+                        # if not self._enable_pbn and self.freezeBN is False:
+                        if not self._enable_pbn and self.freezeBN_Require_Grad_True is True:
                             bn.extend(list(m.parameters()))
                             # bn_name.extend(name)
                     elif len(m._modules) == 0:
@@ -458,6 +464,7 @@ class TSN(nn.Module):
                 {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
                  'name': "BN scale/shift"},
             ]
+
     def Generate_grid(self, bs, temporal_length, size):
         oneset = []
         for t in range(temporal_length):

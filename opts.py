@@ -32,10 +32,10 @@ parser.add_argument('--no_softmax_on_p', action='store_true', help='If true, not
 parser.set_defaults(no_softmax_on_p=False)    ##### newly added #####
 parser.add_argument('--sorting', action='store_true', help='If true, sort multihop results')    ##### newly added #####
 parser.set_defaults(sorting=False)    ##### newly added #####
-parser.add_argument('--freezeBN', action='store_true', help='If true, freezeBN')    ##### newly added #####
-parser.set_defaults(freezeBN=False)    ##### newly added #####
-parser.add_argument('--freezeBN_Grad', action='store_true', help='If true, freezeBN but require_grad True for weight and bias')    ##### newly added #####
-parser.set_defaults(freezeBN_Grad=False)    ##### newly added #####
+parser.add_argument('--freezeBN_Eval', action='store_true', help='If true, freezeBN_Eval')    ##### newly added #####
+parser.set_defaults(freezeBN_Eval=False)    ##### newly added #####
+parser.add_argument('--freezeBN_Require_Grad_True', action='store_true', help='If true, freezeBN but require_grad True for weight and bias')    ##### newly added #####
+parser.set_defaults(freezeBN_Require_Grad_True=False)    ##### newly added #####
 parser.add_argument('--freezeBackbone', action='store_true', help='If true, freezeBackbone')    ##### newly added #####
 parser.set_defaults(freezeBackbone=False)    ##### newly added #####
 parser.add_argument('--CustomPolicy', action='store_true', help='If true, customize freezing')    ##### newly added #####

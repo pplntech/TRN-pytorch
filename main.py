@@ -21,6 +21,8 @@ from tensorboardX import SummaryWriter
 
 best_prec1 = 0
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 def main():
     global args, best_prec1, num_train_dataset, num_val_dataset, writer
     args = parser.parse_args()
@@ -53,8 +55,8 @@ def main():
                 query_dim = args.query_dim,
                 query_update_method = args.query_update_method,
                 partial_bn = not args.no_partialbn,
-                freezeBN = args.freezeBN,
-                freezeBN_Grad = args.freezeBN_Grad,
+                freezeBN_Eval = args.freezeBN_Eval,
+                freezeBN_Require_Grad_True = args.freezeBN_Require_Grad_True,
                 num_hop = args.hop,
                 hop_method = args.hop_method,
                 num_CNNs = args.num_CNNs,
@@ -172,6 +174,9 @@ def main():
 
     writer = SummaryWriter(args.result_path)
     log_training = open(os.path.join(args.root_log, '%s.csv' % args.store_name), 'a')
+    # print (count_parameters(model))
+    # asdf
+
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_steps)
 
