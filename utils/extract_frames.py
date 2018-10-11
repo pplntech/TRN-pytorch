@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import shutil
 from tqdm import tqdm
+import skvideo.io
 
 # multithreading
 from joblib import delayed
@@ -28,9 +29,30 @@ def split(l, n):
 
 
 def extract(video, tmpl='%06d.jpg'):
+    # read first frame of the video and get the SIZE
+    video_file_path = os.path.join(VIDEO_ROOT, video)
+    try:
+        reader = skvideo.io.FFmpegReader(video_file_path)
+        for frame in reader.nextFrame():
+            # print (frame.shape)
+            width, height = frame.shape[1], frame.shape[0]
+            break
+        reader.close()
+    except:
+        print (video_file_path)
+        return
+
     os.makedirs(os.path.join(FRAME_ROOT, video[:-5]))
-    cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=256:256 \"{}/{}/{}\"'.\
-    format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
+
+    if width>height:
+        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=-1:320 -sws_flags bilinear \"{}/{}/{}\"'.\
+        format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
+    else:
+        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=320:-1 -sws_flags bilinear \"{}/{}/{}\"'.\
+        format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
+
+    # cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=256:256 \"{}/{}/{}\"'.\
+    # format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
 
     # print (cmd)
     # asdf
