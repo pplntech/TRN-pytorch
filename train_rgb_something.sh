@@ -317,11 +317,12 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 -
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query
 
 v23 only_LSTM (on my computer) ResNet50 frame_num 8
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 15 --gpus 0 --root_path /ssd2/VideoDataset/ \
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 --root_path /ssd2/VideoDataset/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
 --result_path /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_Res50_num8 --workers 20 --num_CNNs 1 \
---epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query \
---arch resnet50 --channel 2048 --freezeBN_Grad --npb
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN_Eval --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query \
+--arch resnet50 --channel 2048 --freezeBN_Require_Grad_True --npb \
+--resume /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_Res50_num8/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment8_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_checkpoint.pth.tar
 
 v23 only_LSTM (on dgx GPU3) ResNet50 frame_num 16
 CUDA_VISIBLE_DEVICES=2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /raid/users/km/SthSth/ \
@@ -387,6 +388,19 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 -
 --result_path /hdd3/VideoDataset/Experiments/V2/TMP --workers 20 --num_CNNs 1 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --how_to_get_query mean --CustomPolicy \
 --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --AdditionalLoss_MLP --memory_dim 2
+
+v28 (dgx GPU1) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8  --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v28_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_iter_numseg8/ --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP
+
+v28 (on my computer) ResNet18 {Data Augmentation}
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 4 --gpus 0 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8 --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/TEST --workers 20 --num_CNNs 1 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 \
+--sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --CC -arch resnet18 --channel 512 --freezeBN_Eval --npb --lr_steps 25 50
 
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \

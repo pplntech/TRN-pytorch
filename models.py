@@ -16,7 +16,7 @@ class TSN(nn.Module):
                  consensus_type='avg', before_softmax=True,
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN_Eval=False, freezeBN_Require_Grad_True=False, print_spec=True, num_hop=1, hop_method=None, 
-                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, AdditionalLoss=False, AdditionalLoss_MLP=False, \
+                 num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, MultiStageLoss=False, MultiStageLoss_MLP=False, \
                  how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1):
         super(TSN, self).__init__()
         self.modality = modality
@@ -31,7 +31,7 @@ class TSN(nn.Module):
         self.freezeBN_Require_Grad_True = freezeBN_Require_Grad_True
         self.freezeBackbone = freezeBackbone
         self.CustomPolicy = CustomPolicy
-        self.AdditionalLoss = AdditionalLoss
+        self.MultiStageLoss = MultiStageLoss
         self.CC = CC
         self.memory_dim = memory_dim
         # self.sorting = sorting
@@ -77,7 +77,7 @@ class TSN(nn.Module):
             self.consensus = MemNNmodule.return_MemNN(consensus_type, self.num_segments, num_class, \
                 key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, memory_dim=memory_dim, query_update_method=query_update_method, \
                 no_softmax_on_p=no_softmax_on_p, channel=channel, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
-                sorting=sorting, AdditionalLoss=AdditionalLoss, AdditionalLoss_MLP=AdditionalLoss_MLP, how_to_get_query=how_to_get_query, only_query=only_query, CC=CC)
+                sorting=sorting, MultiStageLoss=MultiStageLoss, MultiStageLoss_MLP=MultiStageLoss_MLP, how_to_get_query=how_to_get_query, only_query=only_query, CC=CC)
         else: # agv or something else
             self.consensus = ConsensusModule(consensus_type)
 
@@ -659,11 +659,11 @@ class TSN(nn.Module):
 
     def get_augmentation(self):
         if self.modality == 'RGB':
-            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75, .66]),
-                                                   GroupRandomHorizontalFlip(is_flow=False)])
+            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75, .66], fix_crop=False)])
+                # , GroupRandomHorizontalFlip(is_flow=False)])
         elif self.modality == 'Flow':
-            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75]),
-                                                   GroupRandomHorizontalFlip(is_flow=True)])
+            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75], fix_crop=False)])
+                # ,GroupRandomHorizontalFlip(is_flow=True)])
         elif self.modality == 'RGBDiff':
-            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75]),
-                                                   GroupRandomHorizontalFlip(is_flow=False)])
+            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75], fix_crop=False)])
+                # ,GroupRandomHorizontalFlip(is_flow=False)])

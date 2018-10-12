@@ -5,6 +5,8 @@ from six.moves import range
 import time
 import cv2
 import random
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 def channel_shift(xs, intensity, channel_axis):
@@ -102,6 +104,7 @@ def flip_axis(xs, axis):
 
     return ys
 
+# rt=5, cs=0.03
 def random_transform(xs, rnd,
                      rt=False, # rotation
                      hs=False, # height_shift
@@ -191,12 +194,14 @@ def random_transform(xs, rnd,
 
         xs = apply_transforms_cv(xs, transform_matrix)
 
-        # plt.figure(1)
-        # plt.subplot(2,1,1); plt.imshow(xs[0])
-        # plt.subplot(2,1,2); plt.imshow(xs[1])
-        # plt.show()
 
+    # plt.figure(1)
+    # plt.subplot(2,1,1); plt.imshow(xs[0])
+    # plt.subplot(2,1,2); plt.imshow(xs[1])
+    # plt.savefig('aug_1_rotation.png')
+    # plt.show()
 
+    # print ('middle : ', xs[0], max(xs[0]), min(xs[0]))
     if cs != 0:
         intensity = rnd.uniform(-cs, cs)
         xs = channel_shift(xs,
@@ -207,6 +212,10 @@ def random_transform(xs, rnd,
         if rnd.random() < 0.5:
             xs = flip_axis(xs, img_col_axis)
 
+    # plt.figure(1)
+    # plt.subplot(2,1,1); plt.imshow(xs[0])
+    # plt.subplot(2,1,2); plt.imshow(xs[1])
+    # plt.savefig('aug_2_color.png')
     return xs
 
 

@@ -7,6 +7,12 @@ import numpy as np
 from numpy.random import randint
 import h5py
 import io
+import random
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+
+from affine_transforms import random_transform
 
 class VideoRecord(object):
     def __init__(self, row):
@@ -167,8 +173,30 @@ class TSNDataSet(data.Dataset):
         if self.file_type == 'h5':
             input_h5.close()
 
+        # ADD additional Data Augmentation (rotation and jittering)
+        # print (len(images)) # 8
+        # print (images[0].size) # (256, 256)
 
+        rnd = random.Random()
+        list_FM = [np.array(img, dtype=np.float64)/255. for img in images] # T,H,W,3
+        # print ('bf : ', list_FM[0])
+        # plt.figure(1)
+        # plt.subplot(2,1,1); plt.imshow(list_FM[0])
+        # plt.subplot(2,1,2); plt.imshow(list_FM[1])
+        # plt.savefig('aug_0_bf.png')
+        # print (list_FM[0]) # 0~255
+        # print (list_FM[0].dtype) # uint8
+        list_trans_FM = random_transform(list_FM, rnd, rt=5, cs=0.03, hf=False)
+        # list_trans_FM = random_transform(list_FM, rnd, rt=5, cs=0.03, hf=False)
+        # print ('after : ',  list_trans_FM[0], max(list_trans_FM[0]), min(list_trans_FM[0]))
+        list_trans_FM = [np.uint8(img*255.) for img in list_trans_FM]
+        # print ('after int : ',  list_trans_FM[0], max(list_trans_FM[0]), min(list_trans_FM[0]))
+        images = [Image.fromarray(img) for img in list_trans_FM]
+
+
+        # Original Data Augmentation
         process_data = self.transform(images)
+
         # print (process_data.type(), process_data.size(), record.path)
         # print (indices, record.num_frames, record.path, process_data)
         return process_data, record.label, record.path, indices

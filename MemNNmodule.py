@@ -11,15 +11,15 @@ import pdb
 class MemNNModule(torch.nn.Module):
     def __init__(self, num_frames, num_class, channel, \
         key_dim, value_dim, query_dim, memory_dim, query_update_method, no_softmax_on_p, \
-        num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, AdditionalLoss_MLP, how_to_get_query, only_query, CC):
+        num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC):
         super(MemNNModule, self).__init__()
 
         self.num_frames = num_frames # num of segments
         self.num_class = num_class
         self.channel = channel # 1024
         self.sorting = sorting
-        self.AdditionalLoss = AdditionalLoss
-        self.AdditionalLoss_MLP = AdditionalLoss_MLP
+        self.MultiStageLoss = MultiStageLoss
+        self.MultiStageLoss_MLP = MultiStageLoss_MLP
         self.how_to_get_query = how_to_get_query
         self.only_query = only_query
 
@@ -84,24 +84,32 @@ class MemNNModule(torch.nn.Module):
 
         self.classifier = self.fc_fusion()
 
-        if self.AdditionalLoss:
-            if self.AdditionalLoss_MLP:
+        if self.MultiStageLoss:
+            if self.MultiStageLoss_MLP:
                 self.query_prediction = self.fc_fusion(self.channel)
             else:
                 self.query_prediction = nn.Linear(self.channel, self.num_class)
 
             if self.hop_method=='iterative':
                 if self.hops >= 2:
-                    if self.query_update_method=='concat': self.hop1_prediction = nn.Linear(self.channel + self.value_dim, self.num_class)
-                    if self.query_update_method=='sum': self.hop1_prediction = nn.Linear(self.channel, self.num_class)
+                    if self.MultiStageLoss_MLP:
+                        if self.query_update_method=='concat': self.hop1_prediction = self.fc_fusion(self.channel + self.value_dim)
+                        if self.query_update_method=='sum': self.hop1_prediction = self.fc_fusion(self.channel)
+                    else:
+                        if self.query_update_method=='concat': self.hop1_prediction = nn.Linear(self.channel + self.value_dim, self.num_class)
+                        if self.query_update_method=='sum': self.hop1_prediction = nn.Linear(self.channel, self.num_class)
                 if self.hops >= 3:
-                    if self.query_update_method=='concat': self.hop2_prediction = nn.Linear(self.channel + self.value_dim*2, self.num_class)
-                    if self.query_update_method=='sum': self.hop2_prediction = nn.Linear(self.channel, self.num_class)
+                    if self.MultiStageLoss_MLP:
+                        if self.query_update_method=='concat': self.hop2_prediction = self.fc_fusion(self.channel + self.value_dim*2)
+                        if self.query_update_method=='sum': self.hop2_prediction = self.fc_fusion(self.channel)
+                    else:
+                        if self.query_update_method=='concat': self.hop2_prediction = nn.Linear(self.channel + self.value_dim*2, self.num_class)
+                        if self.query_update_method=='sum': self.hop2_prediction = nn.Linear(self.channel, self.num_class)
 
 
     def fc_fusion(self, given_input_dim=None):
         nums = self.hops
-        input_dim = (nums * self.value_dim)
+        input_dim = (self.channel + nums * self.value_dim)
         if self.only_query:
             input_dim = self.channel
         if given_input_dim is not None:
@@ -147,8 +155,9 @@ class MemNNModule(torch.nn.Module):
             else:
                 return outputs
 
-        if self.AdditionalLoss:
+        if self.MultiStageLoss:
             outputs.append(self.query_prediction(query_value).squeeze(1))
+
 
         # first hop
         retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
@@ -170,7 +179,7 @@ class MemNNModule(torch.nn.Module):
                     updated_query_value2 = torch.cat((query_value,retrieved_value1), dim=1) # (bs, 1024 + value_dim)
                     QueryEmbedding = self.query_embedding2
 
-                if self.AdditionalLoss:
+                if self.MultiStageLoss:
                     outputs.append(self.hop1_prediction(updated_query_value2).squeeze(1))
 
             elif self.hop_method=='parallel':
@@ -199,7 +208,7 @@ class MemNNModule(torch.nn.Module):
                     updated_query_value3 = torch.cat((updated_query_value2, retrieved_value2), dim=1)
                     QueryEmbedding = self.query_embedding3
                     
-                if self.AdditionalLoss:
+                if self.MultiStageLoss:
                     outputs.append(self.hop2_prediction(updated_query_value3).squeeze(1))
 
             elif self.hop_method=='parallel':
@@ -213,7 +222,10 @@ class MemNNModule(torch.nn.Module):
             accumulated_output.append(retrieved_value3)
             attentions.append(p3.cpu())
 
+        # print (len(accumulated_output)) # 3
+        # print (accumulated_output[0].size()) # [4, 512]
         accumulated_output = torch.stack(accumulated_output, -1)
+        # print (accumulated_output.size()) # [4, 512, 3]
         if self.sorting:
             bs = p1.size()[0]
             accumulated_time_weight = []
@@ -244,8 +256,9 @@ class MemNNModule(torch.nn.Module):
                 accumulated_output[inner_i] = accumulated_output[inner_i][:,tuple(arg_time[inner_i,:].tolist())]
                 # .permute(tuple(arg_time[inner_i,:].tolist()))
                 # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
-
-
+        # print (query_value, query_value.unsqueeze(2)) # 4 x 512, 4 x 512 x 1
+        # print (accumulated_output) # 4 x 512 x 3
+        accumulated_output = torch.cat((query_value.unsqueeze(2), accumulated_output), 2)
         accumulated_output = accumulated_output.view(bs, -1)
         output = self.classifier(accumulated_output)
 
@@ -257,7 +270,7 @@ class MemNNModule(torch.nn.Module):
         # print (len(attentions)) # bs
         outputs.append(output.squeeze(1))
 
-        if self.AdditionalLoss:
+        if self.MultiStageLoss:
             pass
 
         if eval:
@@ -276,7 +289,7 @@ class MemNNModule(torch.nn.Module):
 
         # print (memory.size()) # [32, 2048, 1, 1]
         # print (KeyEmbedding) # Conv2d (2048, 256, kernel_size=(1, 1), stride=(1, 1))
-        
+
         key = KeyEmbedding(memory) # ([BS*num_frames, img_dim, h, w]) >> ([BS*num_frames, key_dim, h, w])
         key = key.view(bs, T, self.key_dim, H, W) # (BS, num_frames, key_dim, h, w)
         key = torch.transpose(key,1,2).contiguous() # (BS, key_dim, num_frames, h, w)
@@ -304,12 +317,12 @@ class MemNNModule(torch.nn.Module):
 def return_MemNN(
     relation_type, num_frames, num_class, \
     key_dim, value_dim, query_dim, memory_dim, query_update_method, no_softmax_on_p,
-    channel, num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, AdditionalLoss_MLP, how_to_get_query, only_query, CC):
+    channel, num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC):
 
     if relation_type == 'MemNN':
         MemNNmodel = MemNNModule(num_frames, num_class, channel, \
             key_dim, value_dim, query_dim, memory_dim, query_update_method, no_softmax_on_p, \
-            num_hop, hop_method, num_CNNs, sorting, AdditionalLoss, AdditionalLoss_MLP, how_to_get_query, only_query, CC)
+            num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 

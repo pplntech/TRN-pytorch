@@ -42,10 +42,10 @@ parser.add_argument('--CustomPolicy', action='store_true', help='If true, custom
 parser.set_defaults(CustomPolicy=False)    ##### newly added #####
 parser.add_argument('--CC', action='store_true', help='If true, add CC')    ##### newly added #####
 parser.set_defaults(CC=False)    ##### newly added #####
-parser.add_argument('--AdditionalLoss', action='store_true', help='If true, use additional loss every hop')    ##### newly added #####
-parser.set_defaults(AdditionalLoss=False)    ##### newly added #####
-parser.add_argument('--AdditionalLoss_MLP', action='store_true', help='If true, use MLP for lstm estimation')    ##### newly added #####
-parser.set_defaults(AdditionalLoss_MLP=False)    ##### newly added #####
+parser.add_argument('--MultiStageLoss', action='store_true', help='If true, use additional loss every hop')    ##### newly added #####
+parser.set_defaults(MultiStageLoss=False)    ##### newly added #####
+parser.add_argument('--MultiStageLoss_MLP', action='store_true', help='If true, use MLP for lstm estimation')    ##### newly added #####
+parser.set_defaults(MultiStageLoss_MLP=False)    ##### newly added #####
 parser.add_argument('--how_to_get_query', type=str, default="mean", choices=['mean', 'lstm'])  ##### newly added #####
 parser.add_argument('--only_query', action='store_true', help='If true, use only query to predict the final')    ##### newly added #####
 parser.set_defaults(only_query=False)    ##### newly added #####
