@@ -162,7 +162,8 @@ class MemNNModule(torch.nn.Module):
         # first hop
         retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
         accumulated_output.append(retrieved_value1)
-        attentions.append(p1.cpu())
+        attentions.append(p1)
+        # attentions.append(p1.cpu())
 
         if self.hops >= 2:
             if self.hop_method=='iterative':
@@ -191,7 +192,8 @@ class MemNNModule(torch.nn.Module):
 
             retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, KeyEmbedding, ValueEmbedding, QueryEmbedding)
             accumulated_output.append(retrieved_value2)
-            attentions.append(p2.cpu())
+            attentions.append(p2)
+            # attentions.append(p2.cpu())
 
         if self.hops >= 3:
             if self.hop_method=='iterative':
@@ -220,7 +222,8 @@ class MemNNModule(torch.nn.Module):
 
             retrieved_value3, p3 = self.hop(memory_input, updated_query_value3, KeyEmbedding, ValueEmbedding, QueryEmbedding)
             accumulated_output.append(retrieved_value3)
-            attentions.append(p3.cpu())
+            attentions.append(p3)
+            # attentions.append(p3.cpu())
 
         # print (len(accumulated_output)) # 3
         # print (accumulated_output[0].size()) # [4, 512]
@@ -266,12 +269,12 @@ class MemNNModule(torch.nn.Module):
         attentions = torch.stack(attentions,-1) # (bs, 1, num_seg, h, w, hop)
         attentions = attentions.permute(0, 1, 5, 2, 3, 4) # (bs, 1, hop, num_seg, h, w)
         attentions = attentions.squeeze(1) # (bs, hop, num_seg, h, w)
-        attentions = attentions.data.numpy().tolist()
+        # attentions = attentions.data.numpy().tolist()
         # print (len(attentions)) # bs
         outputs.append(output.squeeze(1))
 
-        if self.MultiStageLoss:
-            pass
+        # print  (outputs) # list of (bsx174)
+        # print (len(outputs)) # 2 for parallel
 
         if eval:
             return outputs, attentions

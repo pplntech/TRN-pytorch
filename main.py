@@ -234,6 +234,8 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
         # compute output
         output, loss = model(input_var, criterion, phase='train', target=target_var) # torch.nn.CrossEntropyLoss().cuda()
+        # print (loss)
+        # asdf
         loss = loss.mean()
         # output = model(input_var)
         # loss = criterion(output, target_var)
@@ -326,13 +328,16 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         # print (input_var)
         # asdf
 
+
         # compute output
         if json_file is not None and args.consensus_type in ['MemNN']:
+            # output, loss = model(input_var, criterion, phase='eval', target=target_var, eval=False)
             output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
+            attentions = attentions.cpu().data.numpy().tolist()
             # output, attentions = model(input_var, eval=True)
         else:
             # print (input_var)
-            output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=False)
+            output, loss = model(input_var, criterion, phase='eval', target=target_var, eval=False)
             # output = model(input_var)
         # loss = criterion(output, target_var)
 

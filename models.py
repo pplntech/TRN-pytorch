@@ -550,10 +550,10 @@ class TSN(nn.Module):
             outputs = [self.consensus(base_out).squeeze(1)]
 
 
-        # Calculate Loss
+        # Calculate Loss (Avg MultiStage Loss)
         total_loss = None
         total_output = None
-        for output in outputs: # outputs : list of logits
+        for idx, output in enumerate(outputs): # outputs : list of logits
             if total_loss is None:
                 # output.size() : 
                 # target.size() : 
@@ -562,12 +562,13 @@ class TSN(nn.Module):
             else:
                 total_loss += criterion(output, target)
                 total_output += nn.functional.softmax(output,1) # BS x 174
+                # print (idx, criterion(output, target))
 
         total_output = total_output / len(outputs)
         total_loss = total_loss / len(outputs)
+
         # total_loss = total_loss.mean()
         if eval and self.consensus_type in ['MemNN']:
-            # print (total_output.size(), attentions.size(), total_loss.size())
             return total_output, attentions, total_loss
         else:
             return total_output, total_loss
