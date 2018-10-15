@@ -324,7 +324,7 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 -
 --arch resnet50 --channel 2048 --freezeBN_Require_Grad_True --npb \
 --resume /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_Res50_num8/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment8_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_checkpoint.pth.tar
 
-###### TEST ######
+###### MultiGPU TEST ######
 (on my computer) BNInception frame_num 16 (TEST)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 21 --gpus 0 1 --root_path /ssd2/VideoDataset/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16  --hop 3 \
@@ -429,6 +429,13 @@ v29 (ciplabthree GPU1) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering 
 CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v29_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_parallel_numseg8_BNGradFalse/ --workers 5 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP
+
+v29 (ciplabthree GPU01) ResNet34 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+CUDA_VISIBLE_DEVICES=0,1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 80 --gpus 0 1 --root_path /ssd/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8  --hop 3 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v29_MemNNQueryNN_3hops_NOsoftmax_ResNet34_MultiStageLossMLP_parallel_numseg8_BNGradFalse/ --workers 5 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
 --CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP
 
