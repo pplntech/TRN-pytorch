@@ -8,15 +8,21 @@ import random
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+import numbers
 
-def channel_shift(xs, intensity, channel_axis):
+def channel_shift(xs, scale, intensity, channel_axis):
+    if isinstance(intensity, numbers.Number):
+        intensity = [intensity, intensity, intensity]
+    if isinstance(scale, numbers.Number):
+        scale = [scale, scale, scale]
+
     ys = []
     for x in xs:
         if x.ndim == 3: # image
             x = np.rollaxis(x, channel_axis, 0)
             min_x, max_x = np.min(x), np.max(x)
-            channel_images = [np.clip(x_channel + intensity, min_x, max_x)
-                            for x_channel in x]
+            channel_images = [np.clip(scale[idx]*(x_channel + intensity[idx]), min_x, max_x)
+                            for idx, x_channel in enumerate(x)]
             x = np.stack(channel_images, axis=0)
             x = np.rollaxis(x, 0, channel_axis + 1)
             ys.append(x)

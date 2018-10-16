@@ -107,10 +107,11 @@ def main():
     elif args.modality in ['Flow', 'RGBDiff']:
         data_length = 5
 
-    train_data = TSNDataSet(args.root_path, args.train_list, args.file_type, num_segments=args.num_segments,
+    train_data = TSNDataSet(args.root_path, args.train_list, args.file_type, num_segments=args.num_segments, MoreAug_Rotation=args.MoreAug_Rotation, MoreAug_ColorJitter=args.MoreAug_ColorJitter,
                        new_length=data_length,
                        modality=args.modality,
                        image_tmpl=prefix,
+                       phase='train',
                        transform=torchvision.transforms.Compose([
                            train_augmentation, # GroupMultiScaleCrop[1, .875, .75, .66] AND GroupRandomHorizontalFlip
                            Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
@@ -121,11 +122,12 @@ def main():
         batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False, drop_last=True)
 
-    val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments,
+    val_data = TSNDataSet(args.root_path, args.val_list, args.file_type,num_segments=args.num_segments, MoreAug_Rotation=args.MoreAug_Rotation, MoreAug_ColorJitter=args.MoreAug_ColorJitter,
                    new_length=data_length,
                    modality=args.modality,
                    image_tmpl=prefix,
                    random_shift=False,
+                   phase='test',
                    transform=torchvision.transforms.Compose([
                        GroupScale(int(scale_size)),
                        GroupCenterCrop(crop_size),

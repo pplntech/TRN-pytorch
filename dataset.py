@@ -12,7 +12,9 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 
-from affine_transforms import random_transform
+from affine_transforms import channel_shift
+from transforms import GroupRandomRotation
+# from transforms import GroupRandomColorjitter_km
 
 class VideoRecord(object):
     def __init__(self, row):
@@ -33,8 +35,8 @@ class VideoRecord(object):
 
 class TSNDataSet(data.Dataset):
     def __init__(self, root_path, list_file, file_type,
-                 num_segments=3, new_length=1, modality='RGB',
-                 image_tmpl='img_{:05d}.jpg', transform=None,
+                 num_segments=3, MoreAug_Rotation=False, MoreAug_ColorJitter=False, new_length=1, modality='RGB',
+                 image_tmpl='img_{:05d}.jpg', transform=None, phase='test',
                  force_grayscale=False, random_shift=True, test_mode=False):
 
         self.root_path = root_path
@@ -47,6 +49,14 @@ class TSNDataSet(data.Dataset):
         self.transform = transform
         self.random_shift = random_shift
         self.test_mode = test_mode
+        self.MoreAug_Rotation = MoreAug_Rotation
+        self.MoreAug_ColorJitter = MoreAug_ColorJitter
+        self.phase = phase
+        if self.MoreAug_Rotation and self.phase=='train': self.moreaug_transform_rotation = GroupRandomRotation(5)
+        # if self.MoreAug_ColorJitter and self.phase=='train': self.moreaug_transform_colorjitter = GroupRandomColorjitter_km(brightness=0.7, contrast=0.7, saturation=0.5, hue=0.05)
+        # if self.MoreAug_ColorJitter and self.phase=='train': self.moreaug_transform_colorjitter = GroupRandomColorjitter(brightness=0.7, contrast=0.7, saturation=0.5, hue=0.05)
+            
+
 
         if self.modality == 'RGBDiff':
             self.new_length += 1# Diff needs one more image to calculate diff
@@ -177,6 +187,7 @@ class TSNDataSet(data.Dataset):
         # print (len(images)) # 8
         # print (images[0].size) # (256, 256)
 
+        '''
         rnd = random.Random()
         list_FM = [np.array(img, dtype=np.float64)/255. for img in images] # T,H,W,3
         # print ('bf : ', list_FM[0])
@@ -192,7 +203,22 @@ class TSNDataSet(data.Dataset):
         list_trans_FM = [np.uint8(img*255.) for img in list_trans_FM]
         # print ('after int : ',  list_trans_FM[0], max(list_trans_FM[0]), min(list_trans_FM[0]))
         images = [Image.fromarray(img) for img in list_trans_FM]
+        '''
 
+        # Additional Data Augmentation # Rotation # ColorJitter
+        if self.MoreAug_Rotation and self.phase=='train': images = self.moreaug_transform_rotation(images)
+        if self.MoreAug_ColorJitter and self.phase=='train':
+            # images = self.moreaug_transform_colorjitter(images)
+
+            list_FM = [np.array(img) for img in images] # T,H,W,3
+
+            img_channel_axis, cs, alpha = 2, 6, 0.15
+            intensity = [random.uniform(-cs, cs), random.uniform(-cs, cs), random.uniform(-cs, cs)]
+            scale = [random.uniform(1-alpha, 1+alpha), random.uniform(1-alpha, 1+alpha), random.uniform(1-alpha, 1+alpha)]
+
+            list_FM = channel_shift(list_FM, scale, intensity, img_channel_axis)
+            list_trans_FM = [np.uint8(img) for img in list_FM]
+            images = [Image.fromarray(img) for img in list_trans_FM]
 
         # Original Data Augmentation
         process_data = self.transform(images)
