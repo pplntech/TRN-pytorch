@@ -36,7 +36,7 @@ class VideoRecord(object):
 class TSNDataSet(data.Dataset):
     def __init__(self, root_path, list_file, file_type,
                  num_segments=3, MoreAug_Rotation=False, MoreAug_ColorJitter=False, new_length=1, modality='RGB',
-                 image_tmpl='img_{:05d}.jpg', transform=None, phase='test',
+                 image_tmpl='img_{:05d}.jpg', transform1=None, transform2=None, phase='test',
                  force_grayscale=False, random_shift=True, test_mode=False):
 
         self.root_path = root_path
@@ -46,7 +46,8 @@ class TSNDataSet(data.Dataset):
         self.new_length = new_length
         self.modality = modality
         self.image_tmpl = image_tmpl
-        self.transform = transform
+        self.transform1 = transform1
+        self.transform2 = transform2
         self.random_shift = random_shift
         self.test_mode = test_mode
         self.MoreAug_Rotation = MoreAug_Rotation
@@ -205,8 +206,13 @@ class TSNDataSet(data.Dataset):
         images = [Image.fromarray(img) for img in list_trans_FM]
         '''
 
-        # Additional Data Augmentation # Rotation # ColorJitter
+        # Additional Data Augmentation # Rotation
         if self.MoreAug_Rotation and self.phase=='train': images = self.moreaug_transform_rotation(images)
+
+        # Original Data Augmentation
+        images = self.transform1(images)
+
+        # Additional Data Augmentation # ColorJitter
         if self.MoreAug_ColorJitter and self.phase=='train':
             # images = self.moreaug_transform_colorjitter(images)
 
@@ -220,8 +226,7 @@ class TSNDataSet(data.Dataset):
             list_trans_FM = [np.uint8(img) for img in list_FM]
             images = [Image.fromarray(img) for img in list_trans_FM]
 
-        # Original Data Augmentation
-        process_data = self.transform(images)
+        process_data = self.transform2(images)
 
         # print (process_data.type(), process_data.size(), record.path)
         # print (indices, record.num_frames, record.path, process_data)

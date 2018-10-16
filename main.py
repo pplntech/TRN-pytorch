@@ -112,8 +112,10 @@ def main():
                        modality=args.modality,
                        image_tmpl=prefix,
                        phase='train',
-                       transform=torchvision.transforms.Compose([
+                       transform1=torchvision.transforms.Compose([
                            train_augmentation, # GroupMultiScaleCrop[1, .875, .75, .66] AND GroupRandomHorizontalFlip
+                       ]),
+                       transform2=torchvision.transforms.Compose([
                            Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
                            ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
                            normalize, # GroupNormalize
@@ -128,9 +130,11 @@ def main():
                    image_tmpl=prefix,
                    random_shift=False,
                    phase='test',
-                   transform=torchvision.transforms.Compose([
+                   transform1=torchvision.transforms.Compose([
                        GroupScale(int(scale_size)),
-                       GroupCenterCrop(crop_size),
+                       GroupCenterCrop(crop_size)
+                   ]),
+                   transform2=torchvision.transforms.Compose([
                        Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
                        ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
                        normalize,
