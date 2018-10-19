@@ -459,6 +459,13 @@ CUDA_VISIBLE_DEVICES=0,1,2 python main.py somethingv2 RGB --consensus_type MemNN
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p \
 --CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 256
 
+v31 (dgx GPU1,3) ResNet34 frame_num16 iter Nosoftmax Nosorting num_objects 2 (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+CUDA_VISIBLE_DEVICES=0,1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 48 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v30_ResNet34_16frs_Iterative_NoSoftmax_NoSorting/ --workers 20 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --how_many_objects 2
+
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \
 --num_segments 8 --hop 2 --result_path ? --workers 20 --num_CNNs 2 --resume ? --evaluate --evaluation_epoch ?

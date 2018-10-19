@@ -71,6 +71,7 @@ def main():
                 CC=args.CC, channel=args.channel,
                 memory_dim=args.memory_dim,
                 image_resolution=args.image_resolution,
+                how_many_objects=args.how_many_objects,
                 )
 
 
@@ -339,8 +340,13 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         # compute output
         if json_file is not None and args.consensus_type in ['MemNN']:
             # output, loss = model(input_var, criterion, phase='eval', target=target_var, eval=False)
-            output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
-            attentions = attentions.cpu().data.numpy().tolist()
+            if args.how_many_objects == 2:
+                output, attentions, attentions_2, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
+                attentions = attentions.cpu().data.numpy().tolist()
+                attentions_2 = attentions_2.cpu().data.numpy().tolist()
+            else:
+                output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
+                attentions = attentions.cpu().data.numpy().tolist()
             # output, attentions = model(input_var, eval=True)
         else:
             # print (input_var)
@@ -371,6 +377,8 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
                 each_dict['framenums'] = indices_list[each_bs]
 
                 each_dict['hop_probabilities'] = attentions[each_bs]
+                if args.how_many_objects == 2:
+                    each_dict['hop_probabilities_2'] = attentions_2[each_bs]
                 each_dict['Predict'] = pred[each_bs]
                 # print (each_dict) # , sum(attentions[each_bs][0]), sum(attentions[each_bs][1]))
                 dicts[str(each_dict['GT'])].append(each_dict)

@@ -11,7 +11,7 @@ import pdb
 class MemNNModule(torch.nn.Module):
     def __init__(self, num_frames, num_class, channel, \
         key_dim, value_dim, query_dim, memory_dim, query_update_method, no_softmax_on_p, \
-        num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC):
+        num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC, how_many_objects):
         super(MemNNModule, self).__init__()
 
         self.num_frames = num_frames # num of segments
@@ -39,6 +39,7 @@ class MemNNModule(torch.nn.Module):
         self.num_CNNs = num_CNNs
 
         self.CC = CC
+        self.how_many_objects = how_many_objects
 
         if self.how_to_get_query=='lstm':
             '''
@@ -52,9 +53,12 @@ class MemNNModule(torch.nn.Module):
 
             # Query Embedding
             self.query_embedding1 = nn.Linear(self.channel, self.query_dim)
+            if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2: self.query_embedding1_2 = nn.Linear(self.channel, self.query_dim)
 
             if self.hops >= 2:
                 if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+                if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2: self.query_embedding2_2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
+
                 if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding2 = nn.Linear(self.channel, self.query_dim)
                 # if self.query_update_method=='concat': self.QueryEmbedding2 = nn.Linear(self.channel + self.value_dim, self.query_dim)
                 # if self.query_update_method=='sum': self.QueryEmbedding2 = nn.Linear(self.channel, self.query_dim)
@@ -62,6 +66,8 @@ class MemNNModule(torch.nn.Module):
 
             if self.hops >= 3:
                 if self.hop_method=='iterative' and self.query_update_method=='concat': self.query_embedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+                if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2: self.query_embedding3_2 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
+
                 if self.hop_method=='iterative' and self.query_update_method=='sum': self.query_embedding3 = nn.Linear(self.channel, self.query_dim)
                 # if self.query_update_method=='concat': self.QueryEmbedding3 = nn.Linear(self.channel + self.value_dim*2, self.query_dim)
                 # if self.query_update_method=='sum': self.QueryEmbedding3 = nn.Linear(self.channel, self.query_dim)
@@ -71,6 +77,8 @@ class MemNNModule(torch.nn.Module):
             # Key / Value Embedding
             self.KeyEmbedding1 = nn.Conv2d(self.channel, self.key_dim, kernel_size=1) # input : (N,Cin,H,W)
             self.ValueEmbedding1 = nn.Conv2d(self.channel, self.value_dim, kernel_size=1) # output :  (N,Cout,Hout,Wout)
+            if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2: self.KeyEmbedding2 = nn.Conv2d(self.channel, self.key_dim, kernel_size=1) # nn.Linear(self.channel, self.key_dim)
+            if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2: self.ValueEmbedding2 = nn.Conv2d(self.channel, self.value_dim, kernel_size=1) # nn.Linear(self.channel, self.value_dim)
             # self.KeyEmbedding1 = nn.Linear(self.channel, self.key_dim)
             # self.ValueEmbedding1 = nn.Linear(self.channel, self.value_dim)
 
@@ -146,6 +154,7 @@ class MemNNModule(torch.nn.Module):
 
         accumulated_output = []
         attentions = []
+        if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2: attentions_2 = []
         if self.only_query:
             output = self.classifier(query_value)
             outputs.append(output.squeeze(1))
@@ -161,8 +170,15 @@ class MemNNModule(torch.nn.Module):
 
         # first hop
         retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
+
+        if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2:
+            retrieved_value1_2, p1_2 = self.hop(memory_input, query_value, self.KeyEmbedding2, self.ValueEmbedding2, self.query_embedding1_2)
+            retrieved_value1 = retrieved_value1 + retrieved_value1_2
+            attentions_2.append(p1_2)
+
         accumulated_output.append(retrieved_value1)
         attentions.append(p1)
+        
         # attentions.append(p1.cpu())
 
         if self.hops >= 2:
@@ -191,6 +207,11 @@ class MemNNModule(torch.nn.Module):
                 QueryEmbedding = self.query_embedding2
 
             retrieved_value2, p2 = self.hop(memory_input, updated_query_value2, KeyEmbedding, ValueEmbedding, QueryEmbedding)
+            if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2:
+                retrieved_value2_2, p2_2 = self.hop(memory_input, updated_query_value2, self.KeyEmbedding2, self.ValueEmbedding2, self.query_embedding2_2)
+                retrieved_value2 = retrieved_value2 + retrieved_value2_2
+                attentions_2.append(p2_2)
+
             accumulated_output.append(retrieved_value2)
             attentions.append(p2)
             # attentions.append(p2.cpu())
@@ -221,6 +242,11 @@ class MemNNModule(torch.nn.Module):
                 QueryEmbedding = self.query_embedding3
 
             retrieved_value3, p3 = self.hop(memory_input, updated_query_value3, KeyEmbedding, ValueEmbedding, QueryEmbedding)
+            if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2:
+                retrieved_value3_2, p3_2 = self.hop(memory_input, updated_query_value3, self.KeyEmbedding2, self.ValueEmbedding2, self.query_embedding3_2)
+                retrieved_value3 = retrieved_value3 + retrieved_value3_2
+                attentions_2.append(p3_2)
+
             accumulated_output.append(retrieved_value3)
             attentions.append(p3)
             # attentions.append(p3.cpu())
@@ -271,12 +297,18 @@ class MemNNModule(torch.nn.Module):
         attentions = attentions.squeeze(1) # (bs, hop, num_seg, h, w)
         # attentions = attentions.data.numpy().tolist()
         # print (len(attentions)) # bs
+        if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2:
+            attentions_2 = torch.stack(attentions_2,-1) # (bs, 1, num_seg, h, w, hop)
+            attentions_2 = attentions_2.permute(0, 1, 5, 2, 3, 4) # (bs, 1, hop, num_seg, h, w)
+            attentions_2 = attentions_2.squeeze(1) # (bs, hop, num_seg, h, w)
         outputs.append(output.squeeze(1))
 
         # print  (outputs) # list of (bsx174)
         # print (len(outputs)) # 2 for parallel
 
         if eval:
+            if self.hop_method=='iterative' and self.query_update_method=='concat' and self.how_many_objects == 2:
+                return outputs, attentions, attentions_2
             return outputs, attentions
         else:
             return outputs
@@ -320,12 +352,12 @@ class MemNNModule(torch.nn.Module):
 def return_MemNN(
     relation_type, num_frames, num_class, \
     key_dim, value_dim, query_dim, memory_dim, query_update_method, no_softmax_on_p,
-    channel, num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC):
+    channel, num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC, how_many_objects):
 
     if relation_type == 'MemNN':
         MemNNmodel = MemNNModule(num_frames, num_class, channel, \
             key_dim, value_dim, query_dim, memory_dim, query_update_method, no_softmax_on_p, \
-            num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC)
+            num_hop, hop_method, num_CNNs, sorting, MultiStageLoss, MultiStageLoss_MLP, how_to_get_query, only_query, CC, how_many_objects)
     else:
         raise ValueError('Unknown TRN' + relation_type)
 
