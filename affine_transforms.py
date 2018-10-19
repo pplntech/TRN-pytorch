@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import numbers
 
 def channel_shift(xs, scale, intensity, channel_axis):
-    if isinstance(intensity, numbers.Number):
+    if isinstance(intensity, int):
         intensity = [intensity, intensity, intensity]
-    if isinstance(scale, numbers.Number):
+    if isinstance(scale, int):
         scale = [scale, scale, scale]
 
     ys = []
