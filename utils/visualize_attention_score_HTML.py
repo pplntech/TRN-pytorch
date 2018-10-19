@@ -33,6 +33,8 @@ import numpy as np
 import scipy.misc
 
 import matplotlib.cm as cm
+
+from html_colorcode import graycolor
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_root', type=str, required=True,
                     help='root directory that contains images')
@@ -88,8 +90,9 @@ if __name__ == '__main__':
     with open(os.path.join(args.result_root, 'results_epoch%d.json'%args.epoch)) as f:
         data = json.load(f)
 
-    colors_bg = ['#DCDCDC', '#D3D3D3', '#A9A9A9', '#696969', '#000000']
-    colors_txt = ['#000000', '#000000', '#000000', '#FFFFFF', '#FFFFFF']
+    # colors_bg = ['#DCDCDC', '#D3D3D3', '#A9A9A9', '#696969', '#000000']
+    # colors_txt = ['#000000', '#000000', '#000000', '#FFFFFF', '#FFFFFF']
+    colors_bg, colors_txt = graycolor()
     # per each class, create folders
     for each_class in sorted(data.iterkeys()):
         class_int = int(each_class)
@@ -102,6 +105,8 @@ if __name__ == '__main__':
 
         # per each data, create html files
         for idx, each_data in enumerate(class_data):
+            if os.path.isdir(os.path.join(args.img_root,str(each_data['id']))) is False:
+                continue
             html_file_name = os.path.join(html_folder,'%d.html' % each_data['id'])
             each_img_folder_name = os.path.join(img_folder, str(each_data['id']))
             _makedirs(each_img_folder_name)
@@ -122,12 +127,13 @@ if __name__ == '__main__':
                     # print (normalize(each_data['hop_probabilities'][each_hop]))
                     # asfd
                     nparray = np.asarray(each_data['hop_probabilities'][each_hop][each_frame]) # (7, 7)
-                    print (nparray)
-                    asdf
+                    # print (nparray.shape)
+                    # asdf
                     prob = np.sum(nparray)
-                    jet_heatmap = np.uint8(cm.jet(nparray)[..., :3] * 255)
-                    scipy.misc.imsave(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,each_frame)), \
-                    overlay(scipy.misc.imresize(jet_heatmap,[img_container.shape[0],img_container.shape[1]]), img_container)) # jet_heatmap.shape : (7, 7, 3)
+                    if (nparray.shape == (1, 1)) is False:
+                        jet_heatmap = np.uint8(cm.jet(nparray)[..., :3] * 255)
+                        scipy.misc.imsave(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,each_frame)), \
+                        overlay(scipy.misc.imresize(jet_heatmap,[img_container.shape[0],img_container.shape[1]]), img_container)) # jet_heatmap.shape : (7, 7, 3)
                     # prob = each_data['hop_probabilities'][each_hop][each_frame] # (bs, hop, num_seg, h, w)
                     # print (prob, int(prob*len(colors_bg)))
                     # print (min(int(prob*len(colors_bg)),len(colors_bg)-1))
@@ -248,6 +254,41 @@ if __name__ == '__main__':
             # visualization
             # create the first row
             html += '<div id="bottom">'
+
+
+            html += '\n<div style="width:100%"><table border="1px solid gray" style="width=100%">'
+            html += '\n<thead><tr><td><b> </b></td>'
+            for frame_idx in range(len(each_data['framenums'])):
+                html += '<td><b>{}</b></td>'.format('fr%d'%(frame_idx+1))
+            html +='</tr></thead><tbody>'
+
+            html += '\n<tr><td><b>images</b></td>'
+            for frame_idx, each_frame in enumerate(each_data['framenums']):
+                html += '<td><img src="{}"></td>'.format(os.path.join(args.img_root,str(each_data['id']),args.prefix.format(each_frame)))
+            html +='</tr>'
+
+            for each_hop in range(num_of_hops):
+                html += '\n<tr><td rowspan="2"><b>{}</b></td>'.format('hop%d'%(each_hop+1))
+
+                for frame_idx, each_frame in enumerate(each_data['framenums']):
+                    # html += '<td class="{}">{}</td>'.format('hop%d_frame%d'%(each_hop,frame_idx), each_data['hop_probabilities'][each_hop][frame_idx])
+                    # html += '<td bgcolor="{}" color="{}">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)],\
+                    if os.path.exists(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,frame_idx))):
+                        html += '<td><img src="{}"></td>'.format(os.path.join(each_img_folder_name, 'hop%02d_frame%02d.jpg'%(each_hop,frame_idx)))
+                    else:
+                        html += '<td></td>'
+                html +='</tr>'
+
+                # html += '\n<tr><td><b>{}</b></td>'.format('hop%d probs'%(each_hop+1))
+                html += '\n<tr>'
+                for frame_idx, each_frame in enumerate(each_data['framenums']):
+                    nparray = np.asarray(each_data['hop_probabilities'][each_hop][frame_idx])
+                    prob = np.sum(nparray)
+                    prob = float("{0:.2f}".format(prob))
+                    html += '<td style="background-color:{};color:{};">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)], prob)
+                html +='</tr>'
+            html +='</tbody></table></div>'
+            '''
             html += '\n<div style="width:100%"><table border="1px solid gray" style="width=100%">'
             html += '\n<thead><tr><td><b>images</b></td>'
             for each_hop in range(num_of_hops):
@@ -267,6 +308,7 @@ if __name__ == '__main__':
                     html += '<td style="background-color:{};color:{};">{}</td>'.format(colortables_bg['hop%d_frame%d'%(each_hop,frame_idx)], colortables_txt['hop%d_frame%d'%(each_hop,frame_idx)], prob)
                 html +='</tr>'
             html +='</tbody></table></div>'
+            '''
             html += '</div>'
             # html +='</p>'
             html += '</body></html>'

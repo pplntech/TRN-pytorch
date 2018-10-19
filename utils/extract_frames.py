@@ -13,6 +13,8 @@ parser = argparse.ArgumentParser(description='directories')
 parser.add_argument('--video_root', default='20bn-something-something-v2', type=str)
 parser.add_argument('--frame_root', default='20bn-something-something-v2-frames', type=str)
 parser.add_argument('--num_threads', default=100, type=int)
+parser.add_argument('--resolution', default=256, type=int)
+parser.add_argument('--quality', default=7, type=int)
 args = parser.parse_args()
 
 NUM_THREADS = args.num_threads
@@ -44,15 +46,19 @@ def extract(video, tmpl='%06d.jpg'):
 
     os.makedirs(os.path.join(FRAME_ROOT, video[:-5]))
 
-    if width>height:
-        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=-1:320 -sws_flags bilinear -q:v 5 \"{}/{}/{}\"'.\
-        format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
-    else:
-        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=320:-1 -sws_flags bilinear -q:v 5 \"{}/{}/{}\"'.\
-        format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
+    if args.resolution==320:
+        if width>height:
+            # 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=-1:320 -sws_flags bilinear -q:v 5 \"{}/{}/{}\"'.\
+            cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=-1:320 -sws_flags bilinear -q:v {} \"{}/{}/{}\"'.\
+            format(VIDEO_ROOT, video, args.quality, FRAME_ROOT, video[:-5], tmpl)
+        else:
+            # cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=320:-1 -sws_flags bilinear -q:v 5 \"{}/{}/{}\"'.\
+            cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=320:-1 -sws_flags bilinear -q:v {} \"{}/{}/{}\"'.\
+            format(VIDEO_ROOT, video, args.quality, FRAME_ROOT, video[:-5], tmpl)
 
-    # cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=256:256 \"{}/{}/{}\"'.\
-    # format(VIDEO_ROOT, video, FRAME_ROOT, video[:-5], tmpl)
+    elif args.resolution==256:
+        cmd = 'ffmpeg -loglevel panic -i \"{}/{}\" -vf scale=256:256 -sws_flags bilinear -q:v {} \"{}/{}/{}\"'.\
+        format(VIDEO_ROOT, video, args.quality, FRAME_ROOT, video[:-5], tmpl)
 
     # print (cmd)
     # asdf

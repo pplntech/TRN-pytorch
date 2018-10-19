@@ -324,14 +324,6 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 -
 --arch resnet50 --channel 2048 --freezeBN_Require_Grad_True --npb \
 --resume /hdd3/VideoDataset/Experiments/V2/v23_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ONLYLSTM_Res50_num8/model/MemNN_somethingv2_RGB_resnet50_MemNN_segment8_key256_value512_query256_queryUpdatebyconcat_NoSoftmaxTrue_hopMethodparallel_checkpoint.pth.tar
 
-###### MultiGPU TEST ######
-(on my computer) resnet34 frame_num 8 (TEST)
-python main.py somethingv2 RGB --consensus_type MemNN --batch-size 60 --gpus 0 1 --root_path /ssd2/VideoDataset/ \
---key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8  --hop 3 \
---result_path /hdd3/VideoDataset/Experiments/V2/MULTIGPU_TEST_rotation --workers 8 \
---epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter
-
 v23 only_LSTM (on dgx GPU3) ResNet50 frame_num 16
 CUDA_VISIBLE_DEVICES=2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
@@ -397,55 +389,75 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 14 --gpus 0 -
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --how_to_get_query mean --CustomPolicy \
 --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --AdditionalLoss_MLP --memory_dim 2
 
-v28 (dgx GPU1) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v28 (dgx GPU1) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 50 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8  --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v28_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_iter_numseg8/ --workers 20 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320
 
-v28 (dgx GPU1) ResNet34 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v28 (dgx GPU1) ResNet34 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 42 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 8  --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v28_MemNNQueryNN_3hops_NOsoftmax_ResNet34_MultiStageLossMLP_iter_numseg8/ --workers 20 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter
+--CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320
 
-v28 (dgx GPU3) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v28 (dgx GPU3) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 25 --gpus 0 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v28_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_iter_numseg16/ --workers 20 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320
 
-v29 (ciplabthree GPU0) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v29 (ciplabthree GPU0) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=0 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 42 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v29_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_parallel_numseg8_BNGradTrue/ --workers 5 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --freezeBN_Require_Grad_True --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --freezeBN_Require_Grad_True --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --image_resolution 320
 
-v29 (ciplabthree GPU1) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v29 (ciplabthree GPU1) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 39 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v29_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_parallel_numseg8_BNGradFalse/ --workers 5 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --image_resolution 320
 
-v29 (ciplabthree GPU0,1) ResNet34 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v29 (ciplabthree GPU0,1) ResNet34 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=0,1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 66 --gpus 0 1 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 8  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v29_MemNNQueryNN_3hops_NOsoftmax_ResNet34_MultiStageLossMLP_parallel_numseg8_BNGradFalse/ --workers 5 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation
+--CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --image_resolution 320
 
-v29 (ciplabthree GPU2) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss)
+v29 (ciplabthree GPU2) ResNet18 h5_320 DataAugmentation_Rotation_ColorJittering MLP_on_MultiStageLoss (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 21 --gpus 0 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v29_MemNNQueryNN_3hops_NOsoftmax_ResNet18_MultiStageLossMLP_parallel_numseg16/ --workers 5 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p \
---CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation
+--CustomPolicy --CC --arch resnet18 --channel 512 --freezeBN_Eval --npb  --lr_steps 30 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --image_resolution 320
 
+v30 (on my computer) ResNet34 frame_num16 parallel softmax sorting (h5 : 256)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 1 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16  --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/v30_ResNet34_16frs_Parallel_Softmax_Sorting --workers 8 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm \
+--CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 256
+
+v30 (dgx GPU1,3) ResNet34 frame_num16 parallel Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 256)
+CUDA_VISIBLE_DEVICES=1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 46 --gpus 0 1 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16  --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v30_ResNet34_16frs_Parallel_NoSoftmax_NoSorting/ --workers 20 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 256
+
+v30 (ciplabthree GPU0,1,2) ResNet34 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 256)
+CUDA_VISIBLE_DEVICES=0,1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 48 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v30_ResNet34_16frs_Iterative_NoSoftmax_NoSorting/ --workers 20 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 256
 
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \
@@ -486,4 +498,4 @@ NV_GPU=0,1 nvidia-docker run -ti --name KM_pytorch_GPU01 --ipc=host \
  heyday097/pytorch:latest
 
 # extract jpeg v2
-python utils/extract_frames.py --video_root /raid/km/SthSth/20bn-something-something-v2-vids/ --frame_root /raid/km/SthSth/20bn-something-something-v2-frames_320_jpegQual5 --num_threads 20
+python utils/extract_frames.py --video_root /raid/km/SthSth/20bn-something-something-v2-vids/ --frame_root /raid/km/SthSth/20bn-something-something-v2-frames_320_jpegQual5 --num_threads 20 --resolution 256 --quality 7

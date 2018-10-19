@@ -37,7 +37,7 @@ class TSNDataSet(data.Dataset):
     def __init__(self, root_path, list_file, file_type,
                  num_segments=3, MoreAug_Rotation=False, MoreAug_ColorJitter=False, new_length=1, modality='RGB',
                  image_tmpl='img_{:05d}.jpg', transform1=None, transform2=None, phase='test',
-                 force_grayscale=False, random_shift=True, test_mode=False):
+                 force_grayscale=False, random_shift=True, test_mode=False, image_resolution=256):
 
         self.root_path = root_path
         self.list_file = list_file
@@ -53,6 +53,7 @@ class TSNDataSet(data.Dataset):
         self.MoreAug_Rotation = MoreAug_Rotation
         self.MoreAug_ColorJitter = MoreAug_ColorJitter
         self.phase = phase
+        self.image_resolution = image_resolution
         if self.MoreAug_Rotation and self.phase=='train': self.moreaug_transform_rotation = GroupRandomRotation(5)
         # if self.MoreAug_ColorJitter and self.phase=='train': self.moreaug_transform_colorjitter = GroupRandomColorjitter_km(brightness=0.7, contrast=0.7, saturation=0.5, hue=0.05)
         # if self.MoreAug_ColorJitter and self.phase=='train': self.moreaug_transform_colorjitter = GroupRandomColorjitter(brightness=0.7, contrast=0.7, saturation=0.5, hue=0.05)
@@ -154,7 +155,7 @@ class TSNDataSet(data.Dataset):
     def get(self, record, indices):
         images = list()
         if self.file_type == 'h5':
-            input_h5file = os.path.join(self.root_path, 'AllInOne.h5')
+            input_h5file = os.path.join(self.root_path, 'AllInOne_%d.h5'%(self.image_resolution))
             input_h5 = h5py.File(input_h5file, 'r')
 
         assert (len(input_h5[str(record.path)])==record.num_frames)

@@ -53,6 +53,8 @@ parser.add_argument('--MoreAug_Rotation', action='store_true', help='If true, ap
 parser.set_defaults(MoreAug_Rotation=False)    ##### newly added #####
 parser.add_argument('--MoreAug_ColorJitter', action='store_true', help='If true, apply color jittering as data augmentation')    ##### newly added #####
 parser.set_defaults(MoreAug_ColorJitter=False)    ##### newly added #####
+parser.add_argument('--image_resolution', default=256, type=int, help="resolution of image")    ##### newly added #####
+parser.add_argument('--how_many_objects', default=1, type=int, help="decide how many heads each hop has to have")    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',

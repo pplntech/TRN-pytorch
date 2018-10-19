@@ -39,7 +39,7 @@ def save(txt_filename, gt, pred, idx2class):
         # else:
         #     FN[each_gt] += 1
         #     FP[each_pred] += 1
-    print ('Accuracy')
+    # print ('Accuracy')
     dic_acc = {}
     for each_class_int in range(n_classes):
         dic_acc[each_class_int] = float(true[each_class_int])/total[each_class_int]

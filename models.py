@@ -17,7 +17,7 @@ class TSN(nn.Module):
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN_Eval=False, freezeBN_Require_Grad_True=False, print_spec=True, num_hop=1, hop_method=None, 
                  num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, MultiStageLoss=False, MultiStageLoss_MLP=False, \
-                 how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1):
+                 how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1, image_resolution=256):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -34,6 +34,7 @@ class TSN(nn.Module):
         self.MultiStageLoss = MultiStageLoss
         self.CC = CC
         self.memory_dim = memory_dim
+        self.image_resolution = image_resolution
         # self.sorting = sorting
 
         if not before_softmax and consensus_type != 'avg':
@@ -660,7 +661,9 @@ class TSN(nn.Module):
 
     def get_augmentation(self):
         if self.modality == 'RGB':
-            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75, .66], fix_crop=False)])
+            scales = [1, .875, .75, .66]
+            if self.image_resolution==320: scales = [1, .9, .85, .8]
+            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, scales, fix_crop=False)])
                 # , GroupRandomHorizontalFlip(is_flow=False)])
         elif self.modality == 'Flow':
             return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75], fix_crop=False)])

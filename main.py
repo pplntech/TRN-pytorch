@@ -70,6 +70,7 @@ def main():
                 only_query=args.only_query,
                 CC=args.CC, channel=args.channel,
                 memory_dim=args.memory_dim,
+                image_resolution=args.image_resolution,
                 )
 
 
@@ -119,7 +120,7 @@ def main():
                            Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
                            ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
                            normalize, # GroupNormalize
-                       ]))
+                       ]), image_resolution=args.image_resolution)
     train_loader = torch.utils.data.DataLoader(train_data,
         batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False, drop_last=True)
@@ -138,7 +139,7 @@ def main():
                        Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
                        ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
                        normalize,
-                   ]))
+                   ]), image_resolution=args.image_resolution)
     val_loader = torch.utils.data.DataLoader(val_data,
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False, drop_last=True)
