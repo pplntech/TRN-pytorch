@@ -285,7 +285,8 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
             print(output)
             log.write(output + '\n')
             log.flush()
-        # break
+        if args.break_while_train:
+            break
 
     # final print
     output = ('**Sum Up**, lr: {lr:.8f}\t'

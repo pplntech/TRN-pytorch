@@ -79,6 +79,8 @@ parser.add_argument('--print-freq', '-p', default=20, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--eval-freq', '-ef', default=5, type=int,
                     metavar='N', help='evaluation frequency (default: 5)')
+parser.add_argument('--break_while_train', action='store_true', help='If true, break after 1st iteration.')    ##### newly added #####
+parser.set_defaults(break_while_train=False)    ##### newly added #####
 
 
 # ========================= Runtime Configs ==========================
