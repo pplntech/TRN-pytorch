@@ -20,7 +20,7 @@ class TSN(nn.Module):
                  dropout=0.8,key_dim=256,value_dim=256,query_dim=256,query_update_method=None,
                  crop_num=1, partial_bn=True, freezeBN_Eval=False, freezeBN_Require_Grad_True=False, print_spec=True, num_hop=1, hop_method=None, 
                  num_CNNs=1, no_softmax_on_p=False, freezeBackbone=False, CustomPolicy=False, sorting=False, MultiStageLoss=False, MultiStageLoss_MLP=False, \
-                 how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1, image_resolution=256,how_many_objects=1, Each_Embedding=False):
+                 how_to_get_query='mean', only_query=False, CC=False, channel=1024, memory_dim=1, image_resolution=256,how_many_objects=1, Each_Embedding=False, Curriculum=False, Curriculum_dim=512, lr_steps=None):
         super(TSN, self).__init__()
         self.modality = modality
         self.num_segments = num_segments
@@ -39,6 +39,7 @@ class TSN(nn.Module):
         self.memory_dim = memory_dim
         self.image_resolution = image_resolution
         self.how_many_objects = how_many_objects
+
         # self.sorting = sorting
 
         if not before_softmax and consensus_type != 'avg':
@@ -83,7 +84,7 @@ class TSN(nn.Module):
                 key_dim=key_dim, value_dim=value_dim, query_dim=query_dim, memory_dim=memory_dim, query_update_method=query_update_method, \
                 no_softmax_on_p=no_softmax_on_p, channel=channel, num_hop=num_hop, hop_method=hop_method, num_CNNs=num_CNNs, \
                 sorting=sorting, MultiStageLoss=MultiStageLoss, MultiStageLoss_MLP=MultiStageLoss_MLP, how_to_get_query=how_to_get_query, only_query=only_query, CC=CC, how_many_objects=how_many_objects,\
-                Each_Embedding=Each_Embedding)
+                Each_Embedding=Each_Embedding, Curriculum=Curriculum, Curriculum_dim=Curriculum_dim, lr_steps=lr_steps)
         else: # agv or something else
             self.consensus = ConsensusModule(consensus_type)
 
@@ -242,16 +243,18 @@ class TSN(nn.Module):
                 if isinstance(m, nn.BatchNorm2d):
                     m.eval()
 
-        for m in self.base_model.modules():
-            if isinstance(m, nn.BatchNorm2d):
+        if self._enable_pbn==False: # partial batch norm
+            for m in self.base_model.modules():
+                if isinstance(m, nn.BatchNorm2d):
 
-                # shutdown update in frozen mode
-                if self.freezeBN_Require_Grad_True:
-                    m.weight.requires_grad = True
-                    m.bias.requires_grad = True
-                else:
-                    m.weight.requires_grad = False
-                    m.bias.requires_grad = False
+                    # shutdown update in frozen mode
+                    if self.freezeBN_Require_Grad_True:
+                        m.weight.requires_grad = True
+                        m.bias.requires_grad = True
+                    else:
+                        m.weight.requires_grad = False
+                        m.bias.requires_grad = False
+
 
     def partialBN(self, enable):
         self._enable_pbn = enable
@@ -332,13 +335,34 @@ class TSN(nn.Module):
             backbone_bias = []
             consensus_weight = []
             consensus_bias = []
+            curr_hop1_weight = []
+            curr_hop1_bias = []
+            curr_hop2_weight = []
+            curr_hop2_bias = []
+            curr_hop3_weight = []
+            curr_hop3_bias = []
             bn = []
             bn_cnt = 0
 
             for name, m in self.named_modules():
                 # print (name, type(m))
                 print (name, m)
-                if('consensus' in name):
+                if('Curriculum_hop1' in name):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
+                        ps = list(m.parameters())
+                        curr_hop1_weight.append(ps[0])
+                        if len(ps) == 2: curr_hop1_bias.append(ps[1])
+                elif('Curriculum_hop2' in name):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
+                        ps = list(m.parameters())
+                        curr_hop2_weight.append(ps[0])
+                        if len(ps) == 2: curr_hop2_bias.append(ps[1])
+                elif('Curriculum_hop3' in name):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
+                        ps = list(m.parameters())
+                        curr_hop3_weight.append(ps[0])
+                        if len(ps) == 2: curr_hop3_bias.append(ps[1])
+                elif('consensus' in name):
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                         ps = list(m.parameters())
                         consensus_weight.append(ps[0])
@@ -407,6 +431,22 @@ class TSN(nn.Module):
                  'name': "consensus_weight"},
                 {'params': consensus_bias, 'lr_mult': 2, 'decay_mult': 0,
                  'name': "consensus_bias"},
+
+                {'params': curr_hop1_weight, 'lr_mult': 10, 'decay_mult': 1,
+                 'name': "curr_hop1_weight"},
+                {'params': curr_hop1_bias, 'lr_mult': 20, 'decay_mult': 0,
+                 'name': "curr_hop1_bias"},
+
+                {'params': curr_hop2_weight, 'lr_mult': 50, 'decay_mult': 1,
+                 'name': "curr_hop2_weight"},
+                {'params': curr_hop2_bias, 'lr_mult': 100, 'decay_mult': 0,
+                 'name': "curr_hop2_bias"},
+
+                {'params': curr_hop3_weight, 'lr_mult': 100, 'decay_mult': 1,
+                 'name': "curr_hop3_weight"},
+                {'params': curr_hop3_bias, 'lr_mult': 200, 'decay_mult': 0,
+                 'name': "curr_hop3_bias"},
+
                 {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
                  'name': "BN scale/shift"},
             ]
@@ -492,7 +532,7 @@ class TSN(nn.Module):
 
         return torch.autograd.Variable(allgrids.cuda())
 
-    def forward(self, input, criterion, phase='eval', target=None, eval=False):
+    def forward(self, input, criterion, phase='eval', target=None, eval=False, epoch=None):
         # print (input.size()) # [72, 6, 224, 224] # [BS, num_seg * num_channel, h, w]
 
         sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
@@ -550,11 +590,11 @@ class TSN(nn.Module):
         if self.consensus_type in ['MemNN']:
             if eval:
                 if self.how_many_objects == 2:
-                    outputs, attentions, attentions_2 = self.consensus(base_out, eval=eval) # output : logit
+                    outputs, attentions, attentions_2 = self.consensus(base_out, eval=eval, epoch=epoch) # output : logit
                 else:
-                    outputs, attentions = self.consensus(base_out, eval=eval) # output : logit
+                    outputs, attentions = self.consensus(base_out, eval=eval, epoch=epoch) # output : logit
             else:
-                outputs = self.consensus(base_out, eval=eval) # output : logit
+                outputs = self.consensus(base_out, eval=eval, epoch=epoch) # output : logit
         else:
             outputs = [self.consensus(base_out).squeeze(1)]
 

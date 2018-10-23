@@ -208,22 +208,10 @@ class TSNDataSet(data.Dataset):
         '''
 
         # Additional Data Augmentation # Rotation, Shearing, Zoom
-        plt.figure(1)
-        plt.subplot(2,1,1); plt.imshow(images[0])
-        plt.subplot(2,1,2); plt.imshow(images[1])
-        plt.savefig('aug_0.png')
         if self.MoreAug_Rotation and self.phase=='train': images = self.moreaug_transform_rotation(images)
-        plt.figure(1)
-        plt.subplot(2,1,1); plt.imshow(images[0])
-        plt.subplot(2,1,2); plt.imshow(images[1])
-        plt.savefig('aug_1.png')
 
         # Original Data Augmentation
         images = self.transform1(images)
-        plt.figure(1)
-        plt.subplot(2,1,1); plt.imshow(images[0])
-        plt.subplot(2,1,2); plt.imshow(images[1])
-        plt.savefig('aug_2.png')
 
         # Additional Data Augmentation # ColorJitter
         if self.MoreAug_ColorJitter and self.phase=='train':
@@ -239,11 +227,6 @@ class TSNDataSet(data.Dataset):
             list_trans_FM = [np.uint8(img) for img in list_FM]
             images = [Image.fromarray(img) for img in list_trans_FM]
 
-        plt.figure(1)
-        plt.subplot(2,1,1); plt.imshow(images[0])
-        plt.subplot(2,1,2); plt.imshow(images[1])
-        plt.savefig('aug_3.png')
-        asdf
         process_data = self.transform2(images)
 
         # print (process_data.type(), process_data.size(), record.path)

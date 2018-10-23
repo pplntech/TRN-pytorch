@@ -482,6 +482,14 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 1
 --CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 \
 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Each_Embedding
 
+v32 (on my computer) ResNet50 frame_num16 iter softmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/v32_ResNet50_16frs_Iterative_YesSoftmax_NoSorting/ --workers 8 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512
+
+
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \
 --num_segments 8 --hop 2 --result_path ? --workers 20 --num_CNNs 2 --resume ? --evaluate --evaluation_epoch ?

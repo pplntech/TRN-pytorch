@@ -57,6 +57,9 @@ parser.add_argument('--image_resolution', default=256, type=int, help="resolutio
 parser.add_argument('--how_many_objects', default=1, type=int, help="decide how many heads each hop has to have")    ##### newly added #####
 parser.add_argument('--Each_Embedding', action='store_true', help='Use per-hop key/value embedding on iterative version')    ##### newly added #####
 parser.set_defaults(Each_Embedding=False)    ##### newly added #####
+parser.add_argument('--Curriculum', action='store_true', help='If true, do curriculum learning')    ##### newly added #####
+parser.set_defaults(Curriculum=False)    ##### newly added #####
+parser.add_argument('--Curriculum_dim', default=512, type=int, help="intermediate dim of curriculum learning")    ##### newly added #####
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=120, type=int, metavar='N',

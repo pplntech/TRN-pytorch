@@ -72,7 +72,10 @@ def main():
                 memory_dim=args.memory_dim,
                 image_resolution=args.image_resolution,
                 how_many_objects=args.how_many_objects,
-                Each_Embedding=args.Each_Embedding
+                Each_Embedding=args.Each_Embedding,
+                Curriculum=args.Curriculum,
+                Curriculum_dim=args.Curriculum_dim,
+                lr_steps=args.lr_steps,
                 )
 
 
@@ -177,7 +180,7 @@ def main():
 
     if args.evaluate:
         json_file_path = os.path.join(args.result_path, 'results_epoch%d.json'%args.evaluation_epoch)
-        validate(val_loader, model, criterion, 0, json_file=json_file_path, idx2class=categories)
+        validate(val_loader, model, criterion, 0, json_file=json_file_path, idx2class=categories, epoch = args.evaluation_epoch)
         return
 
 
@@ -196,7 +199,7 @@ def main():
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:
             json_file_path = os.path.join(args.result_path, 'results_epoch%d.json'%(epoch + 1))
             # prec1 = validate(val_loader, model, criterion, (epoch + 1) * len(train_loader), log=log_training, json_file=json_file_path, idx2class=categories)
-            prec1 = validate(val_loader, model, criterion, (epoch + 1) * num_train_dataset, log=log_training, json_file=json_file_path, idx2class=categories)
+            prec1 = validate(val_loader, model, criterion, (epoch + 1) * num_train_dataset, log=log_training, json_file=json_file_path, idx2class=categories, epoch=epoch)
 
             # remember best prec@1 and save checkpoint
             is_best = prec1 > best_prec1
@@ -242,7 +245,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
         target_var = torch.autograd.Variable(target)
 
         # compute output
-        output, loss = model(input_var, criterion, phase='train', target=target_var) # torch.nn.CrossEntropyLoss().cuda()
+        output, loss = model(input_var, criterion, phase='train', target=target_var, epoch=epoch) # torch.nn.CrossEntropyLoss().cuda()
         # print (loss)
         # asdf
         loss = loss.mean()
@@ -308,7 +311,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
 
 
-def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2class=None):
+def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2class=None, epoch=None):
     if json_file is not None and args.consensus_type in ['MemNN']:
         dicts = {}
         for idx, classstr in enumerate(idx2class):
@@ -343,11 +346,11 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
         if json_file is not None and args.consensus_type in ['MemNN']:
             # output, loss = model(input_var, criterion, phase='eval', target=target_var, eval=False)
             if args.how_many_objects == 2:
-                output, attentions, attentions_2, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
+                output, attentions, attentions_2, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True, epoch=epoch)
                 attentions = attentions.cpu().data.numpy().tolist()
                 attentions_2 = attentions_2.cpu().data.numpy().tolist()
             else:
-                output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True)
+                output, attentions, loss = model(input_var, criterion, phase='eval', target=target_var, eval=True, epoch=epoch)
                 attentions = attentions.cpu().data.numpy().tolist()
             # output, attentions = model(input_var, eval=True)
         else:
