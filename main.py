@@ -72,6 +72,7 @@ def main():
                 memory_dim=args.memory_dim,
                 image_resolution=args.image_resolution,
                 how_many_objects=args.how_many_objects,
+                Each_Embedding=args.Each_Embedding
                 )
 
 

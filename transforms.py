@@ -165,6 +165,74 @@ class GroupRandomRotation(object):
         ret = [img.rotate(theta) for img in img_group]
         return ret
 
+def transform_matrix_offset_center(matrix, x, y):
+    o_x = float(x) / 2 + 0.5
+    o_y = float(y) / 2 + 0.5
+    offset_matrix = np.array([[1, 0, o_x], [0, 1, o_y], [0, 0, 1]])
+    reset_matrix = np.array([[1, 0, -o_x], [0, 1, -o_y], [0, 0, 1]])
+    transform_matrix = np.dot(np.dot(offset_matrix, matrix), reset_matrix)
+    return transform_matrix
+
+class GroupRandomAffineTransform(object):
+    """Randomly rotate the given PIL.Image with the range of [-rt, rt]
+    """
+    def __init__(self, rt, sh, zm):
+        self.rt = rt
+        self.sh = sh
+        self.zm = zm
+
+    def __call__(self, img_group):
+        # rotation
+        w, h = img_group[0].size
+        if self.rt: theta = np.pi / 180 * random.uniform(-self.rt, self.rt)
+        else: theta = 0
+
+        # shear
+        if self.sh: shear = random.uniform(-self.sh, self.sh)
+        else: shear = 0
+
+        # zoom
+        if self.zm[0] == 1 and self.zm[1] == 1: zx, zy = 1, 1
+        else:
+            zx = random.uniform(self.zm[0], self.zm[1])
+            zy = random.uniform(self.zm[0], self.zm[1])
+
+
+        # build transformation matrix
+        transform_matrix = None
+
+        if theta != 0:
+            rotation_matrix = np.array([[np.cos(theta), -np.sin(theta), 0],[np.sin(theta), np.cos(theta), 0],[0, 0, 1]])
+            transform_matrix = rotation_matrix
+
+        if shear != 0:
+            if random.random() < 0.5:
+                shear_matrix = np.array([[1, shear, 0],
+                                        [0, 1, 0],
+                                        [0, 0, 1]])
+            else:
+                shear_matrix = np.array([[1, 0, 0],
+                                        [shear, 1, 0],
+                                        [0, 0, 1]])
+            transform_matrix = shear_matrix if transform_matrix is None else np.dot(transform_matrix, shear_matrix)
+
+        if zx != 1 or zy != 1:
+            zoom_matrix = np.array([[zx, 0, 0],
+                                    [0, zy, 0],
+                                    [0, 0, 1]])
+            transform_matrix = zoom_matrix if transform_matrix is None else np.dot(transform_matrix, zoom_matrix)
+
+        if transform_matrix is not None:
+            transform_matrix = transform_matrix_offset_center(transform_matrix, h, w)
+            # transformed = image.transform(img_group[0].size,Image.AFFINE,tuple(transform_matrix.flat[:6]))
+        else:
+            transform_matrix = np.array([[1, 0, 0],
+                                        [0, 1, 0],
+                                        [0, 0, 1]])
+        ret = [img.transform(img.size,Image.AFFINE,tuple(transform_matrix.flat[:6])) for img in img_group]
+
+        return ret
+
 '''
 def channel_shift(xs, intensity, channel_axis):
     ys = []
@@ -357,6 +425,79 @@ class GroupMultiScaleCrop(object):
 
         return ret
 
+
+class GroupRandomScaleCrop(object):
+
+    def __init__(self, input_size, scales=None, max_distort=1, fix_crop=True, more_fix_crop=True):
+        self.scales = scales if scales is not None else [1, .875, .75, .66]
+        self.max_distort = max_distort
+        self.fix_crop = fix_crop
+        self.more_fix_crop = more_fix_crop
+        self.input_size = input_size if not isinstance(input_size, int) else [input_size, input_size]
+        self.interpolation = Image.BILINEAR
+
+    def __call__(self, img_group):
+
+        im_size = img_group[0].size
+
+        crop_w, crop_h, offset_w, offset_h = self._sample_crop_size(im_size)
+        crop_img_group = [img.crop((offset_w, offset_h, offset_w + crop_w, offset_h + crop_h)) for img in img_group]
+        ret_img_group = [img.resize((self.input_size[0], self.input_size[1]), self.interpolation)
+                         for img in crop_img_group]
+        return ret_img_group
+
+    def _sample_crop_size(self, im_size):
+        image_w, image_h = im_size[0], im_size[1]
+
+        # find a crop size
+        base_size = min(image_w, image_h)
+        crop_sizes = [int(base_size * x) for x in self.scales]
+        crop_h = [self.input_size[1] if abs(x - self.input_size[1]) < 2 else x for x in crop_sizes]
+        crop_w = [self.input_size[0] if abs(x - self.input_size[0]) < 2 else x for x in crop_sizes]
+
+        pairs = []
+        for i, h in enumerate(crop_h):
+            for j, w in enumerate(crop_w):
+                if abs(i - j) <= self.max_distort:
+                    pairs.append((w, h))
+
+        crop_pair = random.choice(pairs)
+        if not self.fix_crop:
+            w_offset = random.randint(0, image_w - crop_pair[0])
+            h_offset = random.randint(0, image_h - crop_pair[1])
+        else:
+            w_offset, h_offset = self._sample_fix_offset(image_w, image_h, crop_pair[0], crop_pair[1])
+
+        return crop_pair[0], crop_pair[1], w_offset, h_offset
+
+    def _sample_fix_offset(self, image_w, image_h, crop_w, crop_h):
+        offsets = self.fill_fix_offset(self.more_fix_crop, image_w, image_h, crop_w, crop_h)
+        return random.choice(offsets)
+
+    @staticmethod
+    def fill_fix_offset(more_fix_crop, image_w, image_h, crop_w, crop_h):
+        w_step = (image_w - crop_w) // 4
+        h_step = (image_h - crop_h) // 4
+
+        ret = list()
+        ret.append((0, 0))  # upper left
+        ret.append((4 * w_step, 0))  # upper right
+        ret.append((0, 4 * h_step))  # lower left
+        ret.append((4 * w_step, 4 * h_step))  # lower right
+        ret.append((2 * w_step, 2 * h_step))  # center
+
+        if more_fix_crop:
+            ret.append((0, 2 * h_step))  # center left
+            ret.append((4 * w_step, 2 * h_step))  # center right
+            ret.append((2 * w_step, 4 * h_step))  # lower center
+            ret.append((2 * w_step, 0 * h_step))  # upper center
+
+            ret.append((1 * w_step, 1 * h_step))  # upper left quarter
+            ret.append((3 * w_step, 1 * h_step))  # upper right quarter
+            ret.append((1 * w_step, 3 * h_step))  # lower left quarter
+            ret.append((3 * w_step, 3 * h_step))  # lower righ quarter
+
+        return ret
 
 class GroupRandomSizedCrop(object):
     """Random crop the given PIL.Image to a random size of (0.08 to 1.0) of the original size

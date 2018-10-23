@@ -13,7 +13,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from affine_transforms import channel_shift
-from transforms import GroupRandomRotation
+from transforms import GroupRandomAffineTransform
 # from transforms import GroupRandomColorjitter_km
 
 class VideoRecord(object):
@@ -54,7 +54,7 @@ class TSNDataSet(data.Dataset):
         self.MoreAug_ColorJitter = MoreAug_ColorJitter
         self.phase = phase
         self.image_resolution = image_resolution
-        if self.MoreAug_Rotation and self.phase=='train': self.moreaug_transform_rotation = GroupRandomRotation(5)
+        if self.MoreAug_Rotation and self.phase=='train': self.moreaug_transform_rotation = GroupRandomAffineTransform(rt=10, sh=0.1, zm = [0.95, 1.05])
         # if self.MoreAug_ColorJitter and self.phase=='train': self.moreaug_transform_colorjitter = GroupRandomColorjitter_km(brightness=0.7, contrast=0.7, saturation=0.5, hue=0.05)
         # if self.MoreAug_ColorJitter and self.phase=='train': self.moreaug_transform_colorjitter = GroupRandomColorjitter(brightness=0.7, contrast=0.7, saturation=0.5, hue=0.05)
             
@@ -207,11 +207,23 @@ class TSNDataSet(data.Dataset):
         images = [Image.fromarray(img) for img in list_trans_FM]
         '''
 
-        # Additional Data Augmentation # Rotation
+        # Additional Data Augmentation # Rotation, Shearing, Zoom
+        plt.figure(1)
+        plt.subplot(2,1,1); plt.imshow(images[0])
+        plt.subplot(2,1,2); plt.imshow(images[1])
+        plt.savefig('aug_0.png')
         if self.MoreAug_Rotation and self.phase=='train': images = self.moreaug_transform_rotation(images)
+        plt.figure(1)
+        plt.subplot(2,1,1); plt.imshow(images[0])
+        plt.subplot(2,1,2); plt.imshow(images[1])
+        plt.savefig('aug_1.png')
 
         # Original Data Augmentation
         images = self.transform1(images)
+        plt.figure(1)
+        plt.subplot(2,1,1); plt.imshow(images[0])
+        plt.subplot(2,1,2); plt.imshow(images[1])
+        plt.savefig('aug_2.png')
 
         # Additional Data Augmentation # ColorJitter
         if self.MoreAug_ColorJitter and self.phase=='train':
@@ -227,6 +239,11 @@ class TSNDataSet(data.Dataset):
             list_trans_FM = [np.uint8(img) for img in list_FM]
             images = [Image.fromarray(img) for img in list_trans_FM]
 
+        plt.figure(1)
+        plt.subplot(2,1,1); plt.imshow(images[0])
+        plt.subplot(2,1,2); plt.imshow(images[1])
+        plt.savefig('aug_3.png')
+        asdf
         process_data = self.transform2(images)
 
         # print (process_data.type(), process_data.size(), record.path)
