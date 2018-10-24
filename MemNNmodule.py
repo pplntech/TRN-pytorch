@@ -191,7 +191,10 @@ class MemNNModule(torch.nn.Module):
                 output = self.classifier(Curriculum_query_results)
                 outputs.append(output.squeeze(1))
                 if eval:
-                    attentions = [[[1.0/self.num_frames for x in range(self.num_frames)] for y in range(self.hops)] for z in range(bs)]
+                    # attentions = torch.Tensor(np.ones((bs, 1, int(self.num_frames), int(memory_input.size()[3]), int(memory_input.size()[4]), self.hops), dtype=np.float64))
+                    attentions = Variable(torch.ones((int(bs), 1, int(self.num_frames), int(memory_input.size()[3]), int(memory_input.size()[4]), int(self.hops))))
+                    attentions = attentions.permute(0, 1, 5, 2, 3, 4) # (bs, 1, hop, num_seg, h, w)
+                    attentions = attentions.squeeze(1).cuda() # (bs, hop, num_seg, h, w)
                     return outputs, attentions
                 else:
                     return outputs

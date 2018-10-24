@@ -598,7 +598,6 @@ class TSN(nn.Module):
         else:
             outputs = [self.consensus(base_out).squeeze(1)]
 
-
         # Calculate Loss (Avg MultiStage Loss)
         total_loss = None
         total_output = None
@@ -616,6 +615,12 @@ class TSN(nn.Module):
         total_output = total_output / len(outputs)
         total_loss = total_loss / len(outputs)
 
+
+        # if eval:
+        #     print (total_output, attentions, total_loss)
+        # else:
+        #     print (total_output, total_loss)
+            
         # total_loss = total_loss.mean()
         if eval and self.consensus_type in ['MemNN']:
             if self.how_many_objects == 2:

@@ -489,6 +489,20 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm \
 --CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512
 
+v32 (dgx GPU1,3) ResNet50 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+CUDA_VISIBLE_DEVICES=1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 20 --gpus 0 1 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v32_ResNet50_16frs_Iterative_NoSoftmax_NoSorting/ --workers 20 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p  \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512
+
+v32 (ciplabthree GPU0,1,2) ResNet50 frame_num16 iter Nosoftmax Nosorting Each_Embedding (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+CUDA_VISIBLE_DEVICES=0,1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 20 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
+--result_path /hdd2/km/SthSth/Experiments/TRN/V2/v32_ResNet50_16frs_Iterative_NoSoftmax_NoSorting_EachEmbedding/ --workers 20 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p  \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --Each_Embedding
+
 
 ########################### TEST ########################### ()
 python main.py something RGB --consensus_type MemNN --batch-size 20 --gpus ? --root_path ? \
