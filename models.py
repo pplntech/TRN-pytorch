@@ -40,6 +40,7 @@ class TSN(nn.Module):
         self.image_resolution = image_resolution
         self.how_many_objects = how_many_objects
         self.Curriculum = Curriculum
+        self.lr_steps = lr_steps
 
         # self.sorting = sorting
 
@@ -260,7 +261,7 @@ class TSN(nn.Module):
     def partialBN(self, enable):
         self._enable_pbn = enable
 
-    def get_optim_policies(self):
+    def get_optim_policies(self, epoch=0):
         # print (self.freezeBackbone)
         # asdf
         if self.freezeBackbone is False and self.CustomPolicy is False:
@@ -342,12 +343,14 @@ class TSN(nn.Module):
             curr_hop2_bias = []
             curr_hop3_weight = []
             curr_hop3_bias = []
+            curr_classifier_weight = []
+            curr_classifier_bias = []
             bn = []
             bn_cnt = 0
 
             for name, m in self.named_modules():
                 # print (name, type(m))
-                print (name, m)
+                if epoch==0: print (name, m)
                 if((('Curriculum_hop1' in name) or ('query_embedding1' in name) or ('KeyEmbedding1' in name) or ('ValueEmbedding1' in name)) and self.Curriculum):
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
@@ -363,6 +366,11 @@ class TSN(nn.Module):
                         ps = list(m.parameters())
                         curr_hop3_weight.append(ps[0])
                         if len(ps) == 2: curr_hop3_bias.append(ps[1])
+                elif((('classifier' in name) and self.Curriculum)):
+                    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
+                        ps = list(m.parameters())
+                        curr_classifier_weight.append(ps[0])
+                        if len(ps) == 2: curr_classifier_bias.append(ps[1])
                 elif('consensus' in name):
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                         ps = list(m.parameters())
@@ -370,7 +378,7 @@ class TSN(nn.Module):
                         if len(ps) == 2: consensus_bias.append(ps[1])
                     elif isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
-                        consensus_weight.append(ps[0])
+                        consensus_weight.append(ps[0]) 
                         if len(ps) == 2: consensus_bias.append(ps[1])
                     elif isinstance(m, torch.nn.modules.rnn.LSTM):
                         ps = list(m.parameters())
@@ -423,6 +431,12 @@ class TSN(nn.Module):
                 # asdf
 
             backbone_lr_mul = 0.1
+            classifier_multiplier = 1
+            if self.Curriculum:
+            	if epoch >= self.lr_steps[2]: # 15, 30, 40, 50
+            		classifier_multiplier = 50
+            	elif epoch >= self.lr_steps[3]:
+            		classifier_multiplier = 100
             return [
                 {'params': backbone_weight, 'lr_mult': 5 if self.modality == 'Flow' else backbone_lr_mul, 'decay_mult': 1,
                  'name': "backbone_weight"},
@@ -447,6 +461,11 @@ class TSN(nn.Module):
                  'name': "curr_hop3_weight"},
                 {'params': curr_hop3_bias, 'lr_mult': 200, 'decay_mult': 0,
                  'name': "curr_hop3_bias"},
+
+                {'params': curr_classifier_weight, 'lr_mult': classifier_multiplier, 'decay_mult': 1,
+                 'name': "curr_classifier_weight"},
+                {'params': curr_classifier_bias, 'lr_mult': classifier_multiplier*2, 'decay_mult': 0,
+                 'name': "curr_classifier_bias"},
 
                 {'params': bn, 'lr_mult': 1, 'decay_mult': 0,
                  'name': "BN scale/shift"},

@@ -234,6 +234,23 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
     end = time.time()
     for i, (input, target, ids, indices) in enumerate(train_loader):
+        policies = model.module.get_optim_policies(epoch)
+
+        for group in policies:
+            print(('group: {} has {} params, lr_mult: {}, decay_mult: {}'.format(
+                group['name'], len(group['params']), group['lr_mult'], group['decay_mult'])))
+
+        if args.optimizer=='sgd':
+            optimizer = torch.optim.SGD(policies,
+                                        args.lr,
+                                        momentum=args.momentum,
+                                        weight_decay=args.weight_decay)
+        elif args.optimizer=='adam':
+            optimizer = torch.optim.Adam(policies, lr=args.lr, weight_decay=args.weight_decay)
+        # optimizer = torch.optim.SGD(policies,
+        #                             args.lr,
+        #                             momentum=args.momentum,
+        #          
         # num_iter += input.size(0)
         # measure data loading time
         # print (input.size()) # [72, 6, 224, 224]
@@ -400,7 +417,9 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
             if log is not None:
                 log.write(output + '\n')
                 log.flush()
-        # break
+                
+        if args.break_while_val:
+            break
 
     output = ('Testing Results: Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f} Loss {loss.avg:.5f}'
           .format(top1=top1, top5=top5, loss=losses))
