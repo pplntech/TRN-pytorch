@@ -218,6 +218,20 @@ def main():
 def train(train_loader, model, criterion, optimizer, epoch, log):
     # num_iter = epoch * (num_train_dataset)
 
+    policies = model.module.get_optim_policies(epoch)
+
+    for group in policies:
+        print(('group: {} has {} params, lr_mult: {}, decay_mult: {}'.format(
+            group['name'], len(group['params']), group['lr_mult'], group['decay_mult'])))
+
+    if args.optimizer=='sgd':
+        optimizer = torch.optim.SGD(policies,
+                                    args.lr,
+                                    momentum=args.momentum,
+                                    weight_decay=args.weight_decay)
+    elif args.optimizer=='adam':
+        optimizer = torch.optim.Adam(policies, lr=args.lr, weight_decay=args.weight_decay)
+            
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -234,19 +248,6 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
     end = time.time()
     for i, (input, target, ids, indices) in enumerate(train_loader):
-        policies = model.module.get_optim_policies(epoch)
-
-        for group in policies:
-            print(('group: {} has {} params, lr_mult: {}, decay_mult: {}'.format(
-                group['name'], len(group['params']), group['lr_mult'], group['decay_mult'])))
-
-        if args.optimizer=='sgd':
-            optimizer = torch.optim.SGD(policies,
-                                        args.lr,
-                                        momentum=args.momentum,
-                                        weight_decay=args.weight_decay)
-        elif args.optimizer=='adam':
-            optimizer = torch.optim.Adam(policies, lr=args.lr, weight_decay=args.weight_decay)
         # optimizer = torch.optim.SGD(policies,
         #                             args.lr,
         #                             momentum=args.momentum,
@@ -417,7 +418,7 @@ def validate(val_loader, model, criterion, iter, log=None, json_file=None, idx2c
             if log is not None:
                 log.write(output + '\n')
                 log.flush()
-                
+
         if args.break_while_val:
             break
 
