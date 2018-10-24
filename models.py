@@ -39,6 +39,7 @@ class TSN(nn.Module):
         self.memory_dim = memory_dim
         self.image_resolution = image_resolution
         self.how_many_objects = how_many_objects
+        self.Curriculum = Curriculum
 
         # self.sorting = sorting
 
@@ -347,17 +348,17 @@ class TSN(nn.Module):
             for name, m in self.named_modules():
                 # print (name, type(m))
                 print (name, m)
-                if('Curriculum_hop1' in name):
+                if((('Curriculum_hop1' in name) or ('query_embedding1' in name) or ('KeyEmbedding1' in name) or ('ValueEmbedding1' in name)) and self.Curriculum):
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_hop1_weight.append(ps[0])
                         if len(ps) == 2: curr_hop1_bias.append(ps[1])
-                elif('Curriculum_hop2' in name):
+                elif((('Curriculum_hop2' in name or ('query_embedding2' in name) or ('KeyEmbedding2' in name) or ('ValueEmbedding2' in name)) and self.Curriculum)):
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_hop2_weight.append(ps[0])
                         if len(ps) == 2: curr_hop2_bias.append(ps[1])
-                elif('Curriculum_hop3' in name):
+                elif((('Curriculum_hop3' in name or ('query_embedding3' in name) or ('KeyEmbedding3' in name) or ('ValueEmbedding3' in name)) and self.Curriculum)):
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_hop3_weight.append(ps[0])
