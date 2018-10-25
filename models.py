@@ -239,23 +239,23 @@ class TSN(nn.Module):
                         m.weight.requires_grad = False
                         m.bias.requires_grad = False
 
-        if self.freezeBN_Eval:
-            print("[Freezing BN] Make ALL BatchNorm2D eval mode in base_model.")
-            for m in self.base_model.modules():
-                if isinstance(m, nn.BatchNorm2d):
-                    m.eval()
+        # if self.freezeBN_Eval:
+        #     print("[Freezing BN] Make ALL BatchNorm2D eval mode in base_model.")
+        #     for m in self.base_model.modules():
+        #         if isinstance(m, nn.BatchNorm2d):
+        #             m.eval()
 
-        if self._enable_pbn==False: # partial batch norm
-            for m in self.base_model.modules():
-                if isinstance(m, nn.BatchNorm2d):
+        # if self._enable_pbn==False: # partial batch norm
+        #     for m in self.base_model.modules():
+        #         if isinstance(m, nn.BatchNorm2d):
 
-                    # shutdown update in frozen mode
-                    if self.freezeBN_Require_Grad_True:
-                        m.weight.requires_grad = True
-                        m.bias.requires_grad = True
-                    else:
-                        m.weight.requires_grad = False
-                        m.bias.requires_grad = False
+        #             # shutdown update in frozen mode
+        #             if self.freezeBN_Require_Grad_True:
+        #                 m.weight.requires_grad = True
+        #                 m.bias.requires_grad = True
+        #             else:
+        #                 m.weight.requires_grad = False
+        #                 m.bias.requires_grad = False
 
 
     def partialBN(self, enable):
@@ -311,7 +311,8 @@ class TSN(nn.Module):
                 elif isinstance(m, torch.nn.BatchNorm2d):
                     bn_cnt += 1
                     # later BN's are frozen
-                    if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
+                    # if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
+                    if not self._enable_pbn or bn_cnt == 1:
                         bn.extend(list(m.parameters()))
                 elif len(m._modules) == 0:
                     if len(list(m.parameters())) > 0:
@@ -352,26 +353,32 @@ class TSN(nn.Module):
                 # print (name, type(m))
                 if epoch==0: print (name, m)
                 if((('Curriculum_hop1' in name) or ('query_embedding1' in name) or ('KeyEmbedding1' in name) or ('ValueEmbedding1' in name)) and self.Curriculum):
+                    print (name, 'is in Curriculum_hop1')
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_hop1_weight.append(ps[0])
                         if len(ps) == 2: curr_hop1_bias.append(ps[1])
                 elif((('Curriculum_hop2' in name or ('query_embedding2' in name) or ('KeyEmbedding2' in name) or ('ValueEmbedding2' in name)) and self.Curriculum)):
+                    print (name, 'is in Curriculum_hop2')
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_hop2_weight.append(ps[0])
                         if len(ps) == 2: curr_hop2_bias.append(ps[1])
                 elif((('Curriculum_hop3' in name or ('query_embedding3' in name) or ('KeyEmbedding3' in name) or ('ValueEmbedding3' in name)) and self.Curriculum)):
+                    print (name, 'is in Curriculum_hop3')
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_hop3_weight.append(ps[0])
                         if len(ps) == 2: curr_hop3_bias.append(ps[1])
                 elif((('classifier' in name) and self.Curriculum)):
+                    print (name, 'is in classifier')
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.Linear):
                         ps = list(m.parameters())
                         curr_classifier_weight.append(ps[0])
                         if len(ps) == 2: curr_classifier_bias.append(ps[1])
                 elif('consensus' in name):
+                    print (name, 'is in Consensus')
+                    
                     if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv3d):
                         ps = list(m.parameters())
                         consensus_weight.append(ps[0])
@@ -394,7 +401,8 @@ class TSN(nn.Module):
                         bn_cnt += 1
                         # later BN's are frozen
                         # if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
-                        if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
+                        # if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
+                        if not self._enable_pbn or bn_cnt == 1:
                             bn.extend(list(m.parameters()))
                     elif len(m._modules) == 0:
                         if len(list(m.parameters())) > 0:
@@ -423,7 +431,9 @@ class TSN(nn.Module):
                         bn_cnt += 1
                         # later BN's are frozen
                         # if not self._enable_pbn or bn_cnt == 1 and self.freezeBN is False:
-                        if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
+                        # if not self._enable_pbn or bn_cnt == 1 or (self.freezeBN_Require_Grad_True is True):
+                        if not self._enable_pbn or bn_cnt == 1:
+                            # print (name, 'is in BN')
                             bn.extend(list(m.parameters()))
                     elif len(m._modules) == 0:
                         if len(list(m.parameters())) > 0:
@@ -433,10 +443,10 @@ class TSN(nn.Module):
             backbone_lr_mul = 0.1
             classifier_multiplier = 1
             if self.Curriculum:
-            	if epoch >= self.lr_steps[2]: # 15, 30, 40, 50
-            		classifier_multiplier = 50
-            	elif epoch >= self.lr_steps[3]:
-            		classifier_multiplier = 100
+                if epoch >= self.lr_steps[2]: # 15, 30, 40, 50
+                    classifier_multiplier = 50
+                elif epoch >= self.lr_steps[3]:
+                    classifier_multiplier = 100
             return [
                 {'params': backbone_weight, 'lr_mult': 5 if self.modality == 'Flow' else backbone_lr_mul, 'decay_mult': 1,
                  'name': "backbone_weight"},
@@ -510,7 +520,8 @@ class TSN(nn.Module):
                         # bn_name.extend(name)
                     elif isinstance(m, torch.nn.BatchNorm2d):
                         # if not self._enable_pbn and self.freezeBN is False:
-                        if not self._enable_pbn and self.freezeBN_Require_Grad_True is True:
+                        # if not self._enable_pbn and self.freezeBN_Require_Grad_True is True:
+                        if not self._enable_pbn:
                             bn.extend(list(m.parameters()))
                             # bn_name.extend(name)
                     elif len(m._modules) == 0:

@@ -200,7 +200,6 @@ class MemNNModule(torch.nn.Module):
                 else:
                     return outputs
 
-
         # first hop
         retrieved_value1, p1 = self.hop(memory_input, query_value, self.KeyEmbedding1, self.ValueEmbedding1, self.query_embedding1)
 
