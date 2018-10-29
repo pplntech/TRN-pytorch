@@ -364,14 +364,12 @@ class MemNNModule(torch.nn.Module):
                 # print (accumulated_output[inner_i].cpu().data.numpy(), arg_time[inner_i,:]) # (512, 2)
         # print (query_value, query_value.unsqueeze(2)) # 4 x 512, 4 x 512 x 1
         # print (accumulated_output) # 4 x 512 x 3
-        print ('--------------------------')
-        print (query_value)
-        print ('--------------------------')
-        print (query_value.unsqueeze(2))
-        print ('--------------------------')
-        print (accumulated_output)
-        accumulated_output = torch.cat((query_value.unsqueeze(2), accumulated_output), 2)
         accumulated_output = accumulated_output.view(bs, -1)
+        print ('--------------------------')
+        print (accumulated_output) # 9x1536
+        print ('--------------------------')
+        print (query_value.unsqueeze(2)) # 9x2048
+        accumulated_output = torch.cat((query_value.unsqueeze(2), accumulated_output), 2)
         output = self.classifier(accumulated_output)
 
         # p1, p2, p3 : (4, 1, num_seg, h, w)

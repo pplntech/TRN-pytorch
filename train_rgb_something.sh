@@ -523,6 +523,21 @@ CUDA_VISIBLE_DEVICES=1,2 python main.py somethingv2 RGB --consensus_type MemNN -
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p  \
 --CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --npb
 
+############# TEST #############
+CUDA_VISIBLE_DEVICES=1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 20 --gpus 0 1 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16  --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v32_ResNet50_16frs_Iterative_NoSoftmax_NoSorting/ --workers 20 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p  \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --npb
+
+v26 hop3 ResNet50 CC AdditionalLoss parallel num_segments_16 (dgx GPU1)
+CUDA_VISIBLE_DEVICES=1 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /raid/users/km/SthSth/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
+--result_path /raid/users/km/SthSth/Experiments/TRN/V2/v26_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_parallel_numseg16 --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --freezeBN --sorting --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --lr_steps 35 70 \
+############# TEST #############
+
 v32 (ciplabthree GPU0,1,2) Curriculum Learning ResNet50 frame_num16 iter Nosoftmax Nosorting Each_Embedding (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=0,1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 20 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
