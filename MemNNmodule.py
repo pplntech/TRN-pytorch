@@ -368,6 +368,8 @@ class MemNNModule(torch.nn.Module):
         print ('--------------------------')
         print (accumulated_output) # 9x1536
         print ('--------------------------')
+        print (query_value) # 9x2048x1
+        print ('--------------------------')
         print (query_value.unsqueeze(2)) # 9x2048
         accumulated_output = torch.cat((query_value.unsqueeze(2), accumulated_output), 2)
         output = self.classifier(accumulated_output)
