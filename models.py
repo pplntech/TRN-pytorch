@@ -239,11 +239,11 @@ class TSN(nn.Module):
                         m.weight.requires_grad = False
                         m.bias.requires_grad = False
 
-        # if self.freezeBN_Eval:
-        #     print("[Freezing BN] Make ALL BatchNorm2D eval mode in base_model.")
-        #     for m in self.base_model.modules():
-        #         if isinstance(m, nn.BatchNorm2d):
-        #             m.eval()
+        if self.freezeBN_Eval:
+            print("[Freezing BN] Make ALL BatchNorm2D eval mode in base_model.")
+            for m in self.base_model.modules():
+                if isinstance(m, nn.BatchNorm2d):
+                    m.eval()
 
         # if self._enable_pbn==False: # partial batch norm
         #     for m in self.base_model.modules():

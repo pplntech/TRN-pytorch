@@ -231,7 +231,7 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
                                     weight_decay=args.weight_decay)
     elif args.optimizer=='adam':
         optimizer = torch.optim.Adam(policies, lr=args.lr, weight_decay=args.weight_decay)
-            
+
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -279,7 +279,13 @@ def train(train_loader, model, criterion, optimizer, epoch, log):
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
-
+        # for name, m in self.named_modules():
+        # print ('------------------------------------------')
+        # for group in optimizer.param_groups:
+        #     for p in group['params']:
+        #         if p.grad is not None:
+        #             print (p.grad)
+        # print ('------------------------------------------')
         loss.backward()
 
         # Clips gradient norm of an iterable of parameters.

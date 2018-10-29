@@ -482,26 +482,53 @@ python main.py somethingv2 RGB --consensus_type MemNN --batch-size 30 --gpus 0 1
 --CustomPolicy --CC --arch resnet34 --channel 512 --freezeBN_Eval --npb  --lr_steps 35 50 70 \
 --MultiStageLoss --MultiStageLoss_MLP --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Each_Embedding
 
-v32 (on my computer) ResNet50 frame_num16 iter softmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+v32 (on my computer) Curriculum Learning ResNet50 frame_num16 iter softmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1 --root_path /ssd2/VideoDataset/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
 --result_path /hdd3/VideoDataset/Experiments/V2/v32_ResNet50_16frs_Iterative_YesSoftmax_NoSorting/ --workers 8 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm \
---CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --npb --freezeBN_Eval
 
-v32 (dgx GPU1,3) ResNet50 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+v32 (on my computer) Curriculum Learning ResNet50 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 12 --gpus 0 1 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/v32_ResNet50_16frs_Iterative_NoSoftmax_NoSorting/ --workers 8 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p \
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --npb --freezeBN_Eval
+
+############# TEST #############
+NO CURRICULUM
+v32 (on my computer) ResNet50 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+[refer to v26 hop3 ResNet50 CC AdditionalLoss parallel num_segments_16 (dgx GPU1)]
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/v32_TEST_MemNNQueryNN_3hops_LSTM_NOsoftmax_CC_ResNet50_AdditionalLoss_parallel_numseg16 --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --CC \
+--arch resnet50 --channel 2048 --freezeBN_Grad --npb --AdditionalLoss --lr_steps 35 70 \
+
+NO CURRICULUM
+v32 (on my computer) ResNet50 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+[refer to v23 only_LSTM ResNet50 frame_num 16 (on dgx GPU3)]
+python main.py somethingv2 RGB --consensus_type MemNN --batch-size 9 --gpus 0 --root_path /ssd2/VideoDataset/ \
+--key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method parallel --num_segments 16 --hop 3 \
+--result_path /hdd3/VideoDataset/Experiments/V2/v32_TEST_MemNNQueryNN_3hops_parallel_1CNN_bnFreeze_Adam_0_0001_default_clip_SORTING_LSTM_NOsoftmax_CustomPolicy_ResNet50_ONLYLSTM_numseg16 --workers 20 --num_CNNs 1 \
+--epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --sorting --how_to_get_query lstm --no_softmax_on_p --CustomPolicy --only_query \
+--arch resnet50 --channel 2048 --freezeBN_Grad --npb
+############# TEST #############
+
+v32 (dgx GPU1,3) Curriculum Learning ResNet50 frame_num16 iter Nosoftmax Nosorting (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 20 --gpus 0 1 --root_path /raid/users/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
 --result_path /raid/users/km/SthSth/Experiments/TRN/V2/v32_ResNet50_16frs_Iterative_NoSoftmax_NoSorting/ --workers 20 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p  \
---CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --npb
 
-v32 (ciplabthree GPU0,1,2) ResNet50 frame_num16 iter Nosoftmax Nosorting Each_Embedding (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
+v32 (ciplabthree GPU0,1,2) Curriculum Learning ResNet50 frame_num16 iter Nosoftmax Nosorting Each_Embedding (default : LSTM for query, CC, MultiStageLoss) (h5 : 320)
 CUDA_VISIBLE_DEVICES=0,1,2 python main.py somethingv2 RGB --consensus_type MemNN --batch-size 20 --gpus 0 1 2 --root_path /ssd/km/SthSth/ \
 --key_dim 256 --value_dim 512 --query_dim 256 --query_update_method concat --hop_method iterative --num_segments 16  --hop 3 \
 --result_path /hdd2/km/SthSth/Experiments/TRN/V2/v32_ResNet50_16frs_Iterative_NoSoftmax_NoSorting_EachEmbedding/ --workers 20 \
 --epochs 250 --file_type h5 --optimizer adam --lr 0.0001 --how_to_get_query lstm --no_softmax_on_p  \
---CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --Each_Embedding
+--CustomPolicy --CC --arch resnet50 --channel 2048 --lr_steps 15 30 40 50 --MoreAug_Rotation --MoreAug_ColorJitter --image_resolution 320 --Curriculum --Curriculum_dim 512 --Each_Embedding --npb
 
 
 ########################### TEST ########################### ()
